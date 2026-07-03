@@ -4,11 +4,14 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "postinstall": "npm run generate:api",
+    "predev": "npm run generate:api",
     "dev": "vite",
+    "prebuild": "npm run generate:api",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "lint:api": "spectral lint openapi.yaml",
-    "generate:api": "orval --config ./orval.config.ts",
+    "generate:api": "orval --config ./orval.config.ts && node scripts/create-api-index.js",
     "test": "vitest run",
     "preview": "vite preview"
   },
