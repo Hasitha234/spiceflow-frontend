@@ -1,65 +1,79 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Spin } from 'antd';
 import './App.css';
 import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
 import { PrivateRoute } from './components/layout/PrivateRoute';
-import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage';
-import { ProductListPage } from './features/products';
-import { SupplierListPage } from './features/suppliers';
-import { WarehousesPage } from './pages/settings/WarehousesPage';
-import { RepsPage } from './pages/settings/RepsPage';
-import { DriversPage } from './pages/settings/DriversPage';
-import { ShopsPage } from './pages/settings/ShopsPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { PurchasesPage } from './pages/purchases/PurchasesPage';
-import { InventoryPage } from './pages/InventoryPage';
-import { RepOrdersPage } from './pages/RepOrdersPage';
-import { LoadingSheetsPage } from './pages/LoadingSheetsPage';
-import { DeliveriesPage } from './pages/DeliveriesPage';
-import { ReportsPage } from './pages/ReportsPage';
-import { UsersPage } from './pages/UsersPage';
-import { RolesPage } from './pages/RolesPage';
-import { NotFoundPage } from './pages/NotFoundPage';
+
+// Route-level code splitting via React.lazy
+const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const ProductListPage = lazy(() => import('./features/products').then((m) => ({ default: m.ProductListPage })));
+const SupplierListPage = lazy(() => import('./features/suppliers').then((m) => ({ default: m.SupplierListPage })));
+const WarehousesPage = lazy(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
+const RepsPage = lazy(() => import('./pages/settings/RepsPage').then((m) => ({ default: m.RepsPage })));
+const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
+const ShopsPage = lazy(() => import('./pages/settings/ShopsPage').then((m) => ({ default: m.ShopsPage })));
+const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
+const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
+const RepOrdersPage = lazy(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
+const LoadingSheetsPage = lazy(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
+const DeliveriesPage = lazy(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
+const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
+const UsersPage = lazy(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
+const RolesPage = lazy(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const queryClient = new QueryClient();
+
+function PageLoader() {
+  return (
+    <div className="flex h-screen w-full items-center justify-center bg-slate-900">
+      <Spin size="large" />
+    </div>
+  );
+}
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/*"
-            element={
-              <PrivateRoute>
-                <AppLayout />
-              </PrivateRoute>
-            }
-          >
-            <Route index element={<DashboardPage />} />
-            <Route path="dashboard" element={<DashboardPage />} />
-            <Route path="purchases" element={<PurchasesPage />} />
-            <Route path="inventory" element={<InventoryPage />} />
-            <Route path="sales" element={<RepOrdersPage />} />
-            <Route path="loading" element={<LoadingSheetsPage />} />
-            <Route path="deliveries" element={<DeliveriesPage />} />
-            <Route path="reports" element={<ReportsPage />} />
-            <Route path="settings/products" element={<ProductListPage />} />
-            <Route path="settings/suppliers" element={<SupplierListPage />} />
-            <Route path="settings/warehouses" element={<WarehousesPage />} />
-            <Route path="settings/reps" element={<RepsPage />} />
-            <Route path="settings/drivers" element={<DriversPage />} />
-            <Route path="settings/shops" element={<ShopsPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="roles" element={<RolesPage />} />
-            <Route path="settings" element={<SettingsPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route
+              path="/*"
+              element={
+                <PrivateRoute>
+                  <AppLayout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<DashboardPage />} />
+              <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="inventory" element={<InventoryPage />} />
+              <Route path="sales" element={<RepOrdersPage />} />
+              <Route path="loading" element={<LoadingSheetsPage />} />
+              <Route path="deliveries" element={<DeliveriesPage />} />
+              <Route path="reports" element={<ReportsPage />} />
+              <Route path="settings/products" element={<ProductListPage />} />
+              <Route path="settings/suppliers" element={<SupplierListPage />} />
+              <Route path="settings/warehouses" element={<WarehousesPage />} />
+              <Route path="settings/reps" element={<RepsPage />} />
+              <Route path="settings/drivers" element={<DriversPage />} />
+              <Route path="settings/shops" element={<ShopsPage />} />
+              <Route path="users" element={<UsersPage />} />
+              <Route path="roles" element={<RolesPage />} />
+              <Route path="settings" element={<SettingsPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/login" replace />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </QueryClientProvider>
   );
