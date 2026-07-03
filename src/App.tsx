@@ -7,7 +7,7 @@ import { PrivateRoute } from './components/layout/PrivateRoute';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProductListPage } from './features/products';
-import { SuppliersPage } from './pages/settings/SuppliersPage';
+import { SupplierListPage } from './features/suppliers';
 import { WarehousesPage } from './pages/settings/WarehousesPage';
 import { RepsPage } from './pages/settings/RepsPage';
 import { DriversPage } from './pages/settings/DriversPage';
@@ -48,7 +48,7 @@ function App() {
             <Route path="deliveries" element={<DeliveriesPage />} />
             <Route path="reports" element={<ReportsPage />} />
             <Route path="settings/products" element={<ProductListPage />} />
-            <Route path="settings/suppliers" element={<SuppliersPage />} />
+            <Route path="settings/suppliers" element={<SupplierListPage />} />
             <Route path="settings/warehouses" element={<WarehousesPage />} />
             <Route path="settings/reps" element={<RepsPage />} />
             <Route path="settings/drivers" element={<DriversPage />} />
