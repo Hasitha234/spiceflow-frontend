@@ -121,7 +121,7 @@ export function ShopsPage() {
             <Input.TextArea rows={3} {...register('address')} />
           </Form.Item>
           <Form.Item label={t('shop.rep')}>
-            <Select {...register('repId') as any} options={reps.map((rep) => ({ value: rep.id, label: rep.name }))} />
+            <Select {...(register('repId') as unknown as Record<string, unknown>)} options={reps.map((rep) => ({ value: rep.id, label: rep.name }))} />
           </Form.Item>
           <Form.Item>
             <Space>

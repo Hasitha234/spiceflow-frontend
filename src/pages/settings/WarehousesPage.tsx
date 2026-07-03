@@ -69,6 +69,7 @@ export function WarehousesPage() {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, reset]
   );
 
@@ -121,7 +122,7 @@ export function WarehousesPage() {
             <Input {...register('name')} />
           </Form.Item>
           <Form.Item label={t('warehouse.storeType')} validateStatus={errors.storeType ? 'error' : ''} help={errors.storeType?.message?.toString()}>
-            <Select {...register('storeType') as any} options={storeTypeOptions} />
+            <Select {...(register('storeType') as unknown as Record<string, unknown>)} options={storeTypeOptions} />
           </Form.Item>
           <Form.Item label={t('warehouse.location')}>
             <Input {...register('location')} />

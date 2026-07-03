@@ -80,7 +80,7 @@ export function PurchasesPage() {
         key: 'actions',
         render: (_: unknown, record: Purchase) => (
           <Space>
-            <Button type="link" onClick={() => { setSelectedPurchase(record); setVisible(true); reset(record as any); }}>
+            <Button type="link" onClick={() => { setSelectedPurchase(record); setVisible(true); reset(record as never); }}>
               {t('common.view')}
             </Button>
             {record.status === 'DRAFT' && (
@@ -92,6 +92,7 @@ export function PurchasesPage() {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, reset]
   );
 

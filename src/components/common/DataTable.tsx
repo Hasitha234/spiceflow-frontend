@@ -10,7 +10,7 @@ export interface DataTableProps<T> extends TableProps<T> {
   addText?: string;
 }
 
-export const DataTable = <T extends Record<string, any>>({
+export const DataTable = <T extends object>({
   isLoading = false,
   emptyTitle,
   emptyDescription,

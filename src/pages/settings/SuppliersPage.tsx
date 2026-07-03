@@ -67,6 +67,7 @@ export function SuppliersPage() {
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, reset]
   );
 

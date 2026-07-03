@@ -50,7 +50,7 @@ export function AppLayout() {
       // Import dynamically to avoid circular dependencies if authApi imports client which imports authStore
       const { authApi } = await import('@/api/auth');
       await authApi.logout();
-    } catch (e) {
+    } catch {
       // ignore
     } finally {
       logout();

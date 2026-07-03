@@ -12,7 +12,7 @@ export const customInstance = <T>(
     cancelToken: source.token,
   }).then(({ data }) => data);
 
-  // @ts-ignore
+  // @ts-expect-error Orval generated custom mutator attach cancel function
   promise.cancel = () => {
     source.cancel('Query was cancelled by React Query');
   };
