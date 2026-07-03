@@ -4,7 +4,40 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>spiceflow-frontend</title>
+    <title>SpiceFlow — Spice Business Management</title>
+    <meta name="description" content="SpiceFlow is a comprehensive multi-tenant SaaS platform for managing spice business operations including inventory, sales, deliveries, and reporting." />
+
+    <!-- Font preconnects for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!--
+      No-flash theme hydration script.
+      Runs synchronously BEFORE first paint to read the persisted theme preference
+      and apply it as a data-theme attribute on <html>. This prevents a flash of
+      the wrong theme while React hydrates. The script intentionally has no defer/async.
+
+      Priority order:
+        1. localStorage sf_theme (user's explicit choice)
+        2. prefers-color-scheme media query (system preference)
+        3. Default: dark
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('sf_theme');
+          var preferred = stored
+            ? stored
+            : window.matchMedia('(prefers-color-scheme: light)').matches
+            ? 'light'
+            : 'dark';
+          document.documentElement.setAttribute('data-theme', preferred);
+        } catch (e) {
+          // localStorage blocked (e.g., private browsing with strict settings)
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
