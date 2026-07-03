@@ -6,16 +6,13 @@ import './App.css';
 import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
 import { PrivateRoute } from './components/layout/PrivateRoute';
+import { featureRoutes } from './routes/featureRoutes';
 
 // Route-level code splitting via React.lazy
 const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
-const ProductListPage = lazy(() => import('./features/products').then((m) => ({ default: m.ProductListPage })));
-const SupplierListPage = lazy(() => import('./features/suppliers').then((m) => ({ default: m.SupplierListPage })));
 const WarehousesPage = lazy(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
-const RepsPage = lazy(() => import('./pages/settings/RepsPage').then((m) => ({ default: m.RepsPage })));
 const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
-const ShopsPage = lazy(() => import('./pages/settings/ShopsPage').then((m) => ({ default: m.ShopsPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
 const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
@@ -60,12 +57,11 @@ function App() {
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
               <Route path="reports" element={<ReportsPage />} />
-              <Route path="settings/products" element={<ProductListPage />} />
-              <Route path="settings/suppliers" element={<SupplierListPage />} />
+              {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
+                <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
+              ))}
               <Route path="settings/warehouses" element={<WarehousesPage />} />
-              <Route path="settings/reps" element={<RepsPage />} />
               <Route path="settings/drivers" element={<DriversPage />} />
-              <Route path="settings/shops" element={<ShopsPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="roles" element={<RolesPage />} />
               <Route path="settings" element={<SettingsPage />} />
