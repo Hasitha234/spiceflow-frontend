@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import React from 'react';
-import { AuditTimeline, AuditTimelineItem } from '../AuditTimeline';
+import { AuditTimeline } from '../AuditTimeline';
+import type { AuditTimelineItem } from '../AuditTimeline';
 
 describe('AuditTimeline Component', () => {
   it('renders empty state when no items are provided', () => {
