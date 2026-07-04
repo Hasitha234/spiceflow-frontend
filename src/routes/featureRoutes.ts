@@ -12,8 +12,9 @@ const RepListPage = lazy(() => import('../features/reps').then((m) => ({ default
 
 export interface FeatureRouteConfig {
   metadata: FeatureMetadata;
-  element: React.LazyExoticComponent<React.ComponentType<any>>;
+  element: React.LazyExoticComponent<React.ComponentType<Record<string, never>>>;
 }
+
 
 export const featureRoutes: FeatureRouteConfig[] = [
   {
