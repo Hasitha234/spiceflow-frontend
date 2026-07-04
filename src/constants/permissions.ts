@@ -1,0 +1,31 @@
+/**
+ * Standardized permission and role constants across domain modules.
+ * Centralizing these prevents string drift and simplifies role checks.
+ */
+
+export const PERMISSIONS = {
+  SETTINGS_PRODUCTS: 'SETTINGS_PRODUCTS',
+  SETTINGS_SUPPLIERS: 'SETTINGS_SUPPLIERS',
+  SETTINGS_SHOPS: 'SETTINGS_SHOPS',
+  SETTINGS_REPS: 'SETTINGS_REPS',
+  SETTINGS_DRIVERS: 'SETTINGS_DRIVERS',
+  MASTER_DATA_MANAGE: 'MASTER_DATA_MANAGE',
+  MASTER_DATA_VIEW: 'MASTER_DATA_VIEW',
+} as const;
+
+export const ROLES = {
+  SUPER_ADMIN: 'ROLE_SUPER_ADMIN',
+  TENANT_OWNER: 'ROLE_TENANT_OWNER',
+  INVENTORY_MANAGER: 'ROLE_INVENTORY_MANAGER',
+  PURCHASING_AGENT: 'ROLE_PURCHASING_AGENT',
+  SALES_MANAGER: 'ROLE_SALES_MANAGER',
+  DISPATCHER: 'ROLE_DISPATCHER',
+} as const;
+
+/** Required roles for managing Master Data modules (Suppliers, Shops, Reps, Drivers) */
+export const MASTER_DATA_ROLES = [
+  ROLES.TENANT_OWNER,
+  ROLES.INVENTORY_MANAGER,
+  ROLES.PURCHASING_AGENT,
+  ROLES.SALES_MANAGER,
+];

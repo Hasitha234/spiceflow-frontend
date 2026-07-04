@@ -6,3 +6,5 @@ export * from './hooks/useUpdateSupplier';
 export * from './hooks/useDeleteSupplier';
 export * from './schemas/supplierSchema';
 export * from './queryKeys/supplierKeys';
+export * from './metadata';
+

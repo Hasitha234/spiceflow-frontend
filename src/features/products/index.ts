@@ -19,3 +19,7 @@ export { productKeys } from './queryKeys/productKeys';
 // ─── Schema ───────────────────────────────────────────────────────────────────
 export { productSchema, defaultProductValues } from './schemas/productSchema';
 export type { ProductFormValues } from './schemas/productSchema';
+
+// ─── Metadata ─────────────────────────────────────────────────────────────────
+export { productMetadata } from './metadata';
+
