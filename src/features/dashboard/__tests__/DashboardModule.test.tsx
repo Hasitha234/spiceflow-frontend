@@ -14,7 +14,7 @@ import {
 
 // Mock Recharts since ResponsiveContainer requires actual DOM dimensions in jsdom
 vi.mock('recharts', async () => {
-  const actual = await vi.importActual<any>('recharts');
+  const actual = await vi.importActual<Record<string, unknown>>('recharts');
   return {
     ...actual,
     ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
