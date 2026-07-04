@@ -5,12 +5,14 @@ import { supplierMetadata } from '../features/suppliers/metadata';
 import { shopMetadata } from '../features/shops/metadata';
 import { repMetadata } from '../features/reps/metadata';
 import { driverMetadata } from '../features/drivers/metadata';
+import { purchaseOrderMetadata } from '../features/purchase-orders/metadata';
 
 const ProductListPage = lazy(() => import('../features/products').then((m) => ({ default: m.ProductListPage })));
 const SupplierListPage = lazy(() => import('../features/suppliers').then((m) => ({ default: m.SupplierListPage })));
 const ShopListPage = lazy(() => import('../features/shops').then((m) => ({ default: m.ShopListPage })));
 const RepListPage = lazy(() => import('../features/reps').then((m) => ({ default: m.RepListPage })));
 const DriverListPage = lazy(() => import('../features/drivers').then((m) => ({ default: m.DriverListPage })));
+const PurchasingDashboardPage = lazy(() => import('../features/purchase-orders').then((m) => ({ default: m.PurchasingDashboardPage })));
 
 export interface FeatureRouteConfig {
   metadata: FeatureMetadata;
@@ -38,5 +40,9 @@ export const featureRoutes: FeatureRouteConfig[] = [
   {
     metadata: driverMetadata,
     element: DriverListPage,
+  },
+  {
+    metadata: purchaseOrderMetadata,
+    element: PurchasingDashboardPage,
   },
 ];

@@ -1,0 +1,1 @@
+export { PurchasingDashboardPage } from './PurchasingDashboardPage';
