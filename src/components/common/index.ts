@@ -10,3 +10,4 @@ export * from './EmptyState';
 export * from './ErrorState';
 export * from './PermissionGuard';
 export * from './StatusBadge';
+export * from './AuditTimeline';
