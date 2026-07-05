@@ -326,3 +326,10 @@ body {
 
 /* Status tags */
 .sf-tag-success { --ant-color-success: var(--color-emerald-500); }
+
+/* Responsive Login Hero Panel */
+@media (max-width: 960px) {
+  .login-hero-panel {
+    display: none !important;
+  }
+}

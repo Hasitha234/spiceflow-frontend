@@ -51,6 +51,7 @@ const en = {
   },
   auth: {
     login: 'Login',
+    email: 'Email',
     username: 'Username',
     password: 'Password',
     loginButton: 'Sign In',

@@ -51,6 +51,7 @@ const si = {
   },
   auth: {
     login: 'පිවිසෙන්න',
+    email: 'විද්‍යුත් තැපෑල',
     username: 'පරිශීලක නාමය',
     password: 'මුරපදය',
     loginButton: 'පිවිසෙන්න',
