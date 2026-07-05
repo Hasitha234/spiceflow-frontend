@@ -291,18 +291,18 @@ export function PurchasesPage() {
   };
 
   return (
-    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
+    <div className="p-6">
       <Row justify="space-between" align="middle" className="mb-6">
         <Col>
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500">
               <ShoppingOutlined className="text-2xl" />
             </div>
             <div>
-              <Title level={3} className="!m-0 !text-slate-100">
+              <Title level={3} className="!m-0">
                 {t('purchase.title', 'Purchase Orders')}
               </Title>
-              <Text className="text-slate-400">
+              <Text type="secondary">
                 Manage supplier invoices and receive inventory items
               </Text>
             </div>
@@ -328,7 +328,7 @@ export function PurchasesPage() {
                 });
                 setVisible(true);
               }}
-              className="bg-emerald-600 hover:bg-emerald-500 border-none shadow-lg shadow-emerald-900/30 font-medium h-10 px-5"
+              className="font-medium h-10 px-5"
             >
               {t('purchase.create', 'New Purchase Order')}
             </Button>
@@ -336,21 +336,20 @@ export function PurchasesPage() {
         </Col>
       </Row>
 
-      <Card className="bg-slate-800 border-slate-700 shadow-xl rounded-xl overflow-hidden">
+      <Card className="shadow-xl rounded-xl overflow-hidden">
         <Table
           rowKey="id"
           loading={loading}
           dataSource={purchases}
           columns={columns}
           pagination={{ pageSize: 10 }}
-          className="custom-dark-table"
         />
       </Card>
 
       <Modal
         title={
-          <div className="flex items-center gap-2 text-lg text-slate-100">
-            <ShoppingOutlined className="text-emerald-400" />
+          <div className="flex items-center gap-2 text-lg">
+            <ShoppingOutlined className="text-emerald-500" />
             <span>{selectedPurchase ? 'View Purchase Order' : 'Create Purchase Order'}</span>
           </div>
         }
@@ -358,51 +357,46 @@ export function PurchasesPage() {
         onCancel={() => setVisible(false)}
         width={950}
         footer={null}
-        styles={{
-          header: { background: '#1e293b', borderBottom: '1px solid #334155', paddingBottom: '16px' },
-          body: { background: '#0f172a', padding: '24px' },
-        }}
       >
         {selectedPurchase ? (
-          <div className="space-y-6 text-slate-200">
-            <Row gutter={[16, 16]} className="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+          <div className="space-y-6">
+            <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
               <Col span={8}>
-                <div className="text-xs text-slate-400">Invoice No</div>
-                <div className="font-mono font-bold text-emerald-400 text-base">{selectedPurchase.invoiceNo}</div>
+                <div className="text-xs opacity-70">Invoice No</div>
+                <div className="font-mono font-bold text-emerald-500 text-base">{selectedPurchase.invoiceNo}</div>
               </Col>
               <Col span={8}>
-                <div className="text-xs text-slate-400">Supplier</div>
-                <div className="font-semibold text-slate-100 text-base">{selectedPurchase.supplierName || '—'}</div>
+                <div className="text-xs opacity-70">Supplier</div>
+                <div className="font-semibold text-base">{selectedPurchase.supplierName || '—'}</div>
               </Col>
               <Col span={8}>
-                <div className="text-xs text-slate-400">Invoice Date</div>
-                <div className="text-slate-200 text-base">{selectedPurchase.invoiceDate || '—'}</div>
+                <div className="text-xs opacity-70">Invoice Date</div>
+                <div className="text-base">{selectedPurchase.invoiceDate || '—'}</div>
               </Col>
               <Col span={8}>
-                <div className="text-xs text-slate-400">Status</div>
+                <div className="text-xs opacity-70">Status</div>
                 <div className="mt-1"><Tag color={selectedPurchase.status === 'CONFIRMED' ? 'green' : 'orange'}>{selectedPurchase.status}</Tag></div>
               </Col>
               <Col span={8}>
-                <div className="text-xs text-slate-400">Payment Method</div>
-                <div className="text-slate-200">{selectedPurchase.paymentMethod || 'CASH'}</div>
+                <div className="text-xs opacity-70">Payment Method</div>
+                <div>{selectedPurchase.paymentMethod || 'CASH'}</div>
               </Col>
               <Col span={8}>
-                <div className="text-xs text-slate-400">Total Order Value</div>
-                <div className="font-mono font-bold text-slate-100 text-base">
+                <div className="text-xs opacity-70">Total Order Value</div>
+                <div className="font-mono font-bold text-base">
                   LKR {Number(selectedPurchase.netAmount ?? selectedPurchase.totalOrderValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                 </div>
               </Col>
             </Row>
 
             <div>
-              <Title level={5} className="!text-slate-200 !mb-3">Line Items</Title>
+              <Title level={5} className="!mb-3">Line Items</Title>
               <Table
                 dataSource={selectedPurchase.lineItems || []}
                 rowKey="id"
                 pagination={false}
-                className="custom-dark-table"
                 columns={[
-                  { title: 'SKU', dataIndex: 'productSku', key: 'sku', render: (val: string) => <span className="font-mono text-emerald-400">{val || '—'}</span> },
+                  { title: 'SKU', dataIndex: 'productSku', key: 'sku', render: (val: string) => <span className="font-mono text-emerald-500">{val || '—'}</span> },
                   { title: 'Product Name', dataIndex: 'productName', key: 'name', render: (val: string) => <span className="font-medium">{val || '—'}</span> },
                   { title: 'Boxes', dataIndex: 'noOfBoxes', key: 'boxes', align: 'right' },
                   { title: 'Quantity', dataIndex: 'soldQuantity', key: 'qty', align: 'right' },
@@ -413,8 +407,8 @@ export function PurchasesPage() {
               />
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-slate-700">
-              <Button onClick={() => setVisible(false)} className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200">
+            <div className="flex justify-end pt-4 mt-4 border-t border-black/10 dark:border-white/10">
+              <Button onClick={() => setVisible(false)}>
                 Close
               </Button>
             </div>
@@ -424,7 +418,7 @@ export function PurchasesPage() {
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item
-                  label={<span className="text-slate-300">Supplier</span>}
+                  label="Supplier"
                   validateStatus={errors.supplierId ? 'error' : ''}
                   help={errors.supplierId?.message}
                   required
@@ -452,7 +446,7 @@ export function PurchasesPage() {
               </Col>
               <Col span={8}>
                 <Form.Item
-                  label={<span className="text-slate-300">Invoice No</span>}
+                  label="Invoice No"
                   validateStatus={errors.invoiceNo ? 'error' : ''}
                   help={errors.invoiceNo?.message}
                   required
@@ -466,7 +460,7 @@ export function PurchasesPage() {
               </Col>
               <Col span={8}>
                 <Form.Item
-                  label={<span className="text-slate-300">Invoice Date</span>}
+                  label="Invoice Date"
                   validateStatus={errors.invoiceDate ? 'error' : ''}
                   help={errors.invoiceDate?.message}
                   required
@@ -482,7 +476,7 @@ export function PurchasesPage() {
 
             <Row gutter={16}>
               <Col span={8}>
-                <Form.Item label={<span className="text-slate-300">Payment Method</span>}>
+                <Form.Item label="Payment Method">
                   <Controller
                     name="paymentMethod"
                     control={control}
@@ -501,7 +495,7 @@ export function PurchasesPage() {
                 </Form.Item>
               </Col>
               <Col span={16}>
-                <Form.Item label={<span className="text-slate-300">Notes</span>}>
+                <Form.Item label="Notes">
                   <Controller
                     name="notes"
                     control={control}
@@ -511,11 +505,11 @@ export function PurchasesPage() {
               </Col>
             </Row>
 
-            <Divider className="!border-slate-700 !my-4" />
+            <Divider className="!my-2" />
 
             <div>
               <div className="flex justify-between items-center mb-3">
-                <Title level={5} className="!text-slate-200 !m-0">
+                <Title level={5} className="!m-0">
                   Line Items (Supplier Catalog)
                 </Title>
                 <Button
@@ -524,7 +518,6 @@ export function PurchasesPage() {
                   icon={<PlusOutlined />}
                   onClick={() => append(emptyLineItem)}
                   disabled={!selectedSupplierId}
-                  className="border-emerald-500 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400"
                 >
                   Add Item
                 </Button>
@@ -536,17 +529,17 @@ export function PurchasesPage() {
                   showIcon
                   message="Select a Supplier First"
                   description="Please select a supplier above to view and select their available catalog items."
-                  className="bg-slate-800/80 border-slate-700 text-slate-300 mb-4"
+                  className="mb-4"
                 />
               ) : productsLoading ? (
-                <div className="p-6 text-center text-slate-400 bg-slate-800/40 rounded-lg">Loading supplier items...</div>
+                <div className="p-6 text-center opacity-70 bg-black/5 dark:bg-white/5 rounded-lg">Loading supplier items...</div>
               ) : supplierProducts.length === 0 ? (
                 <Alert
                   type="warning"
                   showIcon
                   message="No Products Sourced From This Supplier"
                   description="This supplier currently has no products linked to them in the system. Go to Suppliers -> Catalog to add items to this supplier first."
-                  className="bg-amber-950/40 border-amber-800/60 text-amber-200 mb-4"
+                  className="mb-4"
                 />
               ) : null}
 
@@ -559,10 +552,10 @@ export function PurchasesPage() {
                   return (
                     <div
                       key={field.id}
-                      className="p-3 bg-slate-800/60 border border-slate-700/80 rounded-lg flex flex-wrap items-center gap-3"
+                      className="p-3 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg flex flex-wrap items-center gap-3"
                     >
                       <div className="flex-1 min-w-[200px]">
-                        <div className="text-xs text-slate-400 mb-1">Product</div>
+                        <div className="text-xs opacity-70 mb-1">Product</div>
                         <Controller
                           name={`lineItems.${index}.productId`}
                           control={control}
@@ -588,7 +581,7 @@ export function PurchasesPage() {
                       </div>
 
                       <div className="w-24">
-                        <div className="text-xs text-slate-400 mb-1">Boxes</div>
+                        <div className="text-xs opacity-70 mb-1">Boxes</div>
                         <Controller
                           name={`lineItems.${index}.noOfBoxes`}
                           control={control}
@@ -599,7 +592,7 @@ export function PurchasesPage() {
                       </div>
 
                       <div className="w-24">
-                        <div className="text-xs text-slate-400 mb-1">Quantity</div>
+                        <div className="text-xs opacity-70 mb-1">Quantity</div>
                         <Controller
                           name={`lineItems.${index}.soldQuantity`}
                           control={control}
@@ -610,7 +603,7 @@ export function PurchasesPage() {
                       </div>
 
                       <div className="w-28">
-                        <div className="text-xs text-slate-400 mb-1">Unit Type</div>
+                        <div className="text-xs opacity-70 mb-1">Unit Type</div>
                         <Controller
                           name={`lineItems.${index}.unitType`}
                           control={control}
@@ -621,7 +614,7 @@ export function PurchasesPage() {
                       </div>
 
                       <div className="w-32">
-                        <div className="text-xs text-slate-400 mb-1">Rate (LKR)</div>
+                        <div className="text-xs opacity-70 mb-1">Rate (LKR)</div>
                         <Controller
                           name={`lineItems.${index}.rate`}
                           control={control}
@@ -632,8 +625,8 @@ export function PurchasesPage() {
                       </div>
 
                       <div className="w-32 text-right">
-                        <div className="text-xs text-slate-400 mb-1">Amount</div>
-                        <div className="font-mono font-semibold text-slate-200 py-1">
+                        <div className="text-xs opacity-70 mb-1">Amount</div>
+                        <div className="font-mono font-semibold py-1">
                           {rowAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </div>
@@ -653,16 +646,16 @@ export function PurchasesPage() {
               </div>
             </div>
 
-            <Divider className="!border-slate-700 !my-4" />
+            <Divider className="!my-4" />
 
             {/* Financial Summary */}
-            <div className="bg-slate-800/80 p-4 rounded-lg border border-slate-700 space-y-2">
-              <div className="flex justify-between text-sm text-slate-300">
-                <span>Gross Total:</span>
+            <div className="bg-black/5 dark:bg-white/5 p-4 rounded-lg border border-black/10 dark:border-white/10 space-y-2">
+              <div className="flex justify-between text-sm">
+                <span className="opacity-80">Gross Total:</span>
                 <span className="font-mono">LKR {grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
-              <div className="flex justify-between items-center text-sm text-slate-300">
-                <span>Discount Amount (-) :</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="opacity-80">Discount Amount (-) :</span>
                 <Controller
                   name="discountAmount"
                   control={control}
@@ -671,8 +664,8 @@ export function PurchasesPage() {
                   )}
                 />
               </div>
-              <div className="flex justify-between items-center text-sm text-slate-300">
-                <span>Returns Deducted (-) :</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="opacity-80">Returns Deducted (-) :</span>
                 <Controller
                   name="returnsDeductedAmount"
                   control={control}
@@ -681,8 +674,8 @@ export function PurchasesPage() {
                   )}
                 />
               </div>
-              <div className="flex justify-between items-center text-sm text-slate-300">
-                <span>VAT Amount (+) :</span>
+              <div className="flex justify-between items-center text-sm">
+                <span className="opacity-80">VAT Amount (+) :</span>
                 <Controller
                   name="vatAmount"
                   control={control}
@@ -691,18 +684,18 @@ export function PurchasesPage() {
                   )}
                 />
               </div>
-              <Divider className="!border-slate-600 !my-2" />
-              <div className="flex justify-between text-base font-bold text-emerald-400">
+              <Divider className="!my-2" />
+              <div className="flex justify-between text-base font-bold text-emerald-500">
                 <span>Net Total Amount:</span>
                 <span className="font-mono text-lg">LKR {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
-              <Button onClick={() => setVisible(false)} className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200">
+            <div className="flex justify-end gap-3 pt-4 border-t border-black/10 dark:border-white/10">
+              <Button onClick={() => setVisible(false)}>
                 {t('common.cancel', 'Cancel')}
               </Button>
-              <Button type="primary" htmlType="submit" loading={isSubmitting} className="bg-emerald-600 hover:bg-emerald-500 border-none">
+              <Button type="primary" htmlType="submit" loading={isSubmitting}>
                 {t('common.save', 'Create Purchase Order')}
               </Button>
             </div>

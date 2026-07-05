@@ -18,6 +18,9 @@ export function SettingsPage() {
         <Card title={t('product.title')} size="small">
           <Link to="products">{t('product.create')}</Link>
         </Card>
+        <Card title={t('category.title')} size="small">
+          <Link to="categories">{t('category.create')}</Link>
+        </Card>
         <Card title={t('supplier.title')} size="small">
           <Link to="suppliers">{t('supplier.create')}</Link>
         </Card>
