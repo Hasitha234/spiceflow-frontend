@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button, Space, Tooltip } from 'antd';
-import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, DeleteOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { SorterResult } from 'antd/es/table/interface';
 import { DataTable, ConfirmDeleteDialog, PermissionGuard } from '@/components/common';
@@ -17,6 +17,7 @@ export interface SupplierTableProps {
   onSizeChange: (size: number) => void;
   onSortChange: (field: string, dir: 'asc' | 'desc') => void;
   onEdit: (supplier: SupplierResponse) => void;
+  onViewCatalog?: (supplier: SupplierResponse) => void;
 }
 
 export const SupplierTable: React.FC<SupplierTableProps> = ({
@@ -28,6 +29,7 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({
   onSizeChange,
   onSortChange,
   onEdit,
+  onViewCatalog,
 }) => {
   const [deleteTarget, setDeleteTarget] = useState<SupplierResponse | null>(null);
   const deleteMutation = useDeleteSupplier({
@@ -84,10 +86,19 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: 150,
       fixed: 'right' as const,
       render: (_: unknown, record: SupplierResponse) => (
         <Space size="small">
+          <Tooltip title="View Catalog & Items">
+            <Button
+              type="text"
+              size="small"
+              icon={<ShoppingOutlined />}
+              onClick={() => onViewCatalog?.(record)}
+              className="!text-emerald-400 hover:!text-emerald-300"
+            />
+          </Tooltip>
           <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
             <Tooltip title="Edit">
               <Button

@@ -1,62 +1,136 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { useEffect, useMemo, useState, useCallback } from 'react';
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Row,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Tooltip,
+  Typography,
+  message,
+} from 'antd';
+import {
+  PlusOutlined,
+  DeleteOutlined,
+  ShoppingOutlined,
+  CheckCircleOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useForm, useFieldArray, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { purchaseApi } from '../../api/sales';
-import { supplierApi, warehouseApi } from '../../api/inventory';
-import type { Supplier, Warehouse } from '../../types/inventory';
+import { supplierApi, productApi } from '../../api/inventory';
+import type { Supplier, Product } from '../../types/inventory';
 import type { Purchase } from '../../types/sales';
+import { PermissionGuard } from '../../components/common';
+
+const { Title, Text } = Typography;
 
 const schema = z.object({
-  invoiceNo: z.string().min(1, 'common.required'),
-  supplierId: z.string().min(1, 'common.required'),
-  purchaseDate: z.string().min(1, 'common.required'),
+  invoiceNo: z.string().min(1, 'Invoice number is required'),
+  supplierId: z.string().min(1, 'Supplier is required'),
+  invoiceDate: z.string().min(1, 'Invoice date is required'),
+  paymentMethod: z.string().min(1, 'Payment method is required'),
+  discountAmount: z.number().min(0).optional(),
+  returnsDeductedAmount: z.number().min(0).optional(),
+  vatAmount: z.number().min(0).optional(),
   notes: z.string().optional(),
   lineItems: z.array(
     z.object({
-      productId: z.string().min(1, 'common.required'),
-      quantity: z.number().int().positive('common.required'),
-      unitCost: z.number().min(0),
-      warehouseId: z.string().optional(),
+      productId: z.string().min(1, 'Product is required'),
+      noOfBoxes: z.number().int().min(1, 'Min 1 box'),
+      soldQuantity: z.number().int().min(1, 'Min 1 unit'),
+      unitType: z.string().min(1, 'Unit type is required'),
+      rate: z.number().min(0, 'Rate must be positive'),
     })
-  ),
+  ).min(1, 'At least one line item is required'),
 });
 
 type FormValues = z.infer<typeof schema>;
 
-const emptyLineItem = { productId: '', quantity: 1, unitCost: 0, warehouseId: '' };
+const emptyLineItem = {
+  productId: '',
+  noOfBoxes: 1,
+  soldQuantity: 1,
+  unitType: 'BOX',
+  rate: 0,
+};
 
 export function PurchasesPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
+  const [productsLoading, setProductsLoading] = useState(false);
   const [visible, setVisible] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
-  const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    setValue,
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
     defaultValues: {
-      purchaseDate: new Date().toISOString().slice(0, 10),
+      invoiceNo: '',
+      supplierId: '',
+      invoiceDate: new Date().toISOString().slice(0, 10),
+      paymentMethod: 'CASH',
+      discountAmount: 0,
+      returnsDeductedAmount: 0,
+      vatAmount: 0,
+      notes: '',
       lineItems: [emptyLineItem],
     },
   });
 
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'lineItems',
+  });
+
+  const selectedSupplierId = useWatch({ control, name: 'supplierId' });
+  const lineItems = useWatch({ control, name: 'lineItems' });
+  const discountAmount = useWatch({ control, name: 'discountAmount' }) || 0;
+  const returnsDeductedAmount = useWatch({ control, name: 'returnsDeductedAmount' }) || 0;
+  const vatAmount = useWatch({ control, name: 'vatAmount' }) || 0;
+
+  const grossTotal = useMemo(() => {
+    if (!lineItems || !Array.isArray(lineItems)) return 0;
+    return lineItems.reduce((sum, item) => {
+      const qty = Number(item?.soldQuantity) || 0;
+      const rate = Number(item?.rate) || 0;
+      return sum + qty * rate;
+    }, 0);
+  }, [lineItems]);
+
+  const netTotal = useMemo(() => {
+    return Math.max(0, grossTotal - Number(discountAmount) - Number(returnsDeductedAmount) + Number(vatAmount));
+  }, [grossTotal, discountAmount, returnsDeductedAmount, vatAmount]);
+
   const loadData = async () => {
     setLoading(true);
     try {
-      const [purchaseRes, supplierRes, warehouseRes] = await Promise.all([
+      const [purchaseRes, supplierRes] = await Promise.all([
         purchaseApi.list({ page: 0, size: 50 }),
-        supplierApi.list({ page: 0, size: 50 }),
-        warehouseApi.list({ page: 0, size: 50 }),
+        supplierApi.list({ page: 0, size: 100 }),
       ]);
-      setPurchases(purchaseRes.content);
-      setSuppliers(supplierRes.content);
-      setWarehouses(warehouseRes.content);
+      setPurchases(purchaseRes?.content || []);
+      setSuppliers(supplierRes?.content || []);
     } catch {
       message.error('Failed to load purchase data');
     } finally {
@@ -68,158 +142,573 @@ export function PurchasesPage() {
     loadData();
   }, []);
 
+  // Fetch supplier products when supplierId changes
+  useEffect(() => {
+    if (selectedSupplierId && !selectedPurchase) {
+      setProductsLoading(true);
+      productApi
+        .list({ supplierId: selectedSupplierId, page: 0, size: 500 })
+        .then((res) => {
+          setSupplierProducts(res?.content || []);
+        })
+        .catch(() => message.error('Failed to load items for the selected supplier'))
+        .finally(() => setProductsLoading(false));
+    } else {
+      setSupplierProducts([]);
+    }
+  }, [selectedSupplierId, selectedPurchase]);
+
+  const handleProductSelect = (productId: string, index: number) => {
+    const product = supplierProducts.find((p) => String(p.id) === String(productId));
+    if (product) {
+      setValue(`lineItems.${index}.rate`, Number(product.ratePerSoldUnit ?? product.basePrice ?? 0));
+      setValue(`lineItems.${index}.unitType`, product.unitType || 'BOX');
+      setValue(`lineItems.${index}.soldQuantity`, Number(product.itemsPerSoldUnit ?? 1));
+      setValue(`lineItems.${index}.noOfBoxes`, 1);
+    }
+  };
+
+  const handleConfirm = useCallback(async (id: string) => {
+    try {
+      await purchaseApi.confirm(id);
+      message.success('Purchase Order confirmed successfully');
+      loadData();
+    } catch {
+      message.error('Failed to confirm purchase order');
+    }
+  }, []);
+
   const columns = useMemo(
     () => [
-      { title: t('purchase.invoiceNo'), dataIndex: 'invoiceNo', key: 'invoiceNo' },
-      { title: t('purchase.supplier'), dataIndex: ['supplier', 'name'], key: 'supplier' },
-      { title: t('purchase.purchaseDate'), dataIndex: 'purchaseDate', key: 'purchaseDate' },
-      { title: t('purchase.status'), dataIndex: 'status', key: 'status' },
-      { title: t('purchase.totalAmount'), dataIndex: 'totalAmount', key: 'totalAmount' },
       {
-        title: t('common.actions'),
+        title: t('purchase.invoiceNo', 'Invoice No'),
+        dataIndex: 'invoiceNo',
+        key: 'invoiceNo',
+        render: (val: string) => <span className="font-mono text-emerald-400 font-semibold">{val || '—'}</span>,
+      },
+      {
+        title: t('purchase.supplier', 'Supplier'),
+        key: 'supplier',
+        render: (_: unknown, record: Purchase) => (
+          <span className="font-medium text-slate-200">
+            {record.supplierName || record.supplier?.name || '—'}
+          </span>
+        ),
+      },
+      {
+        title: t('purchase.purchaseDate', 'Invoice Date'),
+        key: 'invoiceDate',
+        render: (_: unknown, record: Purchase) => (
+          <span className="text-slate-300">{record.invoiceDate || record.purchaseDate || '—'}</span>
+        ),
+      },
+      {
+        title: t('purchase.status', 'Status'),
+        dataIndex: 'status',
+        key: 'status',
+        render: (status: string) => {
+          const color = status === 'CONFIRMED' || status === 'COMPLETED' ? 'green' : 'orange';
+          return <Tag color={color}>{status || 'DRAFT'}</Tag>;
+        },
+      },
+      {
+        title: t('purchase.totalAmount', 'Net Amount (LKR)'),
+        key: 'netAmount',
+        align: 'right' as const,
+        render: (_: unknown, record: Purchase) => {
+          const val = record.netAmount !== undefined ? record.netAmount : record.totalOrderValue ?? record.totalAmount ?? 0;
+          return <span className="font-mono text-slate-100 font-semibold">{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+        },
+      },
+      {
+        title: t('common.actions', 'Actions'),
         key: 'actions',
+        align: 'right' as const,
         render: (_: unknown, record: Purchase) => (
           <Space>
-            <Button type="link" onClick={() => { setSelectedPurchase(record); setVisible(true); reset(record as never); }}>
-              {t('common.view')}
-            </Button>
+            <Tooltip title="View Purchase Details">
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  setSelectedPurchase(record);
+                  setVisible(true);
+                }}
+                className="!text-blue-400 hover:!text-blue-300"
+              />
+            </Tooltip>
             {record.status === 'DRAFT' && (
-              <Button type="link" onClick={() => handleConfirm(record.id)}>
-                {t('purchase.confirmTitle')}
-              </Button>
+              <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+                <Tooltip title="Confirm Purchase Order">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<CheckCircleOutlined />}
+                    onClick={() => handleConfirm(record.id)}
+                    className="!text-emerald-400 hover:!text-emerald-300"
+                  />
+                </Tooltip>
+              </PermissionGuard>
             )}
           </Space>
         ),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [t, reset]
+    [t, handleConfirm]
   );
-
-  const handleConfirm = async (id: string) => {
-    try {
-      await purchaseApi.confirm(id);
-      message.success(t('purchase.confirmSuccess'));
-      loadData();
-    } catch {
-      message.error('Failed to confirm purchase');
-    }
-  };
 
   const onSubmit = async (values: FormValues) => {
     try {
-      await purchaseApi.create(values);
-      message.success(t('purchase.createSuccess'));
+      const payload = {
+        supplierId: Number(values.supplierId),
+        invoiceNo: values.invoiceNo,
+        invoiceDate: values.invoiceDate,
+        discountAmount: Number(values.discountAmount || 0),
+        returnsDeductedAmount: Number(values.returnsDeductedAmount || 0),
+        vatAmount: Number(values.vatAmount || 0),
+        paymentMethod: values.paymentMethod || 'CASH',
+        notes: values.notes || '',
+        lineItems: values.lineItems.map((item) => ({
+          productId: Number(item.productId),
+          noOfBoxes: Number(item.noOfBoxes || 1),
+          soldQuantity: Number(item.soldQuantity || 1),
+          unitType: item.unitType || 'BOX',
+          rate: Number(item.rate || 0),
+        })),
+      };
+
+      await purchaseApi.create(payload);
+      message.success('Purchase Order created successfully');
       setVisible(false);
       reset();
       loadData();
-    } catch {
-      message.error('Failed to create purchase');
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { detail?: string; message?: string } } };
+      const msg = errorObj?.response?.data?.detail || errorObj?.response?.data?.message || 'Failed to create purchase order';
+      message.error(msg);
     }
   };
 
   return (
-    <>
-      <Row justify="space-between" style={{ marginBottom: 16 }}>
+    <div className="p-6 bg-slate-900 min-h-screen text-slate-100">
+      <Row justify="space-between" align="middle" className="mb-6">
         <Col>
-          <h2>{t('purchase.title')}</h2>
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-400">
+              <ShoppingOutlined className="text-2xl" />
+            </div>
+            <div>
+              <Title level={3} className="!m-0 !text-slate-100">
+                {t('purchase.title', 'Purchase Orders')}
+              </Title>
+              <Text className="text-slate-400">
+                Manage supplier invoices and receive inventory items
+              </Text>
+            </div>
+          </div>
         </Col>
         <Col>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setVisible(true);
-              setSelectedPurchase(null);
-              reset({
-                invoiceNo: '',
-                supplierId: '',
-                purchaseDate: new Date().toISOString().slice(0, 10),
-                notes: '',
-                lineItems: [emptyLineItem],
-              });
-            }}
-          >
-            {t('purchase.create')}
-          </Button>
+          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={() => {
+                setSelectedPurchase(null);
+                reset({
+                  invoiceNo: '',
+                  supplierId: '',
+                  invoiceDate: new Date().toISOString().slice(0, 10),
+                  paymentMethod: 'CASH',
+                  discountAmount: 0,
+                  returnsDeductedAmount: 0,
+                  vatAmount: 0,
+                  notes: '',
+                  lineItems: [emptyLineItem],
+                });
+                setVisible(true);
+              }}
+              className="bg-emerald-600 hover:bg-emerald-500 border-none shadow-lg shadow-emerald-900/30 font-medium h-10 px-5"
+            >
+              {t('purchase.create', 'New Purchase Order')}
+            </Button>
+          </PermissionGuard>
         </Col>
       </Row>
-      <Card>
-        <Table<Purchase> rowKey="id" loading={loading} dataSource={purchases} columns={columns} pagination={{ pageSize: 10 }} />
+
+      <Card className="bg-slate-800 border-slate-700 shadow-xl rounded-xl overflow-hidden">
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={purchases}
+          columns={columns}
+          pagination={{ pageSize: 10 }}
+          className="custom-dark-table"
+        />
       </Card>
 
       <Modal
-        title={selectedPurchase ? t('purchase.edit') : t('purchase.create')}
+        title={
+          <div className="flex items-center gap-2 text-lg text-slate-100">
+            <ShoppingOutlined className="text-emerald-400" />
+            <span>{selectedPurchase ? 'View Purchase Order' : 'Create Purchase Order'}</span>
+          </div>
+        }
         open={visible}
         onCancel={() => setVisible(false)}
-        width={900}
+        width={950}
         footer={null}
+        styles={{
+          header: { background: '#1e293b', borderBottom: '1px solid #334155', paddingBottom: '16px' },
+          body: { background: '#0f172a', padding: '24px' },
+        }}
       >
-        <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item label={t('purchase.invoiceNo')} validateStatus={errors.invoiceNo ? 'error' : ''} help={errors.invoiceNo?.message?.toString()} required>
-                <Controller
-                  name="invoiceNo"
-                  control={control}
-                  render={({ field }) => <Input {...field} id="invoiceNo" />}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label={t('purchase.supplier')} validateStatus={errors.supplierId ? 'error' : ''} help={errors.supplierId?.message?.toString()}>
-                <Controller
-                  name="supplierId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select {...field} options={suppliers.map((supplier) => ({ value: supplier.id, label: supplier.name }))} />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item label={t('purchase.purchaseDate')} validateStatus={errors.purchaseDate ? 'error' : ''} help={errors.purchaseDate?.message?.toString()} required>
-                <Controller
-                  name="purchaseDate"
-                  control={control}
-                  render={({ field }) => <Input type="date" {...field} id="purchaseDate" />}
-                />
-              </Form.Item>
-            </Col>
-            <Col span={12}>
-              <Form.Item label={t('purchase.warehouse')}>
-                <Controller
-                  name="lineItems.0.warehouseId"
-                  control={control}
-                  render={({ field }) => (
-                    <Select {...field} options={warehouses.map((warehouse) => ({ value: warehouse.id, label: warehouse.name }))} />
-                  )}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-          <Form.Item label={t('purchase.notes')} validateStatus={errors.notes ? 'error' : ''} help={errors.notes?.message?.toString()}>
-            <Controller
-              name="notes"
-              control={control}
-              render={({ field }) => <Input.TextArea rows={3} {...field} id="notes" />}
-            />
-          </Form.Item>
-          <Card title={t('purchase.lineItems')} style={{ marginBottom: 16 }}>
-            <p>Line item creation is supported through backend schema; implement add/remove in the next phase.</p>
-          </Card>
-          <Form.Item>
-            <Space>
-              <Button type="primary" htmlType="submit" loading={isSubmitting}>
-                {t('common.save')}
+        {selectedPurchase ? (
+          <div className="space-y-6 text-slate-200">
+            <Row gutter={[16, 16]} className="bg-slate-800/60 p-4 rounded-lg border border-slate-700">
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Invoice No</div>
+                <div className="font-mono font-bold text-emerald-400 text-base">{selectedPurchase.invoiceNo}</div>
+              </Col>
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Supplier</div>
+                <div className="font-semibold text-slate-100 text-base">{selectedPurchase.supplierName || '—'}</div>
+              </Col>
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Invoice Date</div>
+                <div className="text-slate-200 text-base">{selectedPurchase.invoiceDate || '—'}</div>
+              </Col>
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Status</div>
+                <div className="mt-1"><Tag color={selectedPurchase.status === 'CONFIRMED' ? 'green' : 'orange'}>{selectedPurchase.status}</Tag></div>
+              </Col>
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Payment Method</div>
+                <div className="text-slate-200">{selectedPurchase.paymentMethod || 'CASH'}</div>
+              </Col>
+              <Col span={8}>
+                <div className="text-xs text-slate-400">Total Order Value</div>
+                <div className="font-mono font-bold text-slate-100 text-base">
+                  LKR {Number(selectedPurchase.netAmount ?? selectedPurchase.totalOrderValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </div>
+              </Col>
+            </Row>
+
+            <div>
+              <Title level={5} className="!text-slate-200 !mb-3">Line Items</Title>
+              <Table
+                dataSource={selectedPurchase.lineItems || []}
+                rowKey="id"
+                pagination={false}
+                className="custom-dark-table"
+                columns={[
+                  { title: 'SKU', dataIndex: 'productSku', key: 'sku', render: (val: string) => <span className="font-mono text-emerald-400">{val || '—'}</span> },
+                  { title: 'Product Name', dataIndex: 'productName', key: 'name', render: (val: string) => <span className="font-medium">{val || '—'}</span> },
+                  { title: 'Boxes', dataIndex: 'noOfBoxes', key: 'boxes', align: 'right' },
+                  { title: 'Quantity', dataIndex: 'soldQuantity', key: 'qty', align: 'right' },
+                  { title: 'Unit Type', dataIndex: 'unitType', key: 'unit', render: (val: string) => <Tag color="purple">{val}</Tag> },
+                  { title: 'Rate (LKR)', dataIndex: 'rate', key: 'rate', align: 'right', render: (val: number) => Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+                  { title: 'Amount (LKR)', dataIndex: 'amount', key: 'amount', align: 'right', render: (val: number) => <span className="font-mono font-semibold">{Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span> },
+                ]}
+              />
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-slate-700">
+              <Button onClick={() => setVisible(false)} className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200">
+                Close
               </Button>
-              <Button onClick={() => setVisible(false)}>{t('common.cancel')}</Button>
-            </Space>
-          </Form.Item>
-        </Form>
+            </div>
+          </div>
+        ) : (
+          <Form layout="vertical" onFinish={handleSubmit(onSubmit as unknown as SubmitHandler<FormValues>)} className="space-y-4">
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item
+                  label={<span className="text-slate-300">Supplier</span>}
+                  validateStatus={errors.supplierId ? 'error' : ''}
+                  help={errors.supplierId?.message}
+                  required
+                >
+                  <Controller
+                    name="supplierId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        placeholder="Select supplier"
+                        options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
+                        showSearch
+                        optionFilterProp="label"
+                        className="w-full"
+                        onChange={(val) => {
+                          field.onChange(val);
+                          // Reset line items when supplier changes
+                          setValue('lineItems', [emptyLineItem]);
+                        }}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label={<span className="text-slate-300">Invoice No</span>}
+                  validateStatus={errors.invoiceNo ? 'error' : ''}
+                  help={errors.invoiceNo?.message}
+                  required
+                >
+                  <Controller
+                    name="invoiceNo"
+                    control={control}
+                    render={({ field }) => <Input {...field} placeholder="e.g. INV-2026-001" />}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={8}>
+                <Form.Item
+                  label={<span className="text-slate-300">Invoice Date</span>}
+                  validateStatus={errors.invoiceDate ? 'error' : ''}
+                  help={errors.invoiceDate?.message}
+                  required
+                >
+                  <Controller
+                    name="invoiceDate"
+                    control={control}
+                    render={({ field }) => <Input type="date" {...field} />}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={8}>
+                <Form.Item label={<span className="text-slate-300">Payment Method</span>}>
+                  <Controller
+                    name="paymentMethod"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        options={[
+                          { label: 'Cash', value: 'CASH' },
+                          { label: 'Credit', value: 'CREDIT' },
+                          { label: 'Cheque', value: 'CHEQUE' },
+                          { label: 'Bank Transfer', value: 'BANK_TRANSFER' },
+                        ]}
+                      />
+                    )}
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={16}>
+                <Form.Item label={<span className="text-slate-300">Notes</span>}>
+                  <Controller
+                    name="notes"
+                    control={control}
+                    render={({ field }) => <Input {...field} placeholder="Optional purchase notes..." />}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Divider className="!border-slate-700 !my-4" />
+
+            <div>
+              <div className="flex justify-between items-center mb-3">
+                <Title level={5} className="!text-slate-200 !m-0">
+                  Line Items (Supplier Catalog)
+                </Title>
+                <Button
+                  type="dashed"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => append(emptyLineItem)}
+                  disabled={!selectedSupplierId}
+                  className="border-emerald-500 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400"
+                >
+                  Add Item
+                </Button>
+              </div>
+
+              {!selectedSupplierId ? (
+                <Alert
+                  type="info"
+                  showIcon
+                  message="Select a Supplier First"
+                  description="Please select a supplier above to view and select their available catalog items."
+                  className="bg-slate-800/80 border-slate-700 text-slate-300 mb-4"
+                />
+              ) : productsLoading ? (
+                <div className="p-6 text-center text-slate-400 bg-slate-800/40 rounded-lg">Loading supplier items...</div>
+              ) : supplierProducts.length === 0 ? (
+                <Alert
+                  type="warning"
+                  showIcon
+                  message="No Products Sourced From This Supplier"
+                  description="This supplier currently has no products linked to them in the system. Go to Suppliers -> Catalog to add items to this supplier first."
+                  className="bg-amber-950/40 border-amber-800/60 text-amber-200 mb-4"
+                />
+              ) : null}
+
+              <div className="space-y-3">
+                {fields.map((field, index) => {
+                  const qty = Number(lineItems?.[index]?.soldQuantity) || 0;
+                  const rate = Number(lineItems?.[index]?.rate) || 0;
+                  const rowAmount = qty * rate;
+
+                  return (
+                    <div
+                      key={field.id}
+                      className="p-3 bg-slate-800/60 border border-slate-700/80 rounded-lg flex flex-wrap items-center gap-3"
+                    >
+                      <div className="flex-1 min-w-[200px]">
+                        <div className="text-xs text-slate-400 mb-1">Product</div>
+                        <Controller
+                          name={`lineItems.${index}.productId`}
+                          control={control}
+                          render={({ field: f }) => (
+                            <Select
+                              {...f}
+                              placeholder="Select item"
+                              disabled={!selectedSupplierId}
+                              options={supplierProducts.map((p) => ({
+                                value: String(p.id),
+                                label: `${p.sku ? `[${p.sku}] ` : ''}${p.name}`,
+                              }))}
+                              showSearch
+                              optionFilterProp="label"
+                              className="w-full"
+                              onChange={(val) => {
+                                f.onChange(val);
+                                handleProductSelect(val, index);
+                              }}
+                            />
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-24">
+                        <div className="text-xs text-slate-400 mb-1">Boxes</div>
+                        <Controller
+                          name={`lineItems.${index}.noOfBoxes`}
+                          control={control}
+                          render={({ field: f }) => (
+                            <InputNumber {...f} min={1} className="w-full" />
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-24">
+                        <div className="text-xs text-slate-400 mb-1">Quantity</div>
+                        <Controller
+                          name={`lineItems.${index}.soldQuantity`}
+                          control={control}
+                          render={({ field: f }) => (
+                            <InputNumber {...f} min={1} className="w-full" />
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-28">
+                        <div className="text-xs text-slate-400 mb-1">Unit Type</div>
+                        <Controller
+                          name={`lineItems.${index}.unitType`}
+                          control={control}
+                          render={({ field: f }) => (
+                            <Input {...f} placeholder="BOX" className="w-full font-mono text-xs" />
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-32">
+                        <div className="text-xs text-slate-400 mb-1">Rate (LKR)</div>
+                        <Controller
+                          name={`lineItems.${index}.rate`}
+                          control={control}
+                          render={({ field: f }) => (
+                            <InputNumber {...f} min={0} step={0.01} precision={2} className="w-full" />
+                          )}
+                        />
+                      </div>
+
+                      <div className="w-32 text-right">
+                        <div className="text-xs text-slate-400 mb-1">Amount</div>
+                        <div className="font-mono font-semibold text-slate-200 py-1">
+                          {rowAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                      </div>
+
+                      <div className="pt-5">
+                        <Button
+                          type="text"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => remove(index)}
+                          disabled={fields.length === 1}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <Divider className="!border-slate-700 !my-4" />
+
+            {/* Financial Summary */}
+            <div className="bg-slate-800/80 p-4 rounded-lg border border-slate-700 space-y-2">
+              <div className="flex justify-between text-sm text-slate-300">
+                <span>Gross Total:</span>
+                <span className="font-mono">LKR {grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm text-slate-300">
+                <span>Discount Amount (-) :</span>
+                <Controller
+                  name="discountAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <InputNumber {...field} min={0} step={0.01} precision={2} className="w-36" />
+                  )}
+                />
+              </div>
+              <div className="flex justify-between items-center text-sm text-slate-300">
+                <span>Returns Deducted (-) :</span>
+                <Controller
+                  name="returnsDeductedAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <InputNumber {...field} min={0} step={0.01} precision={2} className="w-36" />
+                  )}
+                />
+              </div>
+              <div className="flex justify-between items-center text-sm text-slate-300">
+                <span>VAT Amount (+) :</span>
+                <Controller
+                  name="vatAmount"
+                  control={control}
+                  render={({ field }) => (
+                    <InputNumber {...field} min={0} step={0.01} precision={2} className="w-36" />
+                  )}
+                />
+              </div>
+              <Divider className="!border-slate-600 !my-2" />
+              <div className="flex justify-between text-base font-bold text-emerald-400">
+                <span>Net Total Amount:</span>
+                <span className="font-mono text-lg">LKR {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-700">
+              <Button onClick={() => setVisible(false)} className="bg-slate-700 hover:bg-slate-600 border-slate-600 text-slate-200">
+                {t('common.cancel', 'Cancel')}
+              </Button>
+              <Button type="primary" htmlType="submit" loading={isSubmitting} className="bg-emerald-600 hover:bg-emerald-500 border-none">
+                {t('common.save', 'Create Purchase Order')}
+              </Button>
+            </div>
+          </Form>
+        )}
       </Modal>
-    </>
+    </div>
   );
 }

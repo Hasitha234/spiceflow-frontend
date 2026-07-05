@@ -14,11 +14,13 @@ import { useTableState } from '@/hooks/useTableState';
 import { useSupplierList } from '../hooks/useSupplierList';
 import { SupplierTable } from '../components/SupplierTable';
 import { SupplierFormDrawer } from '../components/SupplierFormDrawer';
+import { SupplierCatalogDrawer } from '../components/SupplierCatalogDrawer';
 import { getTraceId } from '@/utils/getProblemDetails';
 
 export function SupplierListPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<SupplierResponse | null>(null);
+  const [catalogSupplier, setCatalogSupplier] = useState<SupplierResponse | null>(null);
 
   // URL ↔ table state synchronization
   const {
@@ -133,12 +135,19 @@ export function SupplierListPage() {
         onSizeChange={setSize}
         onSortChange={setSort}
         onEdit={handleEdit}
+        onViewCatalog={(supplier) => setCatalogSupplier(supplier)}
       />
 
       <SupplierFormDrawer
         open={drawerOpen}
         onClose={handleDrawerClose}
         editingSupplier={editingSupplier}
+      />
+
+      <SupplierCatalogDrawer
+        open={!!catalogSupplier}
+        onClose={() => setCatalogSupplier(null)}
+        supplier={catalogSupplier}
       />
     </PageLayout>
   );
