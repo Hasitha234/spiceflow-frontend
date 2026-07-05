@@ -126,20 +126,35 @@ export interface Delivery {
 export interface Purchase {
   id: string;
   invoiceNo: string;
-  supplier: { id: string; name: string };
-  purchaseDate: string;
-  status: 'DRAFT' | 'CONFIRMED';
-  totalAmount: number;
+  supplier?: { id: string; name: string };
+  supplierName?: string;
+  purchaseDate?: string;
+  invoiceDate?: string;
+  status: 'DRAFT' | 'CONFIRMED' | 'COMPLETED' | string;
+  totalAmount?: number;
+  netAmount?: number;
+  totalOrderValue?: number;
+  discountAmount?: number;
+  returnsDeductedAmount?: number;
+  vatAmount?: number;
+  paymentMethod?: string;
   notes?: string;
   lineItems: PurchaseLineItem[];
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface PurchaseLineItem {
-  id: string;
-  product: Product;
-  quantity: number;
-  unitCost: number;
-  totalCost: number;
+  id?: string;
+  product?: Product;
+  productSku?: string;
+  productName?: string;
+  quantity?: number;
+  soldQuantity?: number;
+  noOfBoxes?: number;
+  unitType?: string;
+  unitCost?: number;
+  rate?: number;
+  totalCost?: number;
+  amount?: number;
   warehouseId?: string;
 }
