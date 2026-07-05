@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Alert,
   Button,
@@ -26,12 +26,13 @@ import {
   EyeOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { Controller, useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { Controller, useForm, useFieldArray, useWatch, type Resolver, type SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { purchaseApi } from '../../api/sales';
 import { supplierApi, productApi } from '../../api/inventory';
 import type { Supplier, Product } from '../../types/inventory';
+import type { Purchase } from '../../types/sales';
 import { PermissionGuard } from '../../components/common';
 
 const { Title, Text } = Typography;
@@ -69,12 +70,12 @@ const emptyLineItem = {
 export function PurchasesPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
-  const [purchases, setPurchases] = useState<any[]>([]);
+  const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
   const [productsLoading, setProductsLoading] = useState(false);
   const [visible, setVisible] = useState(false);
-  const [selectedPurchase, setSelectedPurchase] = useState<any | null>(null);
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
   const {
     control,
@@ -83,7 +84,7 @@ export function PurchasesPage() {
     reset,
     setValue,
   } = useForm<FormValues>({
-    resolver: zodResolver(schema) as any,
+    resolver: zodResolver(schema) as unknown as Resolver<FormValues>,
     defaultValues: {
       invoiceNo: '',
       supplierId: '',
@@ -167,6 +168,16 @@ export function PurchasesPage() {
     }
   };
 
+  const handleConfirm = useCallback(async (id: string) => {
+    try {
+      await purchaseApi.confirm(id);
+      message.success('Purchase Order confirmed successfully');
+      loadData();
+    } catch {
+      message.error('Failed to confirm purchase order');
+    }
+  }, []);
+
   const columns = useMemo(
     () => [
       {
@@ -178,7 +189,7 @@ export function PurchasesPage() {
       {
         title: t('purchase.supplier', 'Supplier'),
         key: 'supplier',
-        render: (_: unknown, record: any) => (
+        render: (_: unknown, record: Purchase) => (
           <span className="font-medium text-slate-200">
             {record.supplierName || record.supplier?.name || '—'}
           </span>
@@ -187,7 +198,7 @@ export function PurchasesPage() {
       {
         title: t('purchase.purchaseDate', 'Invoice Date'),
         key: 'invoiceDate',
-        render: (_: unknown, record: any) => (
+        render: (_: unknown, record: Purchase) => (
           <span className="text-slate-300">{record.invoiceDate || record.purchaseDate || '—'}</span>
         ),
       },
@@ -204,7 +215,7 @@ export function PurchasesPage() {
         title: t('purchase.totalAmount', 'Net Amount (LKR)'),
         key: 'netAmount',
         align: 'right' as const,
-        render: (_: unknown, record: any) => {
+        render: (_: unknown, record: Purchase) => {
           const val = record.netAmount !== undefined ? record.netAmount : record.totalOrderValue ?? record.totalAmount ?? 0;
           return <span className="font-mono text-slate-100 font-semibold">{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
         },
@@ -213,7 +224,7 @@ export function PurchasesPage() {
         title: t('common.actions', 'Actions'),
         key: 'actions',
         align: 'right' as const,
-        render: (_: unknown, record: any) => (
+        render: (_: unknown, record: Purchase) => (
           <Space>
             <Tooltip title="View Purchase Details">
               <Button
@@ -244,18 +255,8 @@ export function PurchasesPage() {
         ),
       },
     ],
-    [t]
+    [t, handleConfirm]
   );
-
-  const handleConfirm = async (id: string) => {
-    try {
-      await purchaseApi.confirm(id);
-      message.success('Purchase Order confirmed successfully');
-      loadData();
-    } catch {
-      message.error('Failed to confirm purchase order');
-    }
-  };
 
   const onSubmit = async (values: FormValues) => {
     try {
@@ -282,8 +283,9 @@ export function PurchasesPage() {
       setVisible(false);
       reset();
       loadData();
-    } catch (err: any) {
-      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to create purchase order';
+    } catch (err: unknown) {
+      const errorObj = err as { response?: { data?: { detail?: string; message?: string } } };
+      const msg = errorObj?.response?.data?.detail || errorObj?.response?.data?.message || 'Failed to create purchase order';
       message.error(msg);
     }
   };
@@ -418,7 +420,7 @@ export function PurchasesPage() {
             </div>
           </div>
         ) : (
-          <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} className="space-y-4">
+          <Form layout="vertical" onFinish={handleSubmit(onSubmit as unknown as SubmitHandler<FormValues>)} className="space-y-4">
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item
@@ -550,8 +552,8 @@ export function PurchasesPage() {
 
               <div className="space-y-3">
                 {fields.map((field, index) => {
-                  const qty = Number(useWatch({ control, name: `lineItems.${index}.soldQuantity` })) || 0;
-                  const rate = Number(useWatch({ control, name: `lineItems.${index}.rate` })) || 0;
+                  const qty = Number(lineItems?.[index]?.soldQuantity) || 0;
+                  const rate = Number(lineItems?.[index]?.rate) || 0;
                   const rowAmount = qty * rate;
 
                   return (
