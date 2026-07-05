@@ -57,9 +57,21 @@ export function LoginPage() {
       setCredentials(response, user);
       message.success(t('auth.login') + ' successful');
       navigate('/');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
-      message.error(t('auth.loginFailed'));
+      const err = error as {
+        response?: { status?: number; data?: { detail?: string } };
+        message?: string;
+      };
+      if (err?.response?.status === 401) {
+        message.error(t('auth.loginFailed'));
+      } else if (err?.response?.data?.detail) {
+        message.error(err.response.data.detail);
+      } else if (err?.message === 'Network Error') {
+        message.error('Unable to connect to backend server. Please check if Spring Boot is running on port 8080.');
+      } else {
+        message.error(t('auth.loginFailed'));
+      }
     }
   };
 
