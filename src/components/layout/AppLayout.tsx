@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
+import { BrandLogo } from '@/components/common/BrandLogo';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -83,13 +84,11 @@ export function AppLayout() {
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: collapsed ? 'center' : 'flex-start',
-          padding: collapsed ? 0 : '0 24px',
+          padding: collapsed ? 0 : '0 20px',
           overflow: 'hidden',
-          borderBottom: '1px solid var(--surface-border)'
+          borderBottom: '1px solid var(--surface-border)',
         }}>
-          <div className="gradient-text" style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
-            {collapsed ? 'S' : 'SpiceFlow'}
-          </div>
+          <BrandLogo size={32} showText={!collapsed} textSize={18} badgeText="" />
         </div>
         
         <Menu
