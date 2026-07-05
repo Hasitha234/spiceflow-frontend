@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Form, Input, Modal, Row, Space, Table, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { driverApi } from '../../api/sales';
@@ -24,8 +24,14 @@ export function DriversPage() {
   const [visible, setVisible] = useState(false);
   const [editDriver, setEditDriver] = useState<Driver | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
+  const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      phone: '',
+      licenseNo: '',
+      vehicleNo: '',
+    },
   });
 
   const loadData = async () => {
@@ -55,7 +61,19 @@ export function DriversPage() {
         key: 'actions',
         render: (_: unknown, record: Driver) => (
           <Space>
-            <Button type="link" onClick={() => { setEditDriver(record); setVisible(true); reset(record); }}>
+            <Button
+              type="link"
+              onClick={() => {
+                setEditDriver(record);
+                setVisible(true);
+                reset({
+                  name: record.name,
+                  phone: record.phone || '',
+                  licenseNo: record.licenseNo || '',
+                  vehicleNo: record.vehicleNo || '',
+                });
+              }}
+            >
               {t('common.edit')}
             </Button>
           </Space>
@@ -76,7 +94,7 @@ export function DriversPage() {
       }
       setVisible(false);
       setEditDriver(null);
-      reset();
+      reset({ name: '', phone: '', licenseNo: '', vehicleNo: '' });
       loadData();
     } catch {
       message.error('Failed to save driver');
@@ -90,7 +108,15 @@ export function DriversPage() {
           <h2>{t('driver.title')}</h2>
         </Col>
         <Col>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setVisible(true); setEditDriver(null); reset(); }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setVisible(true);
+              setEditDriver(null);
+              reset({ name: '', phone: '', licenseNo: '', vehicleNo: '' });
+            }}
+          >
             {t('driver.create')}
           </Button>
         </Col>
@@ -100,17 +126,33 @@ export function DriversPage() {
       </Card>
       <Modal title={editDriver ? t('driver.edit') : t('driver.create')} open={visible} onCancel={() => setVisible(false)} footer={null}>
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          <Form.Item label={t('driver.name')} validateStatus={errors.name ? 'error' : ''} help={errors.name?.message?.toString()}>
-            <Input {...register('name')} />
+          <Form.Item label={t('driver.name')} validateStatus={errors.name ? 'error' : ''} help={errors.name?.message?.toString()} required>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => <Input {...field} id="name" />}
+            />
           </Form.Item>
-          <Form.Item label={t('driver.phone')}>
-            <Input {...register('phone')} />
+          <Form.Item label={t('driver.phone')} validateStatus={errors.phone ? 'error' : ''} help={errors.phone?.message?.toString()}>
+            <Controller
+              name="phone"
+              control={control}
+              render={({ field }) => <Input {...field} id="phone" />}
+            />
           </Form.Item>
-          <Form.Item label={t('driver.licenseNo')}>
-            <Input {...register('licenseNo')} />
+          <Form.Item label={t('driver.licenseNo')} validateStatus={errors.licenseNo ? 'error' : ''} help={errors.licenseNo?.message?.toString()}>
+            <Controller
+              name="licenseNo"
+              control={control}
+              render={({ field }) => <Input {...field} id="licenseNo" />}
+            />
           </Form.Item>
-          <Form.Item label={t('driver.vehicleNo')}>
-            <Input {...register('vehicleNo')} />
+          <Form.Item label={t('driver.vehicleNo')} validateStatus={errors.vehicleNo ? 'error' : ''} help={errors.vehicleNo?.message?.toString()}>
+            <Controller
+              name="vehicleNo"
+              control={control}
+              render={({ field }) => <Input {...field} id="vehicleNo" />}
+            />
           </Form.Item>
           <Form.Item>
             <Space>

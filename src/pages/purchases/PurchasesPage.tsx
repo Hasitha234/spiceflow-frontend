@@ -38,7 +38,7 @@ export function PurchasesPage() {
   const [visible, setVisible] = useState(false);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
-  const { control, handleSubmit, formState: { errors, isSubmitting }, reset, register } = useForm<FormValues>({
+  const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
       purchaseDate: new Date().toISOString().slice(0, 10),
@@ -158,8 +158,12 @@ export function PurchasesPage() {
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={t('purchase.invoiceNo')} validateStatus={errors.invoiceNo ? 'error' : ''} help={errors.invoiceNo?.message?.toString()}>
-                <Input {...register('invoiceNo')} />
+              <Form.Item label={t('purchase.invoiceNo')} validateStatus={errors.invoiceNo ? 'error' : ''} help={errors.invoiceNo?.message?.toString()} required>
+                <Controller
+                  name="invoiceNo"
+                  control={control}
+                  render={({ field }) => <Input {...field} id="invoiceNo" />}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -176,8 +180,12 @@ export function PurchasesPage() {
           </Row>
           <Row gutter={16}>
             <Col span={12}>
-              <Form.Item label={t('purchase.purchaseDate')} validateStatus={errors.purchaseDate ? 'error' : ''} help={errors.purchaseDate?.message?.toString()}>
-                <Input type="date" {...register('purchaseDate')} />
+              <Form.Item label={t('purchase.purchaseDate')} validateStatus={errors.purchaseDate ? 'error' : ''} help={errors.purchaseDate?.message?.toString()} required>
+                <Controller
+                  name="purchaseDate"
+                  control={control}
+                  render={({ field }) => <Input type="date" {...field} id="purchaseDate" />}
+                />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -192,8 +200,12 @@ export function PurchasesPage() {
               </Form.Item>
             </Col>
           </Row>
-          <Form.Item label={t('purchase.notes')}>
-            <Input.TextArea rows={3} {...register('notes')} />
+          <Form.Item label={t('purchase.notes')} validateStatus={errors.notes ? 'error' : ''} help={errors.notes?.message?.toString()}>
+            <Controller
+              name="notes"
+              control={control}
+              render={({ field }) => <Input.TextArea rows={3} {...field} id="notes" />}
+            />
           </Form.Item>
           <Card title={t('purchase.lineItems')} style={{ marginBottom: 16 }}>
             <p>Line item creation is supported through backend schema; implement add/remove in the next phase.</p>

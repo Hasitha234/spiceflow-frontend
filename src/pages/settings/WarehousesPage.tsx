@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Form, Input, Modal, Row, Select, Space, Table, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { warehouseApi } from '../../api/inventory';
@@ -16,12 +16,6 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>;
 
-const storeTypeOptions = [
-  { label: 'Main Store', value: 'MAIN' },
-  { label: 'Vehicle', value: 'VEHICLE' },
-  { label: 'Second Store', value: 'CUSTOM' },
-];
-
 export function WarehousesPage() {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
@@ -29,8 +23,22 @@ export function WarehousesPage() {
   const [visible, setVisible] = useState(false);
   const [editWarehouse, setEditWarehouse] = useState<Warehouse | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
+  const storeTypeOptions = useMemo(
+    () => [
+      { label: t('warehouse.main'), value: 'MAIN' },
+      { label: t('warehouse.vehicle'), value: 'VEHICLE' },
+      { label: t('warehouse.custom'), value: 'CUSTOM' },
+    ],
+    [t]
+  );
+
+  const { control, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormValues>({
     resolver: zodResolver(schema),
+    defaultValues: {
+      name: '',
+      storeType: 'MAIN',
+      location: '',
+    },
   });
 
   const loadData = async () => {
@@ -52,14 +60,35 @@ export function WarehousesPage() {
   const columns = useMemo(
     () => [
       { title: t('warehouse.name'), dataIndex: 'name', key: 'name' },
-      { title: t('warehouse.storeType'), dataIndex: 'storeType', key: 'storeType' },
+      {
+        title: t('warehouse.storeType'),
+        dataIndex: 'storeType',
+        key: 'storeType',
+        render: (type: string) => {
+          if (type === 'MAIN') return t('warehouse.main');
+          if (type === 'VEHICLE') return t('warehouse.vehicle');
+          if (type === 'CUSTOM') return t('warehouse.custom');
+          return type;
+        },
+      },
       { title: t('warehouse.location'), dataIndex: 'location', key: 'location' },
       {
         title: t('common.actions'),
         key: 'actions',
         render: (_: unknown, record: Warehouse) => (
           <Space>
-            <Button type="link" onClick={() => { setEditWarehouse(record); setVisible(true); reset(record); }}>
+            <Button
+              type="link"
+              onClick={() => {
+                setEditWarehouse(record);
+                setVisible(true);
+                reset({
+                  name: record.name,
+                  storeType: record.storeType,
+                  location: record.location || '',
+                });
+              }}
+            >
               {t('common.edit')}
             </Button>
             <Button danger type="link" onClick={() => handleDelete(record.id)}>
@@ -94,7 +123,7 @@ export function WarehousesPage() {
       }
       setVisible(false);
       setEditWarehouse(null);
-      reset();
+      reset({ name: '', storeType: 'MAIN', location: '' });
       loadData();
     } catch {
       message.error('Failed to save warehouse');
@@ -108,7 +137,15 @@ export function WarehousesPage() {
           <h2>{t('warehouse.title')}</h2>
         </Col>
         <Col>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => { setVisible(true); setEditWarehouse(null); reset(); }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setVisible(true);
+              setEditWarehouse(null);
+              reset({ name: '', storeType: 'MAIN', location: '' });
+            }}
+          >
             {t('warehouse.create')}
           </Button>
         </Col>
@@ -118,14 +155,26 @@ export function WarehousesPage() {
       </Card>
       <Modal title={editWarehouse ? t('warehouse.edit') : t('warehouse.create')} open={visible} onCancel={() => setVisible(false)} footer={null}>
         <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
-          <Form.Item label={t('warehouse.name')} validateStatus={errors.name ? 'error' : ''} help={errors.name?.message?.toString()}>
-            <Input {...register('name')} />
+          <Form.Item label={t('warehouse.name')} validateStatus={errors.name ? 'error' : ''} help={errors.name?.message?.toString()} required>
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => <Input {...field} id="name" />}
+            />
           </Form.Item>
-          <Form.Item label={t('warehouse.storeType')} validateStatus={errors.storeType ? 'error' : ''} help={errors.storeType?.message?.toString()}>
-            <Select {...(register('storeType') as unknown as Record<string, unknown>)} options={storeTypeOptions} />
+          <Form.Item label={t('warehouse.storeType')} validateStatus={errors.storeType ? 'error' : ''} help={errors.storeType?.message?.toString()} required>
+            <Controller
+              name="storeType"
+              control={control}
+              render={({ field }) => <Select {...field} id="storeType" options={storeTypeOptions} />}
+            />
           </Form.Item>
-          <Form.Item label={t('warehouse.location')}>
-            <Input {...register('location')} />
+          <Form.Item label={t('warehouse.location')} validateStatus={errors.location ? 'error' : ''} help={errors.location?.message?.toString()}>
+            <Controller
+              name="location"
+              control={control}
+              render={({ field }) => <Input {...field} id="location" />}
+            />
           </Form.Item>
           <Form.Item>
             <Space>
