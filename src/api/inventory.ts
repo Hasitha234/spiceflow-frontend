@@ -41,10 +41,11 @@ export const supplierApi = {
 
 // ─── Products ─────────────────────────────────────────────────────────────────
 export const productApi = {
-  list: (params?: { search?: string; page?: number; size?: number }) =>
+  list: (params?: { search?: string; categoryId?: string | number; supplierId?: string | number; page?: number; size?: number }) =>
     apiClient
       .get<PageResponse<Product>>('/api/v1/products', { params })
       .then((r) => r.data),
+
   get: (id: string) =>
     apiClient.get<Product>(`/api/v1/products/${id}`).then((r) => r.data),
   create: (data: Partial<Product> & { categoryId?: string; supplierId?: string }) =>

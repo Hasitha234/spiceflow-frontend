@@ -15,6 +15,8 @@ export interface ProductFormDrawerProps {
   onClose: () => void;
   /** When provided, the drawer switches to "Edit" mode. */
   editingProduct?: ProductResponse | null;
+  /** When provided, locks and pre-selects the supplier. */
+  defaultSupplierId?: number;
 }
 
 /**
@@ -25,6 +27,7 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   open,
   onClose,
   editingProduct,
+  defaultSupplierId,
 }) => {
   const isEditing = !!editingProduct;
   const { categoryOptions, supplierOptions, isLoading: lookupsLoading } = useProductLookups();
@@ -53,9 +56,12 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
         ratePerSoldUnit: editingProduct.ratePerSoldUnit ?? 0,
       });
     } else {
-      methods.reset(defaultProductValues);
+      methods.reset({
+        ...defaultProductValues,
+        supplierId: defaultSupplierId ?? 0,
+      });
     }
-  }, [editingProduct, methods]);
+  }, [editingProduct, defaultSupplierId, methods]);
 
   const createMutation = useCreateProduct({ onSuccess: onClose });
   const updateMutation = useUpdateProduct({ onSuccess: onClose });
@@ -84,6 +90,7 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
           categoryOptions={categoryOptions}
           supplierOptions={supplierOptions}
           lookupsLoading={lookupsLoading}
+          disabledSupplier={!!defaultSupplierId && !isEditing}
         />
       </FormProvider>
     </EntityFormDrawer>

@@ -8,6 +8,7 @@ export interface ProductFormProps {
   categoryOptions: { label: string; value: number }[];
   supplierOptions: { label: string; value: number }[];
   lookupsLoading?: boolean;
+  disabledSupplier?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
   categoryOptions,
   supplierOptions,
   lookupsLoading = false,
+  disabledSupplier = false,
 }) => {
   const { control, formState: { errors } } = useFormContext<ProductFormValues>();
 
@@ -115,6 +117,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               options={supplierOptions}
               showSearch
               optionFilterProp="label"
+              disabled={disabledSupplier}
             />
           )}
         />
