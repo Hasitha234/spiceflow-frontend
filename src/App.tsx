@@ -13,6 +13,7 @@ const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default:
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const WarehousesPage = lazy(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
 const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
+const CategoriesPage = lazy(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
 const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
@@ -62,6 +63,7 @@ function App() {
               ))}
               <Route path="settings/warehouses" element={<WarehousesPage />} />
               <Route path="settings/drivers" element={<DriversPage />} />
+              <Route path="settings/categories" element={<CategoriesPage />} />
               <Route path="users" element={<UsersPage />} />
               <Route path="roles" element={<RolesPage />} />
               <Route path="settings" element={<SettingsPage />} />
