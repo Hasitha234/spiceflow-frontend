@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Skeleton, Button, Tag, Typography } from 'antd';
+import { Card, Skeleton, Button, Typography } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WarningOutlined } from '@ant-design/icons';
 import '@/features/dashboard/components/dashboard.css'; // Make sure to import the CSS that styles it
