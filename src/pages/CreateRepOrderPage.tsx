@@ -115,7 +115,6 @@ export function CreateRepOrderPage() {
   }, []);
 
   const { control, handleSubmit, setValue } = useForm<FormValues>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resolver: zodResolver(repOrderSchema) as any,
     defaultValues: {
       repId: '',
@@ -206,7 +205,6 @@ export function CreateRepOrderPage() {
         </Space>
       </div>
 
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
       <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
