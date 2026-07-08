@@ -40,6 +40,17 @@ export const KpiStatCard: React.FC<KpiStatCardProps> = ({
   // Map badgeType to AntD tag color if tagColor is not explicitly provided
   const finalTagColor = tagColor || (badgeType === 'up' ? 'green' : badgeType === 'down' ? 'red' : 'blue');
 
+  const getBadgeStyles = (color: string) => {
+    switch (color) {
+      case 'green': return { background: '#D1FAE5', color: '#047857' };
+      case 'orange': return { background: '#FEF3C7', color: '#B45309' };
+      case 'red': return { background: '#FEE2E2', color: '#B91C1C' };
+      case 'blue': 
+      default: return { background: '#DBEAFE', color: '#1D4ED8' };
+    }
+  };
+  const badgeStyles = getBadgeStyles(finalTagColor);
+
   return (
     <Card 
       className="kpi-card" 
@@ -82,7 +93,16 @@ export const KpiStatCard: React.FC<KpiStatCardProps> = ({
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
               <span className="kpi-value" style={{ fontSize: '28px', fontWeight: 800, lineHeight: 1 }}>{value}</span>
               {badgeText && (
-                <Tag color={finalTagColor} style={{ border: 'none', fontWeight: 600 }}>{badgeText}</Tag>
+                <span style={{ 
+                  padding: '4px 8px', 
+                  borderRadius: '4px', 
+                  fontSize: '12px', 
+                  fontWeight: 500, 
+                  lineHeight: 1.2,
+                  ...badgeStyles 
+                }}>
+                  {badgeText}
+                </span>
               )}
             </div>
             {footerText && (

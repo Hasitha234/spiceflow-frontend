@@ -181,7 +181,7 @@ export function LoginPage() {
           flex: 1, 
           flexDirection: 'column', 
           justifyContent: 'space-between', 
-          backgroundColor: '#0F2E24', 
+          backgroundColor: '#114D35', 
           padding: '64px' 
         }}
       >
@@ -191,20 +191,21 @@ export function LoginPage() {
         <div style={{ maxWidth: '576px' }}>
           <h1 style={{ 
             color: 'white', 
-            fontSize: '44px', 
-            fontWeight: 'bold', 
+            fontSize: '48px', 
+            fontWeight: 800, 
             lineHeight: 1.1, 
-            letterSpacing: '-0.025em', 
+            letterSpacing: '-0.03em', 
             marginBottom: '16px',
             marginTop: '0' 
           }}>
-            The intelligent operating system for distribution.
+            The intelligent operating<br />system for distribution.
           </h1>
           <p style={{ 
-            color: '#89A89D', 
-            fontSize: '17.6px', 
-            lineHeight: 1.625,
-            margin: '0'
+            color: 'rgba(255, 255, 255, 0.75)', 
+            fontSize: '18px', 
+            lineHeight: 1.6,
+            margin: '0',
+            maxWidth: '90%'
           }}>
             Real-time inventory, dispatch, and financial reconciliation for your entire enterprise network.
           </p>
@@ -232,10 +233,10 @@ export function LoginPage() {
       }}>
         <div style={{ width: '100%', maxWidth: '380px', margin: '0 auto' }}>
           <h2 style={{ 
-            fontSize: '32px', 
-            fontWeight: 'bold', 
+            fontSize: '36px', 
+            fontWeight: 800, 
             color: '#111827', 
-            letterSpacing: '-0.025em', 
+            letterSpacing: '-0.03em', 
             marginBottom: '40px',
             marginTop: '0'
           }}>
@@ -260,14 +261,16 @@ export function LoginPage() {
                 disabled={state.status === 'loading' || state.status === 'success'}
                 style={{
                   width: '100%',
-                  height: '44px',
-                  padding: '0 12px',
-                  backgroundColor: 'transparent',
+                  height: '48px',
+                  padding: '0 16px',
+                  backgroundColor: 'white',
                   border: '1px solid #D1D5DB',
+                  borderRadius: '8px',
                   color: '#111827',
                   transition: 'border-color 150ms ease-out',
                   outline: 'none',
                   boxSizing: 'border-box',
+                  fontSize: '15px',
                   opacity: (state.status === 'loading' || state.status === 'success') ? 0.5 : 1
                 }}
                 onFocus={(e) => (e.target.style.borderColor = '#0F9D6C')}
@@ -297,15 +300,17 @@ export function LoginPage() {
                   disabled={state.status === 'loading' || state.status === 'success'}
                   style={{
                     width: '100%',
-                    height: '44px',
-                    paddingLeft: '12px',
-                    paddingRight: '40px',
-                    backgroundColor: 'transparent',
+                    height: '48px',
+                    paddingLeft: '16px',
+                    paddingRight: '44px',
+                    backgroundColor: 'white',
                     border: '1px solid #D1D5DB',
+                    borderRadius: '8px',
                     color: '#111827',
                     transition: 'border-color 150ms ease-out',
                     outline: 'none',
                     boxSizing: 'border-box',
+                    fontSize: '15px',
                     opacity: (state.status === 'loading' || state.status === 'success') ? 0.5 : 1
                   }}
                   onFocus={(e) => (e.target.style.borderColor = '#0F9D6C')}
@@ -361,14 +366,16 @@ export function LoginPage() {
                 height: '48px',
                 backgroundColor: '#0F9D6C',
                 color: 'white',
-                fontWeight: 500,
+                fontWeight: 600,
                 fontSize: '16px',
                 border: 'none',
+                borderRadius: '8px',
                 cursor: (state.status === 'loading' || state.status === 'success') ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 overflow: 'hidden',
+                boxShadow: '0 2px 4px rgba(15, 157, 108, 0.2)',
                 opacity: (state.status === 'loading' || state.status === 'success') ? 0.8 : 1
               }}
               onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
