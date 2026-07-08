@@ -48,7 +48,7 @@ export const KpiStatCard: React.FC<KpiStatCardProps> = ({
       styles={{ body: { padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' } }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <Text style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <Text className="kpi-title" style={{ fontWeight: 600, fontSize: '13px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
           {title}
         </Text>
         <div className={`kpi-icon-box ${iconColorClass || ''}`}>
@@ -80,7 +80,7 @@ export const KpiStatCard: React.FC<KpiStatCardProps> = ({
         {(status === 'success' || status === 'empty') && (
           <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginTop: '8px' }}>
-              <span style={{ fontSize: '28px', fontWeight: 800, lineHeight: 1 }}>{value}</span>
+              <span className="kpi-value" style={{ fontSize: '28px', fontWeight: 800, lineHeight: 1 }}>{value}</span>
               {badgeText && (
                 <Tag color={finalTagColor} style={{ border: 'none', fontWeight: 600 }}>{badgeText}</Tag>
               )}

@@ -20,9 +20,10 @@ import { Controller, useForm, useWatch, type Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { purchaseApi } from '../../api/sales';
-import { productApi, supplierApi } from '../../api/inventory';
-import type { Supplier, Product } from '../../types/inventory';
+import { productApi, supplierApi, warehouseApi } from '../../api/inventory';
+import type { Supplier, Product, Warehouse } from '../../types/inventory';
 import { PurchaseLineItemGrid } from './components/PurchaseLineItemGrid';
+import { PurchaseReturnItemGrid } from './components/PurchaseReturnItemGrid';
 
 const { Title, Text } = Typography;
 
@@ -31,6 +32,9 @@ export const purchaseSchema = z.object({
   supplierId: z.string().min(1, 'Supplier is required'),
   invoiceDate: z.string().min(1, 'Invoice date is required'),
   paymentMethod: z.string().min(1, 'Payment method is required'),
+  chequeNo: z.string().optional(),
+  chequeBankName: z.string().optional(),
+  chequeAmount: z.number().min(0).optional(),
   discountAmount: z.number().min(0).optional(),
   returnsDeductedAmount: z.number().min(0).optional(),
   vatAmount: z.number().min(0).optional(),
@@ -46,6 +50,16 @@ export const purchaseSchema = z.object({
       })
     )
     .min(1, 'At least one line item is required'),
+  returnWarehouseId: z.string().optional(),
+  returnItems: z
+    .array(
+      z.object({
+        productId: z.string().min(1, 'Product is required'),
+        quantity: z.number().int().min(1, 'Min 1 unit'),
+        unitType: z.string().min(1, 'Unit type is required'),
+        rate: z.number().min(0, 'Rate must be positive'),
+      })
+    ).optional(),
 });
 
 export type FormValues = z.infer<typeof purchaseSchema>;
@@ -63,6 +77,7 @@ type CatalogStatus = 'idle' | 'loading' | 'success' | 'error';
 export function CreatePurchasePage() {
   const navigate = useNavigate();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>('idle');
   const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
 
@@ -78,16 +93,22 @@ export function CreatePurchasePage() {
       supplierId: '',
       invoiceDate: new Date().toISOString().slice(0, 10),
       paymentMethod: 'CASH',
+      chequeNo: '',
+      chequeBankName: '',
+      chequeAmount: 0,
       discountAmount: 0,
       returnsDeductedAmount: 0,
       vatAmount: 0,
       notes: '',
       lineItems: [emptyLineItem],
+      returnItems: [],
     },
   });
 
+  const paymentMethod = useWatch({ control, name: 'paymentMethod' });
   const selectedSupplierId = useWatch({ control, name: 'supplierId' });
   const lineItems = useWatch({ control, name: 'lineItems' });
+  const returnItems = useWatch({ control, name: 'returnItems' });
   const discountAmount = useWatch({ control, name: 'discountAmount' }) || 0;
   const returnsDeductedAmount = useWatch({ control, name: 'returnsDeductedAmount' }) || 0;
   const vatAmount = useWatch({ control, name: 'vatAmount' }) || 0;
@@ -97,6 +118,11 @@ export function CreatePurchasePage() {
       setSuppliers(res?.content || []);
     }).catch(() => {
       message.error('Failed to load suppliers');
+    });
+    warehouseApi.list({ page: 0, size: 500 }).then((res) => {
+      setWarehouses(res?.content || []);
+    }).catch(() => {
+      message.error('Failed to load warehouses');
     });
   }, []);
 
@@ -118,6 +144,17 @@ export function CreatePurchasePage() {
       setCatalogStatus('idle');
     }
   }, [selectedSupplierId]);
+
+  useEffect(() => {
+    if (returnItems && Array.isArray(returnItems)) {
+      const sum = returnItems.reduce((acc, item) => {
+        const qty = Number(item?.quantity) || 0;
+        const rate = Number(item?.rate) || 0;
+        return acc + qty * rate;
+      }, 0);
+      setValue('returnsDeductedAmount', Number(sum.toFixed(2)));
+    }
+  }, [returnItems, setValue]);
 
   const grossTotal = useMemo(() => {
     if (!lineItems || !Array.isArray(lineItems)) return 0;
@@ -145,6 +182,9 @@ export function CreatePurchasePage() {
         returnsDeductedAmount: Number(values.returnsDeductedAmount || 0),
         vatAmount: Number(values.vatAmount || 0),
         paymentMethod: values.paymentMethod || 'CASH',
+        chequeNo: values.paymentMethod === 'CHEQUE' ? values.chequeNo : null,
+        chequeBankName: values.paymentMethod === 'CHEQUE' ? values.chequeBankName : null,
+        chequeAmount: values.paymentMethod === 'CHEQUE' ? (values.chequeAmount || netTotal) : null,
         notes: values.notes || '',
         lineItems: values.lineItems.map((item) => ({
           productId: Number(item.productId),
@@ -153,6 +193,13 @@ export function CreatePurchasePage() {
           unitType: item.unitType || 'BOX',
           rate: Number(item.rate || 0),
         })),
+        returnWarehouseId: values.returnWarehouseId ? Number(values.returnWarehouseId) : null,
+        returnItems: values.returnItems?.map((item) => ({
+          productId: Number(item.productId),
+          quantity: Number(item.quantity || 1),
+          unitType: item.unitType || 'BOX',
+          rate: Number(item.rate || 0),
+        })) || [],
       };
 
       await purchaseApi.create(payload);
@@ -266,12 +313,65 @@ export function CreatePurchasePage() {
                 />
               </Form.Item>
             </Col>
-            <Col xs={24} md={16}>
+            
+            {paymentMethod === 'CHEQUE' && (
+              <>
+                <Col xs={24} md={8}>
+                  <Form.Item label={<Text strong>Cheque Number</Text>}>
+                    <Controller
+                      name="chequeNo"
+                      control={control}
+                      render={({ field }) => <Input size="large" {...field} placeholder="CHQ-123456" style={{ width: '100%' }} />}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item label={<Text strong>Bank Name</Text>}>
+                    <Controller
+                      name="chequeBankName"
+                      control={control}
+                      render={({ field }) => <Input size="large" {...field} placeholder="Commercial Bank" style={{ width: '100%' }} />}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item label={<Text strong>Cheque Amount</Text>} extra={<span style={{ fontSize: '11px', color: '#10b981' }}>If left 0, it auto-fills with Net Total</span>}>
+                    <Controller
+                      name="chequeAmount"
+                      control={control}
+                      render={({ field }) => <InputNumber onFocus={(e) => e.target.select()} size="large" {...field} min={0} step={0.01} precision={2} style={{ width: '100%' }} placeholder="Amount" />}
+                    />
+                  </Form.Item>
+                </Col>
+              </>
+            )}
+
+            <Col xs={24} md={paymentMethod === 'CHEQUE' ? 24 : 16}>
               <Form.Item label={<Text strong>Notes (Optional)</Text>}>
                 <Controller
                   name="notes"
                   control={control}
                   render={({ field }) => <Input size="large" {...field} placeholder="Add any relevant purchasing notes here..." style={{ width: '100%' }} />}
+                />
+              </Form.Item>
+            </Col>
+          </Row>
+          <Row gutter={24}>
+            <Col xs={24} md={8}>
+              <Form.Item label={<Text strong>Return Warehouse (Optional)</Text>} tooltip="Select if there are returned items in this purchase">
+                <Controller
+                  name="returnWarehouseId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      size="large"
+                      placeholder="Select a warehouse for returns"
+                      options={warehouses.map((w) => ({ value: String(w.id), label: w.name }))}
+                      style={{ width: '100%' }}
+                      allowClear
+                    />
+                  )}
                 />
               </Form.Item>
             </Col>
@@ -324,6 +424,35 @@ export function CreatePurchasePage() {
           </div>
         </Card>
 
+        {/* Returns Data Grid Section */}
+        <Card 
+          bordered={false} 
+          style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}
+          bodyStyle={{ padding: 0 }}
+        >
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <Title level={5} style={{ margin: 0, color: '#f5222d' }}>Return Items</Title>
+              <Text type="secondary">Items returned to the supplier (deducted from total)</Text>
+            </div>
+          </div>
+          
+          <div style={{ overflowX: 'auto' }}>
+            {catalogStatus === 'idle' ? (
+              <div style={{ padding: '24px', textAlign: 'center' }}>
+                 <Text type="secondary">Select a supplier to add return items.</Text>
+              </div>
+            ) : (
+              <PurchaseReturnItemGrid 
+                control={control} 
+                setValue={setValue} 
+                supplierProducts={supplierProducts} 
+                errors={errors}
+              />
+            )}
+          </div>
+        </Card>
+
         {/* Floating Bottom Bar (Sticky Footer) */}
         <div style={{ 
           position: 'fixed', 
@@ -351,7 +480,7 @@ export function CreatePurchasePage() {
                   name="discountAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -362,7 +491,7 @@ export function CreatePurchasePage() {
                   name="returnsDeductedAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -373,7 +502,7 @@ export function CreatePurchasePage() {
                   name="vatAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#10b981' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#10b981' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -399,3 +528,4 @@ export function CreatePurchasePage() {
     </div>
   );
 }
+

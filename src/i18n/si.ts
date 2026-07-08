@@ -42,6 +42,8 @@ const si = {
     orders: 'ලේඛකාධිකාරි ඇණවුම්',
     loading: 'පැටවීමේ පත්‍ර',
     deliveries: 'බෙදා හැරීම්',
+    endOfDay: 'දවස අවසානය',
+    qrScan: 'QR ස්කෑන්',
     reports: 'වාර්තා',
     settings: 'සැකසුම්',
     users: 'පරිශීලකයන්',

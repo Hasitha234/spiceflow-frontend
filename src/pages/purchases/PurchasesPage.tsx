@@ -18,6 +18,7 @@ import {
   Tooltip,
   Typography,
   message,
+  Popconfirm,
 } from 'antd';
 import {
   PlusOutlined,
@@ -28,8 +29,8 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi } from '../../api/sales';
-import { supplierApi, productApi } from '../../api/inventory';
-import type { Supplier, Product } from '../../types/inventory';
+import { supplierApi, productApi, warehouseApi } from '../../api/inventory';
+import type { Supplier, Product, Warehouse } from '../../types/inventory';
 import type { Purchase } from '../../types/sales';
 import { PermissionGuard } from '../../components/common';
 
@@ -41,6 +42,12 @@ export function PurchasesPage() {
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+
+  // Warehouse selection state
+  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [confirmingPurchaseId, setConfirmingPurchaseId] = useState<string | null>(null);
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -56,17 +63,38 @@ export function PurchasesPage() {
 
   useEffect(() => {
     loadData();
+    // Load warehouses for confirmation dropdown
+    warehouseApi.list({ size: 100 }).then(res => setWarehouses(res?.content || [])).catch(() => {});
   }, []);
 
+  const handleConfirmClick = useCallback((id: string) => {
+    setConfirmingPurchaseId(id);
+    setConfirmModalVisible(true);
+    setSelectedWarehouseId(null);
+  }, []);
 
-
-  const handleConfirm = useCallback(async (id: string) => {
+  const submitConfirm = async () => {
+    if (!confirmingPurchaseId || !selectedWarehouseId) {
+      message.error('Please select a warehouse');
+      return;
+    }
     try {
-      await purchaseApi.confirm(id);
+      await purchaseApi.confirm(confirmingPurchaseId, selectedWarehouseId);
       message.success('Purchase Order confirmed successfully');
+      setConfirmModalVisible(false);
       loadData();
     } catch {
       message.error('Failed to confirm purchase order');
+    }
+  };
+
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      await purchaseApi.delete(id);
+      message.success('Purchase Order deleted successfully');
+      loadData();
+    } catch {
+      message.error('Failed to delete purchase order');
     }
   }, []);
 
@@ -136,17 +164,33 @@ export function PurchasesPage() {
                     type="text"
                     size="small"
                     icon={<CheckCircleOutlined />}
-                    onClick={() => handleConfirm(record.id)}
+                    onClick={() => handleConfirmClick(record.id)}
                     className="!text-emerald-400 hover:!text-emerald-300"
                   />
                 </Tooltip>
+                <Popconfirm
+                  title="Are you sure you want to delete this purchase order?"
+                  onConfirm={() => handleDelete(record.id)}
+                  okText="Yes"
+                  cancelText="No"
+                  placement="topLeft"
+                >
+                  <Tooltip title="Delete Purchase Order">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      className="!text-red-400 hover:!text-red-300"
+                    />
+                  </Tooltip>
+                </Popconfirm>
               </PermissionGuard>
             )}
           </Space>
         ),
       },
     ],
-    [t, handleConfirm]
+    [t, handleConfirmClick, handleDelete]
   );
 
 
@@ -238,6 +282,30 @@ export function PurchasesPage() {
               </Col>
             </Row>
 
+            {selectedPurchase.paymentMethod === 'CHEQUE' && (
+              <Row gutter={[16, 16]} className="p-4 mt-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
+                <Col span={24}>
+                  <div className="font-semibold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2">
+                    <span className="text-xl">💳</span> Cheque Details
+                  </div>
+                </Col>
+                <Col span={8}>
+                  <div className="text-xs opacity-70">Cheque Number</div>
+                  <div className="font-mono font-medium">{selectedPurchase.chequeNo || '—'}</div>
+                </Col>
+                <Col span={8}>
+                  <div className="text-xs opacity-70">Bank Name</div>
+                  <div className="font-medium">{selectedPurchase.chequeBankName || '—'}</div>
+                </Col>
+                <Col span={8}>
+                  <div className="text-xs opacity-70">Cheque Amount</div>
+                  <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                    LKR {Number(selectedPurchase.chequeAmount ?? selectedPurchase.netAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </div>
+                </Col>
+              </Row>
+            )}
+
             <div>
               <Title level={5} className="!mb-3">Line Items</Title>
               <Table
@@ -263,6 +331,27 @@ export function PurchasesPage() {
             </div>
           </div>
         )}
+      </Modal>
+
+      <Modal
+        title="Confirm Purchase Order"
+        open={confirmModalVisible}
+        onOk={submitConfirm}
+        onCancel={() => setConfirmModalVisible(false)}
+        okText="Confirm & Receive Stock"
+        okButtonProps={{ disabled: !selectedWarehouseId }}
+      >
+        <p>Please select the warehouse where the inventory should be received:</p>
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Select a warehouse"
+          value={selectedWarehouseId}
+          onChange={setSelectedWarehouseId}
+          options={warehouses.map(w => ({
+            label: `${w.name} (${w.storeType})`,
+            value: w.id
+          }))}
+        />
       </Modal>
 
     </div>

@@ -19,11 +19,14 @@ const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then(
 const CreatePurchasePage = lazy(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
 const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
 const RepOrdersPage = lazy(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
+const CreateRepOrderPage = lazy(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
 const LoadingSheetsPage = lazy(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
 const DeliveriesPage = lazy(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
 const UsersPage = lazy(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
 const RolesPage = lazy(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
+const EndOfDaySummaryPage = lazy(() => import('./pages/EndOfDaySummaryPage').then((m) => ({ default: m.EndOfDaySummaryPage })));
+const QrScanPage = lazy(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const queryClient = new QueryClient();
@@ -58,8 +61,11 @@ function App() {
               <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
+              <Route path="sales/new" element={<CreateRepOrderPage />} />
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
+              <Route path="end-of-day" element={<EndOfDaySummaryPage />} />
+              <Route path="qr-scan" element={<QrScanPage />} />
               <Route path="reports" element={<ReportsPage />} />
               {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />

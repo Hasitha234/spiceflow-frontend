@@ -79,30 +79,34 @@ export function DashboardPage() {
   const inventoryData = inventoryQuery.data;
   const logisticsData = logisticsQuery.data;
 
+  const formatDashboardCurrency = (val: number | undefined) => {
+    return val != null ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : 'LKR 0.00';
+  };
+
   // Map real data to KPI cards
   const kpiData: KPIData[] = [
     { 
       id: 1, title: "Today's Sales", 
-      value: salesData ? `$${salesData.todaySalesValue.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(salesData?.todaySalesValue), 
       tag: "Live Feed", tagColor: "green", desc: "Today", 
       icon: <DollarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No sales recorded today." 
     },
     { 
       id: 2, title: "Month Collections", 
-      value: salesData ? `$${salesData.monthCollectionsValue.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(salesData?.monthCollectionsValue), 
       tag: "Inflows", tagColor: "green", desc: "Current Month", 
       icon: <BankOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No collections this month." 
     },
     { 
       id: 3, title: "Net Cash Flow", 
-      value: financeData ? `$${financeData.netCashFlowMonth.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(financeData?.netCashFlowMonth), 
       tag: financeData && financeData.netCashFlowMonth >= 0 ? "Positive" : "Negative", 
       tagColor: financeData && financeData.netCashFlowMonth >= 0 ? "green" : "red", 
       desc: "Current Month", icon: <DollarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No cash flow data available." 
     },
     { 
       id: 4, title: "Total Stock Value", 
-      value: inventoryData ? `$${inventoryData.totalStockValue.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(inventoryData?.totalStockValue), 
       tag: "Warehouse", tagColor: "blue", desc: `${inventoryData?.totalItemsCount || 0} items`, 
       icon: <InboxOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "Warehouse is currently empty." 
     },
@@ -120,13 +124,13 @@ export function DashboardPage() {
     },
     { 
       id: 7, title: "Total Receivables", 
-      value: financeData ? `$${financeData.totalReceivables.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(financeData?.totalReceivables), 
       tag: "Attention", tagColor: "orange", desc: "Net outstanding", 
       icon: <WarningOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No outstanding receivables." 
     },
     { 
       id: 8, title: "Open PO Payables", 
-      value: financeData ? `$${financeData.totalPayables.toLocaleString()}` : "$0", 
+      value: formatDashboardCurrency(financeData?.totalPayables), 
       tag: "Outflows", tagColor: "red", desc: "Pending payment", 
       icon: <ShoppingOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No open purchase orders." 
     },
@@ -206,7 +210,7 @@ export function DashboardPage() {
                           <Text style={{ fontWeight: 600, display: 'block' }}>{item.shopName}</Text>
                           <Text type="secondary" style={{ fontSize: '12px' }}>{item.area} - {item.phone}</Text>
                         </div>
-                        <Text style={{ fontWeight: 700 }}>${item.outstandingLoan.toLocaleString()}</Text>
+                        <Text style={{ fontWeight: 700 }}>{formatDashboardCurrency(item.outstandingLoan)}</Text>
                       </div>
                     ))}
                   </div>
@@ -245,7 +249,7 @@ export function DashboardPage() {
             <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
               Operational Command Center
             </Title>
-            <Text type="secondary" style={{ fontSize: '15px', marginTop: '4px', display: 'block' }}>
+            <Text style={{ fontSize: '15px', marginTop: '4px', display: 'block', color: '#4b5563' }}>
               Real-time CQRS read-model intelligence across sales, warehouse, dispatch, and financial ledger
             </Text>
           </div>

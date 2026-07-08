@@ -160,7 +160,7 @@ export const ShopForm: React.FC = () => {
             name="outstandingLoan"
             control={control}
             render={({ field }) => (
-              <InputNumber
+              <InputNumber onFocus={(e) => e.target.select()}
                 {...field}
                 id="outstandingLoan"
                 className="w-full"
@@ -203,7 +203,7 @@ export const ShopForm: React.FC = () => {
               name="latitude"
               control={control}
               render={({ field }) => (
-                <InputNumber
+                <InputNumber onFocus={(e) => e.target.select()}
                   {...field}
                   id="latitude"
                   className="w-full"
@@ -225,7 +225,7 @@ export const ShopForm: React.FC = () => {
               name="longitude"
               control={control}
               render={({ field }) => (
-                <InputNumber
+                <InputNumber onFocus={(e) => e.target.select()}
                   {...field}
                   id="longitude"
                   className="w-full"
@@ -305,7 +305,7 @@ export const ShopForm: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1">Latitude</label>
-              <InputNumber
+              <InputNumber onFocus={(e) => e.target.select()}
                 value={tempLat}
                 onChange={(v) => setTempLat(v)}
                 step={0.0001}
@@ -314,7 +314,7 @@ export const ShopForm: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-slate-400 mb-1">Longitude</label>
-              <InputNumber
+              <InputNumber onFocus={(e) => e.target.select()}
                 value={tempLng}
                 onChange={(v) => setTempLng(v)}
                 step={0.0001}
@@ -327,3 +327,4 @@ export const ShopForm: React.FC = () => {
     </div>
   );
 };
+
