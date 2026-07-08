@@ -34,7 +34,7 @@ const NEUTRAL_ICON_COLOR = '#8b949e';
 type KPIData = {
   id: number;
   title: string;
-  value: string;
+  value: React.ReactNode;
   tag: string;
   tagColor: string;
   desc: string;
@@ -80,7 +80,14 @@ export function DashboardPage() {
   const logisticsData = logisticsQuery.data;
 
   const formatDashboardCurrency = (val: number | undefined) => {
-    return val != null ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : 'LKR 0.00';
+    if (val == null) return <><span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#64748B', marginRight: '0.25rem' }}>LKR</span>0.00</>;
+    const numStr = new Intl.NumberFormat('en-LK', { style: 'decimal', minimumFractionDigits: 2 }).format(val);
+    return (
+      <>
+        <span style={{ fontSize: '0.875rem', fontWeight: 400, color: '#64748B', marginRight: '0.25rem' }}>LKR</span>
+        {numStr}
+      </>
+    );
   };
 
   // Map real data to KPI cards
@@ -162,11 +169,11 @@ export function DashboardPage() {
       exit={{ opacity: 0 }} 
       transition={{ duration: 0.15 }}
     >
-      <Row gutter={[16, 16]}>
+      <Row gutter={[24, 24]}>
         {kpiData.map((kpi, i) => renderKPICard(kpi, i))}
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+      <Row gutter={[24, 24]} style={{ marginTop: '48px' }}>
         {/* RECEIVABLES PANEL */}
         <Col xs={24}>
           <Card 
@@ -236,7 +243,7 @@ export function DashboardPage() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#0F9D6C',
+          colorPrimary: '#0D9488',
           fontFamily: 'var(--font-sans, sans-serif)',
         },
       }}
@@ -244,13 +251,13 @@ export function DashboardPage() {
       <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
         
         {/* HEADER AREA */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
           <div>
             <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
               Operational Command Center
             </Title>
-            <Text style={{ fontSize: '15px', marginTop: '4px', display: 'block', color: '#4b5563' }}>
-              Real-time CQRS read-model intelligence across sales, warehouse, dispatch, and financial ledger
+            <Text style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'block', color: 'var(--text-secondary)' }}>
+              Real-time overview of sales, inventory, and financial health.
             </Text>
           </div>
           
