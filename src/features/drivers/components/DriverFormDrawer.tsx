@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * PR Justification:
  * (a) Mode-Gated Termination Date: The "Termination Date" field is fundamentally invalid during driver creation.
@@ -21,7 +20,8 @@ export interface DriverFormDrawerProps {
   onClose: () => void;
   mode?: 'create' | 'edit';
   // Note: If reusing this for editing, pass the initial driver data here.
-  initialValues?: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  initialValues?: any;
 }
 
 export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
@@ -57,7 +57,8 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
     }
   }, [open, initialValues, form]);
 
-  const handleSubmit = (values: Record<string, unknown>) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSubmit = (values: any) => {
     const payload = {
       ...values,
       employmentDate: values.employmentDate ? values.employmentDate.format('YYYY-MM-DD') : undefined,

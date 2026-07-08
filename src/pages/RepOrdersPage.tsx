@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -188,7 +187,7 @@ export function RepOrdersPage() {
               </Col>
               <Col span={8}>
                 <div className="text-xs opacity-70">Route Area</div>
-                <div>{selectedOrder.routeArea || '—'}</div>
+                <div>{(selectedOrder as any).routeArea || '—'}</div>
               </Col>
               <Col span={8}>
                 <div className="text-xs opacity-70">Status</div>

@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -117,7 +115,8 @@ export function CreateRepOrderPage() {
   }, []);
 
   const { control, handleSubmit, setValue } = useForm<FormValues>({
-    resolver: zodResolver(repOrderSchema),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(repOrderSchema) as any,
     defaultValues: {
       repId: '',
       orderNumber: '',
@@ -207,7 +206,8 @@ export function CreateRepOrderPage() {
         </Space>
       </div>
 
-      <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
         <Card bordered={false} style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>

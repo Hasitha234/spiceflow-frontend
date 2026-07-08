@@ -1,8 +1,6 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
-import { Button, Input, InputNumber, Select, Tooltip, Table, message } from 'antd';
+
+import { Button, InputNumber, Select, Tooltip, Table, message } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import type { Control, UseFormSetValue } from 'react-hook-form';

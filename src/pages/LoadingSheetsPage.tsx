@@ -1,7 +1,5 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Button, Card, Col, DatePicker, Form, Modal, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
 } from 'antd';
@@ -39,19 +37,19 @@ export function LoadingSheetsPage() {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const res = await loadingSheetApi.list({ page: 0, size: 50 });
-      setSheets(res?.content || []);
+      setSheets((res?.content as any) || []);
     } catch {
       message.error('Failed to load loading sheets');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const openCreate = async () => {
     try {
@@ -90,7 +88,7 @@ export function LoadingSheetsPage() {
     }
   };
 
-  const handleConfirm = async (id: number) => {
+  const handleConfirm = useCallback(async (id: number) => {
     try {
       await loadingSheetApi.confirm(String(id));
       message.success('Loading sheet confirmed! Inventory transferred to vehicle.');
@@ -99,7 +97,7 @@ export function LoadingSheetsPage() {
       const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to confirm';
       message.error(msg);
     }
-  };
+  }, [loadData]);
 
   const columns = useMemo(() => [
     {

@@ -1,5 +1,3 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -80,10 +78,10 @@ export function DeliveriesPage() {
       const detail = await deliveryApi.get(String(record.id));
       setSelectedDelivery(detail);
       // Fetch the rep order shops for this delivery's loading sheet
-      if (detail.loadingSheetId) {
-        const sheet = await loadingSheetApi.get(String(detail.loadingSheetId));
-        if (sheet.repOrderId) {
-          const orderRes = await apiClient.get(`/api/v1/sales/rep-orders/${sheet.repOrderId}`);
+      if (detail.loadingSheet?.id) {
+        const sheet = await loadingSheetApi.get(String(detail.loadingSheet.id));
+        if (sheet.repOrder?.id) {
+          const orderRes = await apiClient.get(`/api/v1/sales/rep-orders/${sheet.repOrder.id}`);
           setRepOrderShops(orderRes.data?.shops || []);
         }
       }
@@ -281,13 +279,13 @@ export function DeliveriesPage() {
             <Descriptions bordered column={3} size="small" style={{ marginBottom: '24px' }}>
               <Descriptions.Item label="Delivery Date">{selectedDelivery.deliveryDate}</Descriptions.Item>
               <Descriptions.Item label="Status"><Tag color={selectedDelivery.status === 'COMPLETED' ? 'green' : 'blue'}>{selectedDelivery.status}</Tag></Descriptions.Item>
-              <Descriptions.Item label="Loading Sheet">LS-{selectedDelivery.loadingSheetId}</Descriptions.Item>
+              <Descriptions.Item label="Loading Sheet">LS-{selectedDelivery.loadingSheet?.id}</Descriptions.Item>
               <Descriptions.Item label="Total Sales">LKR {Number(selectedDelivery.totalSalesValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
               <Descriptions.Item label="Total Returns">LKR {Number(selectedDelivery.totalReturnsValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
               <Descriptions.Item label="Total Collected"><Text style={{ color: '#10b981', fontWeight: 'bold' }}>LKR {Number(selectedDelivery.totalCollectedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text></Descriptions.Item>
             </Descriptions>
 
-            <Divider orientation="left">Shops in Route</Divider>
+            <Divider orientation={"left" as any}>Shops in Route</Divider>
 
             {/* Shops from Rep Order */}
             {repOrderShops.map((shop: any, idx: number) => {

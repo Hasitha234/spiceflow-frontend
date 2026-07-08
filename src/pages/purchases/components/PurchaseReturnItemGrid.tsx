@@ -1,14 +1,11 @@
-// @ts-nocheck
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
-import { Button, InputNumber, Select, Tooltip, Table, message } from 'antd';
+
+import { Button, InputNumber, Select, Tooltip, Table } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import type { Control, UseFormSetValue } from 'react-hook-form';
 import type { FormValues } from '../CreatePurchasePage';
 import type { Product } from '../../../types/inventory';
-import { productApi } from '../../../api/inventory';
 
 interface PurchaseReturnItemGridProps {
   control: Control<FormValues>;
@@ -32,15 +29,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
 
   const returnItems = useWatch({ control, name: 'returnItems' });
 
-  const getMultiplier = (product: Product | undefined, unitType: string) => {
-    if (!product) return 1;
-    const itemsPerSoldUnit = Number(product.itemsPerSoldUnit || 1);
-    const soldUnitsPerBox = Number(product.soldUnitsPerBox || 1);
-    
-    if (unitType === 'BOX') return itemsPerSoldUnit * soldUnitsPerBox;
-    if (unitType === 'BUNDLE') return itemsPerSoldUnit;
-    return 1; // EACH
-  };
+
 
   const handleProductSelect = (productId: string, index: number) => {
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
