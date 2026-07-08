@@ -187,7 +187,7 @@ export function RepOrdersPage() {
               </Col>
               <Col span={8}>
                 <div className="text-xs opacity-70">Route Area</div>
-                <div>{(selectedOrder as Record<string, unknown>).routeArea as string || '—'}</div>
+                <div>{((selectedOrder as unknown) as Record<string, unknown>).routeArea as string || '—'}</div>
               </Col>
               <Col span={8}>
                 <div className="text-xs opacity-70">Status</div>
