@@ -40,12 +40,12 @@ interface EndOfDaySummary {
 }
 
 export function EndOfDaySummaryPage() {
-  const [loading, setLoading] = useState(false);
+
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [summary, setSummary] = useState<EndOfDaySummary | null>(null);
 
   const loadSummary = async (date: dayjs.Dayjs) => {
-    setLoading(true);
+
     try {
       const res = await apiClient.get('/api/v1/reports/end-of-day-summary', {
         params: { date: date.format('YYYY-MM-DD') },
@@ -53,12 +53,10 @@ export function EndOfDaySummaryPage() {
       setSummary(res.data);
     } catch {
       message.error('Failed to load end-of-day summary');
-    } finally {
-      setLoading(false);
     }
   };
 
-  useEffect(() => { loadSummary(selectedDate); }, []);
+  useEffect(() => { loadSummary(selectedDate); }, [selectedDate]);
 
   const fmt = (val: number) => Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 });
 

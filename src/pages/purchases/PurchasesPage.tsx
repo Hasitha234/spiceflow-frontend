@@ -1,14 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Alert,
   Button,
   Card,
   Col,
-  Divider,
-  Form,
-  Input,
-  InputNumber,
   Modal,
   Row,
   Select,
@@ -29,8 +24,8 @@ import {
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi } from '../../api/sales';
-import { supplierApi, productApi, warehouseApi } from '../../api/inventory';
-import type { Supplier, Product, Warehouse } from '../../types/inventory';
+import { warehouseApi } from '../../api/inventory';
+import type { Warehouse } from '../../types/inventory';
 import type { Purchase } from '../../types/sales';
 import { PermissionGuard } from '../../components/common';
 

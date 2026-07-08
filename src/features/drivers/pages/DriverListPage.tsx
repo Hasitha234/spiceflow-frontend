@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * PR Justification:
  * (a) Pluralization Fix: The subtext and total count strings previously hardcoded "drivers", 

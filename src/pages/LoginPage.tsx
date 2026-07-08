@@ -158,12 +158,13 @@ export function LoginPage() {
       setCredentials(response, user);
       dispatch({ type: 'SUBMIT_SUCCESS' });
       navigate('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
       let msg = 'Incorrect email or password';
-      if (error?.response?.data?.detail) {
-        msg = error.response.data.detail;
-      } else if (error?.message === 'Network Error') {
+      const err = error as { response?: { data?: { detail?: string } }, message?: string };
+      if (err?.response?.data?.detail) {
+        msg = err.response.data.detail;
+      } else if (err?.message === 'Network Error') {
         msg = 'Unable to connect to backend server.';
       }
       dispatch({ type: 'SUBMIT_ERROR', error: msg });

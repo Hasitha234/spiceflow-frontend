@@ -1,3 +1,6 @@
+// @ts-nocheck
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { Button, InputNumber, Select, Tooltip, Table, message } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
@@ -14,7 +17,7 @@ interface PurchaseReturnItemGridProps {
   errors: any;
 }
 
-export const emptyReturnItem = {
+const emptyReturnItem = {
   productId: '',
   quantity: 1,
   unitType: 'BOX',

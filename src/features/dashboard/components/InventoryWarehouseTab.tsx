@@ -277,17 +277,17 @@ export const InventoryWarehouseTab: React.FC<InventoryWarehouseTabProps> = ({ da
             {
               title: 'SKU',
               key: 'sku',
-              render: (_: any, record: InventoryItem) => <span className="font-mono font-medium">{record.productSku || '—'}</span>
+              render: (_: unknown, record: InventoryItem) => <span className="font-mono font-medium">{record.productSku || '—'}</span>
             },
             {
               title: 'Product Name',
               key: 'name',
-              render: (_: any, record: InventoryItem) => <span className="font-semibold">{record.productName || '—'}</span>
+              render: (_: unknown, record: InventoryItem) => <span className="font-semibold">{record.productName || '—'}</span>
             },
             {
               title: 'Category',
               key: 'category',
-              render: (_: any, record: InventoryItem) => <Tag color="blue">{record.productCategoryName || 'N/A'}</Tag>
+              render: (_: unknown, record: InventoryItem) => <Tag color="blue">{record.productCategoryName || 'N/A'}</Tag>
             },
             {
               title: 'Available Qty',
@@ -303,19 +303,19 @@ export const InventoryWarehouseTab: React.FC<InventoryWarehouseTabProps> = ({ da
             {
               title: 'Stock Breakdown',
               key: 'breakdown',
-              render: (_: any, record: InventoryItem) => renderStockBreakdown(record)
+              render: (_: unknown, record: InventoryItem) => renderStockBreakdown(record)
             },
             {
               title: 'Unit Value',
               key: 'unitValue',
               align: 'right' as const,
-              render: (_: any, record: InventoryItem) => formatCurr(record.productBasePrice)
+              render: (_: unknown, record: InventoryItem) => formatCurr(record.productBasePrice)
             },
             {
               title: 'Total Value',
               key: 'totalValue',
               align: 'right' as const,
-              render: (_: any, record: InventoryItem) => (
+              render: (_: unknown, record: InventoryItem) => (
                 <span className="font-mono text-emerald-600 font-semibold">
                   {formatCurr((record.productBasePrice || 0) * (record.quantityAvailable || 0))}
                 </span>

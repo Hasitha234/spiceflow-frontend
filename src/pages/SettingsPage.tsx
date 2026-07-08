@@ -121,6 +121,7 @@ function CategoryCard({ title, icon, createLabel, createLink, emptyLabel, singul
 }
 
 // Helper to extract count from paginated or list response
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const getCount = (data: any) => {
   if (!data) return 0;
   if (typeof data.totalElements === 'number') return data.totalElements;

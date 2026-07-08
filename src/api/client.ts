@@ -31,7 +31,7 @@ const apiClient = axios.create({
     serialize: (params) => {
       const searchParams = new URLSearchParams();
       
-      const addParam = (key: string, value: any) => {
+      const addParam = (key: string, value: unknown) => {
         if (value === undefined || value === null) return;
         if (Array.isArray(value)) {
           value.forEach(v => searchParams.append(key, String(v)));
@@ -42,7 +42,7 @@ const apiClient = axios.create({
 
       for (const [key, value] of Object.entries(params)) {
         if (key === 'pageable' && value && typeof value === 'object') {
-          const { page, size, sort } = value as any;
+          const { page, size, sort } = value as Record<string, unknown>;
           if (page !== undefined) addParam('page', page);
           if (size !== undefined) addParam('size', size);
           if (sort !== undefined) addParam('sort', sort);

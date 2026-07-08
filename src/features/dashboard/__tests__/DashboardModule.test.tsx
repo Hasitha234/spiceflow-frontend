@@ -94,6 +94,7 @@ describe('Dashboard Module Reference Tests', () => {
     render(
       <InventoryWarehouseTab
         data={{
+          warehouseStocks: [],
           totalStockValue: 80000,
           totalItemsCount: 150,
           lowStockCount: 2,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Col, Descriptions, Input, InputNumber, Row, Tag, Typography, message, Space, Result, List as AntList } from 'antd';
+import { Button, Card, Col, Input, InputNumber, Row, Tag, Typography, message, Space, Result, List as AntList } from 'antd';
 import { QrcodeOutlined, CheckCircleOutlined, CameraOutlined, ShopOutlined } from '@ant-design/icons';
 import apiClient from '../api/client';
 
@@ -66,8 +66,9 @@ export function QrScanPage() {
       setResult(res.data);
       setVerified(true);
       message.success('Shop visit verified!');
-    } catch (err: any) {
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to verify QR code');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string, message?: string } } };
+      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to verify QR code');
     } finally {
       setScanning(false);
     }
@@ -114,8 +115,9 @@ export function QrScanPage() {
       setResult(res.data);
       setVerified(true);
       message.success('Shop visit verified with GPS!');
-    } catch (err: any) {
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to verify');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string, message?: string } } };
+      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to verify');
     } finally {
       setScanning(false);
     }

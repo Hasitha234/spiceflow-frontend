@@ -76,7 +76,7 @@ export const SupplierFormDrawer: React.FC<SupplierFormDrawerProps> = ({
             message.success('Supplier updated successfully');
             onClose(); // Parent's onClose should refetch the list
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
             setStatus('error');
             setServerError(getErrorMessage(error) || "Couldn't update supplier — please try again");
           },
@@ -91,7 +91,7 @@ export const SupplierFormDrawer: React.FC<SupplierFormDrawerProps> = ({
             message.success('Supplier created successfully');
             onClose(); // Parent's onClose should refetch the list
           },
-          onError: (error: any) => {
+          onError: (error: unknown) => {
             setStatus('error');
             setServerError(getErrorMessage(error) || "Couldn't create supplier — please try again");
           },
