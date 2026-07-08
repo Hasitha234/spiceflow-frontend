@@ -171,6 +171,13 @@ body {
   border: 1px solid rgba(48, 54, 61, 0.4);
 }
 
+[data-theme='light'] .glass-subtle {
+  background: rgba(241, 245, 249, 0.5); /* slate-100 semi-transparent */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8); /* slate-200 */
+}
+
 /* --------------------------------------------------------------------------
    Gradient utilities
    -------------------------------------------------------------------------- */

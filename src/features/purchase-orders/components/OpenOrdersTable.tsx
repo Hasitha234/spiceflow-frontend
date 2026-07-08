@@ -1,6 +1,9 @@
 import React from 'react';
 import { Skeleton, Tooltip } from 'antd';
 import { WarningOutlined } from '@ant-design/icons';
+import { MailOutlined } from '@ant-design/icons';
+import { EmptyState } from '@/components/common/EmptyState';
+import type { KpiStatStatus } from '@/components/common/KpiStatCard';
 import type { ColumnsType } from 'antd/es/table';
 import { DataTable } from '@/components/common';
 import { PurchaseOrderStatusBadge } from './PurchaseOrderStatusBadge';
@@ -8,7 +11,7 @@ import type { OpenPurchaseOrderProjection } from '../types';
 
 interface OpenOrdersTableProps {
   data: OpenPurchaseOrderProjection[];
-  loading: boolean;
+  status: KpiStatStatus;
 }
 
 const fmt = (n: number) =>
@@ -17,7 +20,7 @@ const fmt = (n: number) =>
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-export const OpenOrdersTable: React.FC<OpenOrdersTableProps> = ({ data, loading }) => {
+export const OpenOrdersTable: React.FC<OpenOrdersTableProps> = ({ data, status }) => {
   const columns: ColumnsType<OpenPurchaseOrderProjection> = [
     {
       title: 'PO Number',
@@ -86,7 +89,7 @@ export const OpenOrdersTable: React.FC<OpenOrdersTableProps> = ({ data, loading 
     },
   ];
 
-  if (loading) {
+  if (status === 'loading') {
     return (
       <div className="space-y-2 mt-4">
         {[1, 2, 3, 4, 5].map((i) => (
@@ -96,14 +99,31 @@ export const OpenOrdersTable: React.FC<OpenOrdersTableProps> = ({ data, loading 
     );
   }
 
+  if (status === 'error') {
+    return (
+      <EmptyState
+        title="Error loading open orders"
+        description="We couldn't fetch the open purchase orders. Please refresh."
+      />
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <EmptyState
+        icon={<MailOutlined className="text-4xl text-blue-500 mb-2" />}
+        title="No open orders"
+        description="All purchase orders have been received or there are no orders yet."
+      />
+    );
+  }
+
   return (
     <DataTable<OpenPurchaseOrderProjection>
       dataSource={data}
       columns={columns}
       rowKey="poNumber"
       isLoading={false}
-      emptyTitle="No open orders"
-      emptyDescription="All purchase orders have been received or there are no orders yet."
       pagination={false}
       scroll={{ x: 700 }}
     />

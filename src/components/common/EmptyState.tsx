@@ -5,24 +5,29 @@ import { PlusOutlined } from '@ant-design/icons';
 export interface EmptyStateProps {
   title?: string;
   description?: string;
+  message?: string; // Alias for description
   actionText?: string;
   onAction?: () => void;
+  icon?: React.ReactNode;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
   title = 'No records found',
-  description = 'There are currently no items matching your criteria or available in this section.',
+  description,
+  message,
   actionText,
   onAction,
+  icon,
 }) => {
+  const displayDescription = message || description || 'There are currently no items matching your criteria or available in this section.';
   return (
-    <div className="py-12 px-6 glass rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center">
+    <div className="py-12 px-6 glass rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center h-full">
       <Empty
-        image={Empty.PRESENTED_IMAGE_SIMPLE}
+        image={icon || Empty.PRESENTED_IMAGE_SIMPLE}
         description={
           <div className="max-w-md mx-auto">
             <p className="text-slate-200 font-semibold text-lg">{title}</p>
-            <p className="text-slate-400 text-sm mt-1">{description}</p>
+            <p className="text-slate-400 text-sm mt-1">{displayDescription}</p>
           </div>
         }
       >

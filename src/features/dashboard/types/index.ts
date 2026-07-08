@@ -19,6 +19,14 @@ export interface RecentMovement {
   performedBy: string;
 }
 
+export interface WarehouseStock {
+  warehouseId: number;
+  warehouseName: string;
+  location: string;
+  totalValue: number;
+  itemCount: number;
+}
+
 export interface InventoryDashboardData {
   totalStockValue: number;
   totalItemsCount: number;
@@ -26,6 +34,7 @@ export interface InventoryDashboardData {
   pendingTransfersCount: number;
   lowStockItems: LowStockItem[];
   recentMovements: RecentMovement[];
+  warehouseStocks: WarehouseStock[];
 }
 
 export interface ActiveLoadingSheet {

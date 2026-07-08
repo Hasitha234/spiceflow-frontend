@@ -37,7 +37,6 @@ export interface FilterPanelProps {
   values: Record<string, string>;
   onChange: (key: string, value: string | null) => void;
   onReset: () => void;
-  extra?: React.ReactNode;
 }
 
 /**
@@ -51,13 +50,12 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   values,
   onChange,
   onReset,
-  extra,
 }) => {
   const hasActiveFilters = Object.values(values).some((v) => v && v.length > 0);
 
   return (
-    <div className="mb-4 glass-subtle rounded-xl border border-slate-700/50 p-4">
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="glass-subtle" style={{ marginBottom: 16, borderRadius: 12, padding: 16 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         {filters.map((filter) => (
           <FilterControl
             key={filter.key}
@@ -71,13 +69,11 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
           <Button
             icon={<ClearOutlined />}
             onClick={onReset}
-            className="!text-slate-400 hover:!text-slate-200"
+            style={{ color: 'var(--text-secondary)' }}
           >
             Reset
           </Button>
         )}
-
-        {extra && <div className="ml-auto">{extra}</div>}
       </div>
     </div>
   );
@@ -104,7 +100,6 @@ const FilterControl: React.FC<FilterControlProps> = ({ filter, value, onChange }
           allowClear={filter.allowClear !== false}
           options={filter.options}
           style={{ minWidth: 180 }}
-          className="!bg-slate-900/60 rounded-lg"
         />
       );
     case 'dateRange':
@@ -117,7 +112,6 @@ const FilterControl: React.FC<FilterControlProps> = ({ filter, value, onChange }
               onChange(null);
             }
           }}
-          className="!bg-slate-900/60 !border-slate-700 rounded-lg"
         />
       );
     default:
@@ -156,13 +150,13 @@ const DebouncedSearch: React.FC<{
 
   return (
     <Input
-      prefix={<SearchOutlined className="text-slate-500 mr-1" />}
+      prefix={<SearchOutlined style={{ color: 'var(--text-secondary)', marginRight: 4 }} />}
       placeholder={filter.placeholder ?? 'Search...'}
       value={local}
       onChange={handleChange}
       allowClear
       onClear={() => onChange(null)}
-      className="max-w-xs !bg-slate-900/60 !border-slate-700 !text-slate-200 focus:!border-emerald-500 rounded-lg py-1.5"
+      style={{ maxWidth: 320 }}
     />
   );
 };

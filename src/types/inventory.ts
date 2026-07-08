@@ -43,8 +43,16 @@ export interface Warehouse {
 
 export interface InventoryItem {
   id: string;
-  product: Product;
-  warehouse: Warehouse;
+  productId: string;
+  productName: string;
+  productSku: string;
+  productCategoryName: string;
+  productBasePrice: number;
+  unitOfMeasure: string;
+  itemsPerSoldUnit?: number;
+  soldUnitsPerBox?: number;
+  warehouseId: string;
+  warehouseName: string;
   quantityAvailable: number;
   quantityReserved: number;
   batchNumber?: string;

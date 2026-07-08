@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Spin } from 'antd';
+import { Spin, App as AntApp } from 'antd';
 import './App.css';
 import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
@@ -16,13 +16,17 @@ const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) =
 const CategoriesPage = lazy(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
+const CreatePurchasePage = lazy(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
 const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
 const RepOrdersPage = lazy(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
+const CreateRepOrderPage = lazy(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
 const LoadingSheetsPage = lazy(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
 const DeliveriesPage = lazy(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
 const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
 const UsersPage = lazy(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
 const RolesPage = lazy(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
+const EndOfDaySummaryPage = lazy(() => import('./pages/EndOfDaySummaryPage').then((m) => ({ default: m.EndOfDaySummaryPage })));
+const QrScanPage = lazy(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
 const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const queryClient = new QueryClient();
@@ -38,8 +42,9 @@ function PageLoader() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+      <AntApp>
+        <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
@@ -53,10 +58,14 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
+              <Route path="sales/new" element={<CreateRepOrderPage />} />
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
+              <Route path="end-of-day" element={<EndOfDaySummaryPage />} />
+              <Route path="qr-scan" element={<QrScanPage />} />
               <Route path="reports" element={<ReportsPage />} />
               {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
@@ -71,8 +80,9 @@ function App() {
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Suspense>
-      </BrowserRouter>
+          </Suspense>
+        </BrowserRouter>
+      </AntApp>
     </QueryClientProvider>
   );
 }

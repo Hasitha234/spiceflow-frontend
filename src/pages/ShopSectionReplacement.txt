@@ -1,0 +1,285 @@
+// Sub-component to isolate nested field array logic
+function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove }: any) {
+  const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
+    control,
+    name: "shops.$shopIndex.items",
+  });
+
+  const { fields: returnFields, append: appendReturn, remove: removeReturn } = useFieldArray({
+    control,
+    name: "shops.$shopIndex.returns",
+  });
+
+  const shopItems = useWatch({ control, name: "shops.$shopIndex.items" }) || [];
+  const shopReturns = useWatch({ control, name: "shops.$shopIndex.returns" }) || [];
+  const discountAmount = useWatch({ control, name: "shops.$shopIndex.discountAmount" }) || 0;
+  const skuDiscountAmount = useWatch({ control, name: "shops.$shopIndex.skuDiscountAmount" }) || 0;
+
+  const itemsTotal = shopItems.reduce((sum: number, item: any) => sum + (Number(item.quantity || 0) * Number(item.rate || 0)), 0);
+  const returnsTotal = shopReturns.reduce((sum: number, item: any) => sum + Number(item.creditValue || 0), 0);
+  const shopNetTotal = itemsTotal - returnsTotal - Number(discountAmount) - Number(skuDiscountAmount);
+
+  return (
+    <Card 
+      bordered={false}
+      style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}
+      styles={{ body: { padding: 0 } }}
+    >
+      <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Space>
+          <Title level={5} style={{ margin: 0 }}>Shop #{shopIndex + 1}</Title>
+        </Space>
+        {showRemove && (
+          <Button danger type="text" icon={<DeleteOutlined />} onClick={removeShop}>
+            Remove Shop
+          </Button>
+        )}
+      </div>
+
+      <div style={{ padding: '24px', borderBottom: '1px solid #f0f0f0' }}>
+        <Row gutter={24}>
+          <Col xs={24} md={6}>
+            <Form.Item label={<Text strong>Select Shop</Text>} required style={{ margin: 0 }}>
+              <Controller
+                name={"shops.$shopIndex.shopId"}
+                control={control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Select
+                      size="large"
+                      {...field}
+                      showSearch
+                      optionFilterProp="label"
+                      options={shopsList.map((s: any) => ({ label: s.name, value: s.id.toString() }))}
+                      placeholder="Search and select shop"
+                      status={fieldState.error ? 'error' : undefined}
+                    />
+                    {fieldState.error && <Text type="danger" style={{ fontSize: '12px' }}>{fieldState.error.message}</Text>}
+                  </>
+                )}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item label={<Text strong>Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
+              <Controller
+                name={"shops.$shopIndex.discountAmount"}
+                control={control}
+                render={({ field }) => (
+                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item label={<Text strong>SKU Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
+              <Controller
+                name={"shops.$shopIndex.skuDiscountAmount"}
+                control={control}
+                render={({ field }) => (
+                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />
+                )}
+              />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={6}>
+            <Form.Item label={<Text strong>Returns Warehouse</Text>} style={{ margin: 0 }}>
+              <Controller
+                name={"shops.$shopIndex.returnWarehouseId"}
+                control={control}
+                render={({ field }) => (
+                  <Select
+                    size="large"
+                    {...field}
+                    allowClear
+                    options={warehouses.map((w: any) => ({ label: w.name, value: w.id.toString() }))}
+                    placeholder="Select warehouse for returns"
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Items Table */}
+      <div style={{ padding: '16px 24px 8px 24px' }}>
+        <Text strong style={{ fontSize: '16px' }}>Order Items</Text>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+            <tr>
+              <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600 }}>Product</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px' }}>Qty</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '150px' }}>Rate (LKR)</th>
+              <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600, textAlign: 'right' }}>Amount (LKR)</th>
+              <th style={{ padding: '12px', width: '48px' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {itemFields.map((itemField, itemIndex) => {
+              const currentItem = shopItems[itemIndex] || {};
+              const amount = (Number(currentItem.quantity || 0) * Number(currentItem.rate || 0));
+              
+              return (
+                <tr key={itemField.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td style={{ padding: '12px 24px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.items.$itemIndex.productId"}
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          showSearch
+                          optionFilterProp="label"
+                          style={{ width: '100%' }}
+                          options={products.map((p: any) => ({ label: "${p.sku} - ", value: p.id.toString() }))}
+                          onChange={(val) => {
+                            field.onChange(val);
+                            const prod = products.find((p: any) => p.id.toString() === val);
+                            if (prod) {
+                              setValue("shops.$shopIndex.items.$itemIndex.rate", prod.basePrice);
+                            }
+                          }}
+                        />
+                      )}
+                    />
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.items.$itemIndex.quantity"}
+                      control={control}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                    />
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.items.$itemIndex.rate"}
+                      control={control}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                    />
+                  </td>
+                  <td style={{ padding: '12px 24px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: '#10b981' }}>
+                    {amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => itemFields.length > 1 && removeItem(itemIndex)}
+                      disabled={itemFields.length <= 1}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ padding: '16px 24px', backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+        <Button type="dashed" icon={<PlusOutlined />} onClick={() => appendItem(emptyItem)}>
+          Add Item
+        </Button>
+      </div>
+
+      {/* Returns Table */}
+      <div style={{ padding: '16px 24px 8px 24px' }}>
+        <Text strong style={{ fontSize: '16px', color: '#ff4d4f' }}>Returns</Text>
+      </div>
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '14px' }}>
+          <thead style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+            <tr>
+              <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600 }}>Product</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px' }}>Qty</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '150px' }}>Return Type</th>
+              <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600, textAlign: 'right', width: '200px' }}>Credit Value (LKR)</th>
+              <th style={{ padding: '12px', width: '48px' }}></th>
+            </tr>
+          </thead>
+          <tbody>
+            {returnFields.map((returnField, returnIndex) => {
+              const currentReturn = shopReturns[returnIndex] || {};
+              const amount = Number(currentReturn.creditValue || 0);
+              return (
+                <tr key={returnField.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                  <td style={{ padding: '12px 24px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.returns.$returnIndex.productId"}
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          showSearch
+                          optionFilterProp="label"
+                          style={{ width: '100%' }}
+                          options={products.map((p: any) => ({ label: "${p.sku} - ", value: p.id.toString() }))}
+                        />
+                      )}
+                    />
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.returns.$returnIndex.quantity"}
+                      control={control}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                    />
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.returns.$returnIndex.returnType"}
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          size="large"
+                          style={{ width: '100%' }}
+                          options={[
+                            { label: 'Damage', value: 'DAMAGE' },
+                            { label: 'Expiry', value: 'EXPIRY' },
+                            { label: 'Sales Return', value: 'SALES_RETURN' },
+                          ]}
+                        />
+                      )}
+                    />
+                  </td>
+                  <td style={{ padding: '12px 24px' }}>
+                    <Controller
+                      name={"shops.$shopIndex.returns.$returnIndex.creditValue"}
+                      control={control}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                    />
+                  </td>
+                  <td style={{ padding: '12px' }}>
+                    <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removeReturn(returnIndex)} />
+                  </td>
+                </tr>
+              );
+            })}
+            {returnFields.length === 0 && (
+              <tr>
+                <td colSpan={5} style={{ padding: '24px', textAlign: 'center', color: '#bfbfbf' }}>No returns for this shop</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <div style={{ padding: '16px 24px', backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+        <Button type="dashed" danger icon={<PlusOutlined />} onClick={() => appendReturn(emptyReturn)}>
+          Add Return
+        </Button>
+      </div>
+
+      <div style={{ padding: '24px', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+        <div style={{ textAlign: 'right' }}>
+          <Text style={{ color: '#8c8c8c', marginRight: '16px' }}>Shop Subtotal:</Text>
+          <Text style={{ fontSize: '18px', fontFamily: 'monospace', color: '#10b981', fontWeight: 'bold' }}>
+            LKR {shopNetTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          </Text>
+        </div>
+      </div>
+    </Card>
+  );
+}

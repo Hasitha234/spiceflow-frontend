@@ -50,9 +50,13 @@ export interface RepOrderShop {
 
 export interface RepOrder {
   id: string;
-  rep: Rep;
+  repId: string;
+  repName: string;
+  orderNumber: string;
   orderDate: string;
   loadingStatus: 'DRAFT' | 'LOADING_SHEET_CREATED';
+  status: string;
+  netAmount: number;
   shops: RepOrderShop[];
   createdAt: string;
 }
@@ -138,6 +142,9 @@ export interface Purchase {
   returnsDeductedAmount?: number;
   vatAmount?: number;
   paymentMethod?: string;
+  chequeNo?: string;
+  chequeBankName?: string;
+  chequeAmount?: number;
   notes?: string;
   lineItems: PurchaseLineItem[];
   createdAt?: string;

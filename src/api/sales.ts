@@ -74,8 +74,10 @@ export const purchaseApi = {
     apiClient.get<Purchase>(`/api/v1/purchases/${id}`).then((r) => r.data),
   create: (data: object) =>
     apiClient.post<Purchase>('/api/v1/purchases', data).then((r) => r.data),
-  confirm: (id: string) =>
-    apiClient.post<Purchase>(`/api/v1/purchases/${id}/confirm`).then((r) => r.data),
+  confirm: (id: string, warehouseId: number) =>
+    apiClient.post<Purchase>(`/api/v1/purchases/${id}/confirm`, null, { params: { warehouseId } }).then((r) => r.data),
+  delete: (id: string) =>
+    apiClient.delete(`/api/v1/purchases/${id}`).then((r) => r.data),
 };
 
 // ─── Reports ──────────────────────────────────────────────────────────────────
@@ -88,4 +90,16 @@ export const reportApi = {
     apiClient.get('/api/v1/reports/stock-status').then((r) => r.data),
   repPerformance: (params: { startDate: string; endDate: string }) =>
     apiClient.get('/api/v1/reports/rep-performance', { params }).then((r) => r.data),
+  endOfDaySummary: (date: string) =>
+    apiClient.get('/api/v1/reports/end-of-day-summary', { params: { date } }).then((r) => r.data),
+};
+
+// ─── QR Verification ──────────────────────────────────────────────────────
+export const qrApi = {
+  getShopQr: (shopId: string) =>
+    apiClient.get(`/api/v1/sales/qr/shop/${shopId}`).then((r) => r.data),
+  verify: (data: { shopId: number; deliveryId?: number; latitude?: number; longitude?: number; notes?: string }) =>
+    apiClient.post('/api/v1/sales/qr/verify', data).then((r) => r.data),
+  getDeliveryVisits: (deliveryId: string) =>
+    apiClient.get(`/api/v1/sales/qr/delivery/${deliveryId}/visits`).then((r) => r.data),
 };

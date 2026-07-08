@@ -4,9 +4,7 @@ import { ReloadOutlined } from '@ant-design/icons';
 import {
   PageLayout,
   PageHeader,
-  ErrorState,
 } from '@/components/common';
-import { getTraceId } from '@/utils/getProblemDetails';
 import { usePurchasingDashboard } from '../hooks/usePurchasingDashboard';
 import {
   PurchasingKPIRow,
@@ -29,26 +27,9 @@ import {
  */
 export function PurchasingDashboardPage() {
   const [limit] = useState(10);
-  const { data, isLoading, isError, error, refetch, isFetching } = usePurchasingDashboard(limit);
+  const { data, isLoading, isError, refetch, isFetching } = usePurchasingDashboard(limit);
 
-  if (isError) {
-    return (
-      <PageLayout>
-        <PageHeader
-          title="Purchasing Dashboard"
-          breadcrumbs={[{ title: 'Purchasing', href: '/purchase-orders' }, { title: 'Dashboard' }]}
-        />
-        <ErrorState
-          title="Failed to load purchasing dashboard"
-          message="There was an error fetching the dashboard data. Please try again."
-          traceId={getTraceId(error)}
-          onRetry={() => void refetch()}
-        />
-      </PageLayout>
-    );
-  }
-
-  const loading = isLoading || isFetching;
+  const status = isError ? 'error' : (isLoading || isFetching) ? 'loading' : 'success';
 
   return (
     <PageLayout>
@@ -72,20 +53,20 @@ export function PurchasingDashboardPage() {
       />
 
       {/* KPI Row */}
-      <PurchasingKPIRow data={data} loading={loading} />
+      <PurchasingKPIRow data={data} status={status} onRetry={() => void refetch()} />
 
       {/* Aging + Lead Time side by side */}
       <Row gutter={[16, 16]} className="mb-5">
         <Col xs={24} lg={10}>
           <AgingBucketChart
             buckets={data?.agingBuckets ?? []}
-            loading={loading}
+            status={status}
           />
         </Col>
         <Col xs={24} lg={14}>
           <SupplierLeadTimeTable
             data={data?.supplierLeadTimes ?? []}
-            loading={loading}
+            status={status}
           />
         </Col>
       </Row>
@@ -102,7 +83,7 @@ export function PurchasingDashboardPage() {
         </div>
         <OpenOrdersTable
           data={data?.recentOpenOrders ?? []}
-          loading={loading}
+          status={status}
         />
       </div>
     </PageLayout>

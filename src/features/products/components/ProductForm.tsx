@@ -135,7 +135,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           name="basePrice"
           control={control}
           render={({ field }) => (
-            <InputNumber
+            <InputNumber onFocus={(e) => e.target.select()}
               {...field}
               id="basePrice"
               min={0}
@@ -157,7 +157,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           name="ratePerSoldUnit"
           control={control}
           render={({ field }) => (
-            <InputNumber
+            <InputNumber onFocus={(e) => e.target.select()}
               {...field}
               min={0}
               step={0.01}
@@ -229,7 +229,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           name="itemsPerSoldUnit"
           control={control}
           render={({ field }) => (
-            <InputNumber {...field} min={0} style={{ width: '100%' }} />
+            <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} style={{ width: '100%' }} />
           )}
         />
       </Form.Item>
@@ -239,10 +239,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           name="soldUnitsPerBox"
           control={control}
           render={({ field }) => (
-            <InputNumber {...field} min={0} style={{ width: '100%' }} />
+            <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} style={{ width: '100%' }} />
           )}
         />
       </Form.Item>
     </div>
   );
 };
+

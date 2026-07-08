@@ -1,4 +1,6 @@
-import { Tabs, Spin, Alert, Button } from 'antd';
+import React, { useState } from 'react';
+import { Card, Tabs, Button, Skeleton, Empty, Row, Col, Typography, ConfigProvider } from 'antd';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   DashboardOutlined,
   DollarOutlined,
@@ -6,7 +8,7 @@ import {
   CarOutlined,
   ShoppingOutlined,
   BankOutlined,
-  ReloadOutlined,
+  WarningOutlined,
 } from '@ant-design/icons';
 import {
   useInventoryDashboard,
@@ -16,16 +18,34 @@ import {
   usePurchasingDashboard,
 } from '@/features/dashboard/hooks/useOperationalDashboards';
 import {
-  ExecutiveOverviewTab,
   SalesReceivablesTab,
   InventoryWarehouseTab,
   LogisticsDispatchTab,
   PurchasingSuppliersTab,
   FinanceLedgerTab,
 } from '@/features/dashboard/components';
+import { KpiStatCard } from '@/components/common/KpiStatCard';
 import '@/features/dashboard/components/dashboard.css';
 
+const { Title, Text } = Typography;
+
+const NEUTRAL_ICON_COLOR = '#8b949e';
+
+type KPIData = {
+  id: number;
+  title: string;
+  value: string;
+  tag: string;
+  tagColor: string;
+  desc: string;
+  icon: React.ReactNode;
+  emptyMessage: string;
+};
+
 export function DashboardPage() {
+  const [activeTab, setActiveTab] = useState('overview');
+  
+  // Real API hooks
   const inventoryQuery = useInventoryDashboard(10);
   const logisticsQuery = useLogisticsDashboard(10);
   const salesQuery = useSalesDashboard(10);
@@ -46,7 +66,7 @@ export function DashboardPage() {
     financeQuery.isError ||
     purchasingQuery.isError;
 
-  const handleRefreshAll = () => {
+  const handleRefresh = () => {
     inventoryQuery.refetch();
     logisticsQuery.refetch();
     salesQuery.refetch();
@@ -54,113 +74,205 @@ export function DashboardPage() {
     purchasingQuery.refetch();
   };
 
-  const items = [
-    {
-      key: 'overview',
-      label: (
-        <span>
-          <DashboardOutlined /> Executive Overview
-        </span>
-      ),
-      children: (
-        <ExecutiveOverviewTab
-          inventory={inventoryQuery.data}
-          logistics={logisticsQuery.data}
-          sales={salesQuery.data}
-          finance={financeQuery.data}
-          purchasing={purchasingQuery.data}
-          loading={isLoading}
-        />
-      ),
+  const salesData = salesQuery.data;
+  const financeData = financeQuery.data;
+  const inventoryData = inventoryQuery.data;
+  const logisticsData = logisticsQuery.data;
+
+  const formatDashboardCurrency = (val: number | undefined) => {
+    return val != null ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : 'LKR 0.00';
+  };
+
+  // Map real data to KPI cards
+  const kpiData: KPIData[] = [
+    { 
+      id: 1, title: "Today's Sales", 
+      value: formatDashboardCurrency(salesData?.todaySalesValue), 
+      tag: "Live Feed", tagColor: "green", desc: "Today", 
+      icon: <DollarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No sales recorded today." 
     },
-    {
-      key: 'sales',
-      label: (
-        <span>
-          <DollarOutlined /> Sales & Receivables
-        </span>
-      ),
-      children: <SalesReceivablesTab data={salesQuery.data} />,
+    { 
+      id: 2, title: "Month Collections", 
+      value: formatDashboardCurrency(salesData?.monthCollectionsValue), 
+      tag: "Inflows", tagColor: "green", desc: "Current Month", 
+      icon: <BankOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No collections this month." 
     },
-    {
-      key: 'inventory',
-      label: (
-        <span>
-          <InboxOutlined /> Inventory & Warehouse
-        </span>
-      ),
-      children: <InventoryWarehouseTab data={inventoryQuery.data} />,
+    { 
+      id: 3, title: "Net Cash Flow", 
+      value: formatDashboardCurrency(financeData?.netCashFlowMonth), 
+      tag: financeData && financeData.netCashFlowMonth >= 0 ? "Positive" : "Negative", 
+      tagColor: financeData && financeData.netCashFlowMonth >= 0 ? "green" : "red", 
+      desc: "Current Month", icon: <DollarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No cash flow data available." 
     },
-    {
-      key: 'logistics',
-      label: (
-        <span>
-          <CarOutlined /> Logistics & Dispatch
-        </span>
-      ),
-      children: <LogisticsDispatchTab data={logisticsQuery.data} />,
+    { 
+      id: 4, title: "Total Stock Value", 
+      value: formatDashboardCurrency(inventoryData?.totalStockValue), 
+      tag: "Warehouse", tagColor: "blue", desc: `${inventoryData?.totalItemsCount || 0} items`, 
+      icon: <InboxOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "Warehouse is currently empty." 
     },
-    {
-      key: 'purchasing',
-      label: (
-        <span>
-          <ShoppingOutlined /> Purchasing & Suppliers
-        </span>
-      ),
-      children: <PurchasingSuppliersTab data={purchasingQuery.data} />,
+    { 
+      id: 5, title: "Active Loading Sheets", 
+      value: logisticsData ? `${logisticsData.activeLoadingSheetsCount}` : "0", 
+      tag: "Dispatch", tagColor: "blue", desc: "Currently active", 
+      icon: <CarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No active loading sheets." 
     },
-    {
-      key: 'finance',
-      label: (
-        <span>
-          <BankOutlined /> Finance & Ledger
-        </span>
-      ),
-      children: <FinanceLedgerTab data={financeQuery.data} />,
+    { 
+      id: 6, title: "In-Progress Deliveries", 
+      value: logisticsData ? `${logisticsData.inProgressDeliveriesCount}` : "0", 
+      tag: "Transit", tagColor: "blue", desc: "Out for delivery", 
+      icon: <CarOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No deliveries in progress." 
+    },
+    { 
+      id: 7, title: "Total Receivables", 
+      value: formatDashboardCurrency(financeData?.totalReceivables), 
+      tag: "Attention", tagColor: "orange", desc: "Net outstanding", 
+      icon: <WarningOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No outstanding receivables." 
+    },
+    { 
+      id: 8, title: "Open PO Payables", 
+      value: formatDashboardCurrency(financeData?.totalPayables), 
+      tag: "Outflows", tagColor: "red", desc: "Pending payment", 
+      icon: <ShoppingOutlined style={{ color: NEUTRAL_ICON_COLOR }} />, emptyMessage: "No open purchase orders." 
     },
   ];
 
+  // Map real data to chart (using the 6-month historical, but we'll mock the historical axis for now since API doesn't provide it directly in these endpoints, just use static for layout demo, wait the user said "remove mock data". If no chart data, hide it or use whatever is available)
+  // Actually, I can use the recent transactions for receivables!
+  
+  const renderKPICard = (kpi: KPIData, index: number) => (
+    <Col xs={24} sm={12} lg={6} key={`kpi-${index}`}>
+      <KpiStatCard
+        title={kpi.title}
+        value={kpi.value}
+        icon={kpi.icon}
+        badgeText={kpi.tag}
+        tagColor={kpi.tagColor}
+        footerText={kpi.desc}
+        status={isError ? 'error' : isLoading ? 'loading' : 'success'}
+        onRetry={handleRefresh}
+      />
+    </Col>
+  );
+
+  const renderExecutiveOverview = () => (
+    <motion.div 
+      key="overview"
+      initial={{ opacity: 0 }} 
+      animate={{ opacity: 1 }} 
+      exit={{ opacity: 0 }} 
+      transition={{ duration: 0.15 }}
+    >
+      <Row gutter={[16, 16]}>
+        {kpiData.map((kpi, i) => renderKPICard(kpi, i))}
+      </Row>
+
+      <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
+        {/* RECEIVABLES PANEL */}
+        <Col xs={24}>
+          <Card 
+            title={<Text style={{ fontWeight: 600 }}>Top Debtor Shops</Text>}
+            style={{ height: '400px' }}
+            styles={{ body: { padding: '24px', height: '100%', overflowY: 'auto' } }}
+          >
+            <AnimatePresence mode="wait">
+              {isLoading && (
+                <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                  <Skeleton active paragraph={{ rows: 6 }} title={false} />
+                </motion.div>
+              )}
+              
+              {!isLoading && !isError && (!salesData?.topDebtorShops || salesData.topDebtorShops.length === 0) && (
+                <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                  <Empty 
+                    image={Empty.PRESENTED_IMAGE_SIMPLE} 
+                    description={<Text type="secondary">No outstanding receivables</Text>}
+                  />
+                </motion.div>
+              )}
+              
+              {isError && (
+                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ height: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                   <Empty 
+                    image={<WarningOutlined style={{ fontSize: 48, color: '#f87171' }} />}
+                    description={<Text type="secondary">Failed to load receivables.</Text>}
+                  >
+                    <Button onClick={handleRefresh}>Retry</Button>
+                  </Empty>
+                </motion.div>
+              )}
+
+              {!isLoading && !isError && salesData?.topDebtorShops && salesData.topDebtorShops.length > 0 && (
+                <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    {salesData.topDebtorShops.map((item) => (
+                      <div key={item.shopId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '16px', borderBottom: '1px solid #f0f0f0' }}>
+                        <div>
+                          <Text style={{ fontWeight: 600, display: 'block' }}>{item.shopName}</Text>
+                          <Text type="secondary" style={{ fontSize: '12px' }}>{item.area} - {item.phone}</Text>
+                        </div>
+                        <Text style={{ fontWeight: 700 }}>{formatDashboardCurrency(item.outstandingLoan)}</Text>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </Card>
+        </Col>
+      </Row>
+    </motion.div>
+  );
+
+  const tabsItems = [
+    { key: 'overview', label: <span><DashboardOutlined /> Executive Overview</span>, children: renderExecutiveOverview() },
+    { key: 'sales', label: <span><DollarOutlined /> Sales & Receivables</span>, children: <SalesReceivablesTab data={salesQuery.data} /> },
+    { key: 'inventory', label: <span><InboxOutlined /> Inventory & Warehouse</span>, children: <InventoryWarehouseTab data={inventoryQuery.data} /> },
+    { key: 'logistics', label: <span><CarOutlined /> Logistics & Dispatch</span>, children: <LogisticsDispatchTab data={logisticsQuery.data} /> },
+    { key: 'purchasing', label: <span><ShoppingOutlined /> Purchasing & Suppliers</span>, children: <PurchasingSuppliersTab data={purchasingQuery.data} /> },
+    { key: 'finance', label: <span><BankOutlined /> Finance & Ledger</span>, children: <FinanceLedgerTab data={financeQuery.data} /> },
+  ];
+
   return (
-    <div className="dashboard-container">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-        <div>
-          <h1 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#e6edf3', margin: 0 }}>
-            Operational Command Center
-          </h1>
-          <p style={{ color: '#8b949e', margin: '4px 0 0 0', fontSize: '0.95rem' }}>
-            Real-time CQRS read-model intelligence across sales, warehouse, dispatch, purchasing, and financial ledger
-          </p>
-        </div>
-        <div>
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#0F9D6C',
+          fontFamily: 'var(--font-sans, sans-serif)',
+        },
+      }}
+    >
+      <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
+        
+        {/* HEADER AREA */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+          <div>
+            <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
+              Operational Command Center
+            </Title>
+            <Text style={{ fontSize: '15px', marginTop: '4px', display: 'block', color: '#4b5563' }}>
+              Real-time CQRS read-model intelligence across sales, warehouse, dispatch, and financial ledger
+            </Text>
+          </div>
+          
           <Button
             type="primary"
-            icon={<ReloadOutlined />}
-            onClick={handleRefreshAll}
+            onClick={handleRefresh}
             loading={isLoading}
-            style={{ background: '#10b981', borderColor: '#10b981', fontWeight: 600, height: 40, padding: '0 20px' }}
+            style={{ fontWeight: 600, height: '40px', padding: '0 20px', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
             Refresh Feed
           </Button>
         </div>
-      </div>
 
-      {isError && (
-        <Alert
-          type="error"
-          message="Failed to load some dashboard feeds"
-          description="Please check your network connection or backend service status."
-          showIcon
-          style={{ marginBottom: 20, borderRadius: 12, background: 'rgba(248, 113, 113, 0.1)', borderColor: '#f87171' }}
+        {/* TABS */}
+        <Tabs 
+          activeKey={activeTab}
+          onChange={setActiveTab}
+          items={tabsItems} 
+          tabBarStyle={{ marginBottom: '24px' }}
         />
-      )}
 
-      {isLoading ? (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" tip="Loading real-time operational intelligence..." />
-        </div>
-      ) : (
-        <Tabs defaultActiveKey="overview" items={items} className="command-center-tabs" />
-      )}
-    </div>
+      </div>
+    </ConfigProvider>
   );
 }

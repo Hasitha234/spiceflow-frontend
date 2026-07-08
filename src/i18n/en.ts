@@ -42,6 +42,8 @@ const en = {
     orders: 'Rep Orders',
     loading: 'Loading Sheets',
     deliveries: 'Deliveries',
+    endOfDay: 'End of Day',
+    qrScan: 'QR Scan',
     reports: 'Reports',
     settings: 'Settings',
     users: 'Users',

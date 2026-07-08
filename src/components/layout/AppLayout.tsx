@@ -25,6 +25,8 @@ const menuItems = [
   { key: '/sales', translateKey: 'nav.orders' },
   { key: '/loading', translateKey: 'nav.loading' },
   { key: '/deliveries', translateKey: 'nav.deliveries' },
+  { key: '/end-of-day', translateKey: 'nav.endOfDay' },
+  { key: '/qr-scan', translateKey: 'nav.qrScan' },
   { key: '/reports', translateKey: 'nav.reports' },
   { key: '/settings', translateKey: 'nav.settings' },
   { key: '/users', translateKey: 'nav.users' },

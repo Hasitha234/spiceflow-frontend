@@ -1,14 +1,16 @@
 import React from 'react';
 import { Skeleton } from 'antd';
 import { TrophyOutlined } from '@ant-design/icons';
+import { EmptyState } from '@/components/common/EmptyState';
+import type { KpiStatStatus } from '@/components/common/KpiStatCard';
 import type { SupplierLeadTime } from '../types';
 
 interface SupplierLeadTimeTableProps {
   data: SupplierLeadTime[];
-  loading: boolean;
+  status: KpiStatStatus;
 }
 
-export const SupplierLeadTimeTable: React.FC<SupplierLeadTimeTableProps> = ({ data, loading }) => {
+export const SupplierLeadTimeTable: React.FC<SupplierLeadTimeTableProps> = ({ data, status }) => {
   const sorted = [...data].sort((a, b) => a.averageLeadTimeDays - b.averageLeadTimeDays);
 
   const getLeadTimeColor = (days: number) => {
@@ -28,17 +30,23 @@ export const SupplierLeadTimeTable: React.FC<SupplierLeadTimeTableProps> = ({ da
       <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-4">
         Supplier Lead Times
       </h3>
-      {loading ? (
+      {status === 'loading' ? (
         <div className="space-y-2.5">
           {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton.Input key={i} active block style={{ height: 40, borderRadius: 8 }} />
           ))}
         </div>
+      ) : status === 'error' ? (
+        <EmptyState 
+          title="Error loading lead times" 
+          description="We couldn't fetch supplier lead times. Please refresh." 
+        />
       ) : data.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-8 text-slate-600">
-          <TrophyOutlined className="text-3xl mb-2" />
-          <p className="text-sm">No completed orders yet</p>
-        </div>
+        <EmptyState 
+          icon={<TrophyOutlined className="text-4xl text-emerald-500 mb-2" />}
+          title="No completed orders yet" 
+          description="Once orders are fully received, supplier lead times will appear here." 
+        />
       ) : (
         <div className="space-y-2">
           {sorted.map((s, idx) => (
