@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Table, Tag } from 'antd';
 import { CarOutlined, ShoppingCartOutlined, CheckCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { KpiCard } from './KpiCard';
+import { KpiStatCard as KpiCard } from '@/components/common';
 import type { LogisticsDashboardData, ActiveLoadingSheet, InProgressDelivery } from '../types';
 
 interface LogisticsDispatchTabProps {

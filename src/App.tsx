@@ -1,7 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Spin } from 'antd';
+import { Spin, App as AntApp } from 'antd';
 import './App.css';
 import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
@@ -16,6 +16,7 @@ const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) =
 const CategoriesPage = lazy(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
 const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
+const CreatePurchasePage = lazy(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
 const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
 const RepOrdersPage = lazy(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
 const LoadingSheetsPage = lazy(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
@@ -38,8 +39,9 @@ function PageLoader() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
+      <AntApp>
+        <BrowserRouter>
+          <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route
@@ -53,6 +55,7 @@ function App() {
               <Route index element={<DashboardPage />} />
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
+              <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
               <Route path="loading" element={<LoadingSheetsPage />} />
@@ -71,8 +74,9 @@ function App() {
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
-        </Suspense>
-      </BrowserRouter>
+          </Suspense>
+        </BrowserRouter>
+      </AntApp>
     </QueryClientProvider>
   );
 }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Table, Tag } from 'antd';
 import { FileTextOutlined, DollarOutlined, ClockCircleOutlined, SyncOutlined } from '@ant-design/icons';
-import { KpiCard } from './KpiCard';
+import { KpiStatCard as KpiCard } from '@/components/common';
 import type { PurchasingDashboardData, SupplierLeadTime, OpenPurchaseOrderProjection } from '@/features/purchase-orders/types';
 
 interface PurchasingSuppliersTabProps {

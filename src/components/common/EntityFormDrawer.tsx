@@ -4,7 +4,7 @@ import { Drawer, Button, Space } from 'antd';
 export interface EntityFormDrawerProps {
   open: boolean;
   title: string;
-  width?: number | string;
+  mode?: 'create' | 'edit';
   loading?: boolean;
   onClose: () => void;
   onSubmit: () => void;
@@ -15,7 +15,6 @@ export interface EntityFormDrawerProps {
 export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
   open,
   title,
-  width = 500,
   loading = false,
   onClose,
   onSubmit,
@@ -25,7 +24,7 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
   return (
     <Drawer
       title={<span className="text-slate-100 font-semibold text-lg">{title}</span>}
-      width={width}
+      size="large"
       onClose={onClose}
       open={open}
       destroyOnClose

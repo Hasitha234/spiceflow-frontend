@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Table, Tag } from 'antd';
 import { InboxOutlined, AlertOutlined, SyncOutlined, CheckCircleOutlined } from '@ant-design/icons';
-import { KpiCard } from './KpiCard';
+import { KpiStatCard as KpiCard } from '@/components/common';
 import type { InventoryDashboardData, LowStockItem, RecentMovement } from '../types';
 
 interface InventoryWarehouseTabProps {

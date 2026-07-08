@@ -22,7 +22,7 @@ import {
   Pie,
   Cell,
 } from 'recharts';
-import { KpiCard } from './KpiCard';
+import { KpiStatCard } from '@/components/common/KpiStatCard';
 import type {
   InventoryDashboardData,
   LogisticsDashboardData,
@@ -38,6 +38,8 @@ interface ExecutiveOverviewTabProps {
   finance?: FinanceDashboardData;
   purchasing?: PurchasingDashboardData;
   loading?: boolean;
+  error?: boolean;
+  onRetry?: () => void;
 }
 
 const COLORS = ['#10b981', '#60a5fa', '#fbbf24', '#f87171'];
@@ -48,6 +50,9 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
   sales,
   finance,
   purchasing,
+  loading,
+  error,
+  onRetry,
 }) => {
   const formatCurr = (val?: number) =>
     val != null
@@ -68,11 +73,13 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
     value: Number(b.totalAmount) || 0,
   }));
 
+  const kpiStatus = error ? 'error' : loading ? 'loading' : 'success';
+
   return (
     <div className="executive-overview">
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Today's Sales"
             value={formatCurr(sales?.todaySalesValue)}
             icon={<DollarOutlined />}
@@ -80,10 +87,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="Live Feed"
             badgeType="up"
             footerText="Updated just now"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Month Collections"
             value={formatCurr(finance?.totalCollectionsMonth)}
             icon={<BankOutlined />}
@@ -91,10 +100,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="Inflows"
             badgeType="up"
             footerText="Confirmed cash & cheques"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Net Cash Flow"
             value={formatCurr(finance?.netCashFlowMonth)}
             icon={<RiseOutlined />}
@@ -102,10 +113,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="Month Net"
             badgeType={((finance?.netCashFlowMonth || 0) >= 0) ? 'up' : 'down'}
             footerText="Collections vs PO spend"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Total Stock Value"
             value={formatCurr(inventory?.totalStockValue)}
             icon={<InboxOutlined />}
@@ -113,13 +126,15 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText={`${inventory?.totalItemsCount || 0} SKUs`}
             badgeType="neutral"
             footerText="Warehouse valuation"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
       </Row>
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Active Loading Sheets"
             value={logistics?.activeLoadingSheetsCount || 0}
             icon={<CarOutlined />}
@@ -127,10 +142,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="In Transit"
             badgeType="up"
             footerText="Lorries being loaded/dispatched"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="In-Progress Deliveries"
             value={logistics?.inProgressDeliveriesCount || 0}
             icon={<ShoppingCartOutlined />}
@@ -138,10 +155,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="Active Routes"
             badgeType="neutral"
             footerText="Shops currently visited"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Total Receivables"
             value={formatCurr(finance?.totalReceivables)}
             icon={<WarningOutlined />}
@@ -149,10 +168,12 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText="Debtors"
             badgeType="down"
             footerText="Unpaid shop loans"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
         <Col xs={24} sm={12} md={6}>
-          <KpiCard
+          <KpiStatCard
             title="Open PO Payables"
             value={formatCurr(purchasing?.totalOpenOrderValue)}
             icon={<FileTextOutlined />}
@@ -160,6 +181,8 @@ export const ExecutiveOverviewTab: React.FC<ExecutiveOverviewTabProps> = ({
             badgeText={`${purchasing?.totalOpenOrders || 0} POs`}
             badgeType="neutral"
             footerText="Pending supplier bills"
+            status={kpiStatus}
+            onRetry={onRetry}
           />
         </Col>
       </Row>

@@ -109,7 +109,7 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
         }
         open={open}
         onClose={onClose}
-        width={750}
+        size="large"
         styles={{
           header: { background: '#1e293b', borderBottom: '1px solid #334155', color: '#f8fafc' },
           body: { background: '#0f172a', padding: '20px' },

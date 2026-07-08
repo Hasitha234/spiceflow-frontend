@@ -27,6 +27,33 @@ const apiClient = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // Required to send HttpOnly cookies cross-origin in prod
+  paramsSerializer: {
+    serialize: (params) => {
+      const searchParams = new URLSearchParams();
+      
+      const addParam = (key: string, value: any) => {
+        if (value === undefined || value === null) return;
+        if (Array.isArray(value)) {
+          value.forEach(v => searchParams.append(key, String(v)));
+        } else {
+          searchParams.append(key, String(value));
+        }
+      };
+
+      for (const [key, value] of Object.entries(params)) {
+        if (key === 'pageable' && value && typeof value === 'object') {
+          const { page, size, sort } = value as any;
+          if (page !== undefined) addParam('page', page);
+          if (size !== undefined) addParam('size', size);
+          if (sort !== undefined) addParam('sort', sort);
+        } else {
+          addParam(key, value);
+        }
+      }
+      
+      return searchParams.toString();
+    }
+  }
 });
 
 // ---------------------------------------------------------------------------

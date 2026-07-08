@@ -1,7 +1,7 @@
 import React from 'react';
 import { Row, Col, Card, Table, Tag } from 'antd';
 import { BankOutlined, RiseOutlined, WarningOutlined, DollarOutlined } from '@ant-design/icons';
-import { KpiCard } from './KpiCard';
+import { KpiStatCard as KpiCard } from '@/components/common';
 import type { FinanceDashboardData, ReceivableAgingBucket, RecentFinancialTransaction } from '../types';
 
 interface FinanceLedgerTabProps {

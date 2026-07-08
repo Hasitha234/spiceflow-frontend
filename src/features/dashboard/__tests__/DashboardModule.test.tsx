@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import React from 'react';
 import { DollarOutlined } from '@ant-design/icons';
 import {
-  KpiCard,
   ExecutiveOverviewTab,
   SalesReceivablesTab,
   InventoryWarehouseTab,
@@ -11,6 +10,7 @@ import {
   PurchasingSuppliersTab,
   FinanceLedgerTab,
 } from '../components';
+import { KpiStatCard as KpiCard } from '@/components/common/KpiStatCard';
 
 // Mock Recharts since ResponsiveContainer requires actual DOM dimensions in jsdom
 vi.mock('recharts', async () => {

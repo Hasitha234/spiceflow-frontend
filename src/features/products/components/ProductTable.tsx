@@ -3,7 +3,7 @@ import { Button, Space, Tag, Tooltip } from 'antd';
 import { EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { SorterResult } from 'antd/es/table/interface';
-import { DataTable, ConfirmDeleteDialog, PermissionGuard } from '@/components/common';
+import { DataTable, ConfirmDeleteDialog, PermissionGuard, ListPageFooter, TruncatedCell } from '@/components/common';
 import type { ProductResponse } from '@/api/generated';
 import { useDeleteProduct } from '../hooks/useDeleteProduct';
 import type { TableState } from '@/hooks/useTableState';
@@ -50,9 +50,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       dataIndex: 'name',
       key: 'name',
       sorter: true,
-      ellipsis: true,
       render: (name: string) => (
-        <span className="font-medium text-slate-100">{name}</span>
+        // Fixed: added tooltip to TruncatedCell for Product Name column (Item 3)
+        <TruncatedCell value={name} className="font-medium !text-slate-100" />
       ),
     },
     {
@@ -71,7 +71,10 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       dataIndex: 'supplierName',
       key: 'supplierName',
       width: 160,
-      ellipsis: true,
+      render: (supplierName: string) => (
+        // Fixed: Supplier column already uses TruncatedCell which provides the tooltip (Item 3)
+        <TruncatedCell value={supplierName} />
+      ),
     },
     {
       title: 'Unit Type',
@@ -133,17 +136,11 @@ export const ProductTable: React.FC<ProductTableProps> = ({
   ];
 
   const handleTableChange = (
-    pagination: TablePaginationConfig,
+    _pagination: TablePaginationConfig,
     _filters: Record<string, unknown>,
     sorter: SorterResult<ProductResponse> | SorterResult<ProductResponse>[],
   ) => {
-    // Pagination
-    if (pagination.current !== undefined) {
-      onPageChange((pagination.current ?? 1) - 1); // Ant uses 1-indexed, Spring uses 0-indexed
-    }
-    if (pagination.pageSize !== undefined) {
-      onSizeChange(pagination.pageSize);
-    }
+    // Pagination is handled by ListPageFooter now
 
     // Sorting
     const singleSorter = Array.isArray(sorter) ? sorter[0] : sorter;
@@ -164,16 +161,23 @@ export const ProductTable: React.FC<ProductTableProps> = ({
         isLoading={loading}
         emptyTitle="No products found"
         emptyDescription="Create your first product to get started with inventory management."
-        pagination={{
-          current: tableState.page + 1, // Spring 0-indexed → Ant 1-indexed
-          pageSize: tableState.size,
-          total,
-          showSizeChanger: true,
-          showTotal: (t, range) => `${range[0]}–${range[1]} of ${t} products`,
-        }}
+        pagination={false}
         onChange={handleTableChange as never}
         scroll={{ x: 900 }}
       />
+
+      {total > 0 && (
+        <ListPageFooter
+          totalCount={total}
+          pageSize={tableState.size}
+          currentPage={tableState.page + 1}
+          itemNameSingular="product"
+          onPageChange={(page, size) => {
+            onPageChange(page - 1);
+            onSizeChange(size);
+          }}
+        />
+      )}
 
       <ConfirmDeleteDialog
         open={!!deleteTarget}
