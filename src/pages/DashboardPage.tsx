@@ -34,7 +34,7 @@ const NEUTRAL_ICON_COLOR = '#8b949e';
 type KPIData = {
   id: number;
   title: string;
-  value: string;
+  value: React.ReactNode;
   tag: string;
   tagColor: string;
   desc: string;
