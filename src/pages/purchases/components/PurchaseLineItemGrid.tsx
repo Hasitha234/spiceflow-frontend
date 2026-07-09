@@ -58,9 +58,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
     }
   };
 
-  const handleUnitChange = (_unitType: string, _index: number) => {
-    // Unit is just a label, do not recalculate quantity
-  };
+
 
   const handleTotalQtyBlur = async (totalQty: number | null, index: number) => {
     if (!totalQty || totalQty < 1) return;
@@ -182,7 +180,6 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
                 status={error ? 'error' : ''}
                 onChange={(val) => {
                   f.onChange(val);
-                  handleUnitChange(val, index);
                 }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
