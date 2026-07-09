@@ -22,6 +22,7 @@ import { z } from 'zod';
 import { purchaseApi } from '../../api/sales';
 import { productApi, supplierApi, warehouseApi } from '../../api/inventory';
 import type { Supplier, Product, Warehouse } from '../../types/inventory';
+import type { PurchaseLineItem, PurchaseReturnItem } from '../../types/sales';
 import { PurchaseLineItemGrid } from './components/PurchaseLineItemGrid';
 import { PurchaseReturnItemGrid } from './components/PurchaseReturnItemGrid';
 
@@ -175,7 +176,7 @@ export function CreatePurchasePage() {
             returnsDeductedAmount: purchase.returnsDeductedAmount,
             vatAmount: purchase.vatAmount,
             notes: purchase.notes,
-            lineItems: purchase.lineItems?.map((li: any) => ({
+            lineItems: purchase.lineItems?.map((li: PurchaseLineItem) => ({
               productId: li.productId?.toString(),
               noOfBoxes: li.noOfBoxes,
               soldQuantity: li.soldQuantity,
@@ -184,7 +185,7 @@ export function CreatePurchasePage() {
               amount: li.amount,
             })) || [],
             returnWarehouseId: purchase.returnWarehouseId?.toString(),
-            returnItems: purchase.returnItems?.map((ri: any) => ({
+            returnItems: purchase.returnItems?.map((ri: PurchaseReturnItem) => ({
               productId: ri.productId?.toString(),
               quantity: ri.quantity,
               unitType: ri.unitType,

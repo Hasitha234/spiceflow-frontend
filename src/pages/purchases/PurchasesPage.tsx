@@ -47,7 +47,7 @@ export function PurchasesPage() {
   const [confirmingPurchaseId, setConfirmingPurchaseId] = useState<string | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const purchaseRes = await purchaseApi.list({ page: 0, size: 50 });
@@ -57,13 +57,13 @@ export function PurchasesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
     // Load warehouses for confirmation dropdown
     warehouseApi.list({ size: 100 }).then(res => setWarehouses(res?.content || [])).catch(() => {});
-  }, []);
+  }, [loadData]);
 
   const handleConfirmClick = useCallback((id: string) => {
     setConfirmingPurchaseId(id);
@@ -82,7 +82,8 @@ export function PurchasesPage() {
       setConfirmModalVisible(false);
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       loadData();
-    } catch (e: any) {
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string, message?: string } } };
       const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || 'Failed to confirm purchase order';
       message.error(errorMsg);
     }
@@ -97,7 +98,7 @@ export function PurchasesPage() {
     } catch {
       message.error('Failed to delete purchase order');
     }
-  }, []);
+  }, [queryClient, loadData]);
 
   const columns = useMemo(
     () => [
@@ -200,7 +201,7 @@ export function PurchasesPage() {
         ),
       },
     ],
-    [t, handleConfirmClick, handleDelete]
+    [t, handleConfirmClick, handleDelete, navigate]
   );
 
 

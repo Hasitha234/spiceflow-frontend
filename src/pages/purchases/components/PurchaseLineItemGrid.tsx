@@ -49,7 +49,6 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
 
   const handleQtyChange = (qty: number | null, index: number) => {
     const productId = lineItems?.[index]?.productId;
-    const unitType = lineItems?.[index]?.unitType || 'BOX';
     if (productId) {
       const product = supplierProducts.find((p) => String(p.id) === String(productId));
       if (product) {
@@ -59,7 +58,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
     }
   };
 
-  const handleUnitChange = (unitType: string, index: number) => {
+  const handleUnitChange = (_unitType: string, _index: number) => {
     // Unit is just a label, do not recalculate quantity
   };
 
@@ -73,8 +72,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
     setValue(`lineItems.${index}.amount`, undefined);
     const newMultiplier = totalQty / noOfBoxes;
     
-    let newItemsPerSoldUnit = product.itemsPerSoldUnit || 1;
-    let newSoldUnitsPerBox = Math.max(1, Math.round(newMultiplier / newItemsPerSoldUnit));
+    const newItemsPerSoldUnit = product.itemsPerSoldUnit || 1;
+    const newSoldUnitsPerBox = Math.max(1, Math.round(newMultiplier / newItemsPerSoldUnit));
 
     try {
       const payload = {
