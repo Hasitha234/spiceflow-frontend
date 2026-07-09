@@ -208,24 +208,21 @@ export function CreatePurchasePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', paddingBottom: '120px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--surface-base)', paddingBottom: '120px' }}>
       {/* Top Header Navigation */}
-      <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ backgroundColor: 'var(--surface-raised)', borderBottom: '1px solid var(--surface-border)', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
         <Button 
           type="text" 
           icon={<ArrowLeftOutlined />} 
           onClick={() => navigate('/purchases')}
         />
-        <Space>
-          <ShoppingOutlined style={{ color: '#10b981', fontSize: '20px' }} />
-          <Title level={4} style={{ margin: 0 }}>New Purchase Order</Title>
-        </Space>
+        <Title level={4} style={{ margin: 0 }}>New Purchase Order</Title>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
-        <Card bordered={false} style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
+        <Card bordered={false} style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}>
           <Row gutter={24}>
             <Col xs={24} md={8}>
               <Form.Item
@@ -328,7 +325,7 @@ export function CreatePurchasePage() {
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={8}>
-                  <Form.Item label={<Text strong>Cheque Amount</Text>} extra={<span style={{ fontSize: '11px', color: '#10b981' }}>If left 0, it auto-fills with Net Total</span>}>
+                  <Form.Item label={<Text strong>Cheque Amount</Text>} extra={<span style={{ fontSize: '0.6875rem', color: 'var(--color-emerald-500)' }}>If left 0, it auto-fills with Net Total</span>}>
                     <Controller
                       name="chequeAmount"
                       control={control}
@@ -374,23 +371,23 @@ export function CreatePurchasePage() {
         {/* Data Grid Section */}
         <Card 
           bordered={false} 
-          style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}
+          style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}
           bodyStyle={{ padding: 0 }}
         >
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--surface-border)', backgroundColor: 'var(--surface-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <Title level={5} style={{ margin: 0 }}>Line Items</Title>
               <Text type="secondary">Add items from the supplier's catalog</Text>
             </div>
-            {catalogStatus === 'loading' && <Text style={{ color: '#10b981' }}>Syncing catalog...</Text>}
+            {catalogStatus === 'loading' && <Text style={{ color: 'var(--color-emerald-500)' }}>Syncing catalog...</Text>}
           </div>
 
           <div style={{ overflowX: 'auto' }}>
             {catalogStatus === 'idle' ? (
               <div style={{ padding: '48px', textAlign: 'center' }}>
-                <ShoppingOutlined style={{ fontSize: '36px', color: '#d9d9d9', marginBottom: '12px' }} />
+                <ShoppingOutlined style={{ fontSize: '36px', color: 'var(--text-muted)', marginBottom: '12px' }} />
                 <br/>
-                <Text strong style={{ fontSize: '16px', color: '#8c8c8c' }}>Select a supplier to begin.</Text>
+                <Text strong style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>Select a supplier to begin.</Text>
                 <br/>
                 <Text type="secondary">The product catalog will load automatically.</Text>
               </div>
@@ -403,7 +400,7 @@ export function CreatePurchasePage() {
                 </Space>
               </div>
             ) : catalogStatus === 'error' ? (
-              <div style={{ padding: '32px', textAlign: 'center', color: '#f5222d' }}>
+              <div style={{ padding: '32px', textAlign: 'center', color: 'var(--color-danger)' }}>
                 Failed to load the catalog. Please refresh or select the supplier again.
               </div>
             ) : (
@@ -420,12 +417,12 @@ export function CreatePurchasePage() {
         {/* Returns Data Grid Section */}
         <Card 
           bordered={false} 
-          style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}
+          style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}
           bodyStyle={{ padding: 0 }}
         >
-          <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--surface-border)', backgroundColor: 'var(--surface-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
-              <Title level={5} style={{ margin: 0, color: '#f5222d' }}>Return Items</Title>
+              <Title level={5} style={{ margin: 0 }}>Return Items</Title>
               <Text type="secondary">Items returned to the supplier (deducted from total)</Text>
             </div>
           </div>
@@ -452,50 +449,50 @@ export function CreatePurchasePage() {
           bottom: 0, 
           left: 0, 
           right: 0, 
-          backgroundColor: '#fff', 
-          borderTop: '1px solid #f0f0f0', 
-          boxShadow: '0 -4px 6px -1px rgba(0,0,0,0.05)', 
+          backgroundColor: 'var(--surface-raised)', 
+          borderTop: '1px solid var(--surface-border)', 
+          boxShadow: '0 -4px 6px -1px rgba(15, 23, 42, 0.05)', 
           zIndex: 20 
         }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             {/* Financial Adjustments */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Gross</span>
-                <span style={{ fontFamily: 'monospace', fontSize: '18px', fontWeight: 600 }}>{grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Gross</span>
+                <span style={{ fontFamily: 'var(--font-sans)', fontFeatureSettings: "'tnum'", fontSize: '1.125rem', fontWeight: 600, color: 'var(--text-primary)' }}>{grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               
               <div style={{ height: '32px', width: '1px', backgroundColor: '#f0f0f0' }} />
               
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Discount (-)</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Discount (-)</span>
                 <Controller
                   name="discountAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
                   )}
                 />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Returns (-)</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Returns (-)</span>
                 <Controller
                   name="returnsDeductedAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#f5222d' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
                   )}
                 />
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>VAT (+)</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>VAT (+)</span>
                 <Controller
                   name="vatAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: '#10b981' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -504,14 +501,17 @@ export function CreatePurchasePage() {
             {/* Net Total & Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Net Total</span>
-                <span style={{ fontFamily: 'monospace', fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>LKR {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Net Total</span>
+                <span style={{ fontFeatureSettings: "'tnum'", fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-emerald-500)' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)', marginRight: '4px' }}>LKR</span>
+                  {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                </span>
               </div>
               
               <Button size="large" onClick={() => navigate('/purchases')} disabled={isSubmitting}>
                 Cancel
               </Button>
-              <Button size="large" type="primary" htmlType="submit" loading={isSubmitting} style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16,185,129,0.2)' }}>
+              <Button size="large" type="primary" htmlType="submit" loading={isSubmitting}>
                 Submit Order
               </Button>
             </div>
