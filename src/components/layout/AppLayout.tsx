@@ -101,7 +101,7 @@ export function AppLayout() {
           style={{ 
             background: 'transparent',
             borderRight: 'none',
-            padding: '16px 8px'
+            padding: '16px 12px'
           }}
           items={menuItems.map((item) => ({
             key: item.key,

@@ -192,39 +192,30 @@ export function PurchasesPage() {
 
   return (
     <div className="p-6">
-      <Row justify="space-between" align="middle" className="mb-6">
-        <Col>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500">
-              <ShoppingOutlined className="text-2xl" />
-            </div>
-            <div>
-              <Title level={3} className="!m-0">
-                {t('purchase.title', 'Purchase Orders')}
-              </Title>
-              <Text type="secondary">
-                Manage supplier invoices and receive inventory items
-              </Text>
-            </div>
-          </div>
-        </Col>
-        <Col>
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                navigate('/purchases/new');
-              }}
-              className="font-medium h-10 px-5"
-            >
-              {t('purchase.create', 'New Purchase Order')}
-            </Button>
-          </PermissionGuard>
-        </Col>
-      </Row>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <Title level={2} style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0 }}>
+            {t('purchase.title', 'Purchase Orders')}
+          </Title>
+          <Text style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'block', color: 'var(--text-secondary)' }}>
+            Manage supplier invoices and receive inventory items
+          </Text>
+        </div>
+        <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              navigate('/purchases/new');
+            }}
+            style={{ fontWeight: 500, height: '40px', padding: '0 1rem', borderRadius: '6px' }}
+          >
+            {t('purchase.create', 'New Purchase Order')}
+          </Button>
+        </PermissionGuard>
+      </div>
 
-      <Card className="shadow-xl rounded-xl overflow-hidden">
+      <Card style={{ borderRadius: '8px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }} className="overflow-hidden">
         <Table
           rowKey="id"
           loading={loading}
