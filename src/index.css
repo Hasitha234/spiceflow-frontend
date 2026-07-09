@@ -322,11 +322,16 @@ body {
 
 /* Table density — more comfortable for dense SaaS data */
 .ant-table-thead > tr > th {
-  font-size: 11px;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-secondary) !important;
+}
+
+/* Primary button radius — enforce structured B2B aesthetic */
+.ant-btn {
+  border-radius: var(--radius-md) !important;
 }
 
 /* Status tags */
