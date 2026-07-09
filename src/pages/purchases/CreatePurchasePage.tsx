@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Col,
@@ -46,6 +47,7 @@ const purchaseSchema = z.object({
         soldQuantity: z.number().int().min(1, 'Min 1 unit'),
         unitType: z.string().min(1, 'Unit type is required'),
         rate: z.number().min(0, 'Rate must be positive'),
+        amount: z.number().min(0, 'Amount must be positive').optional(),
       })
     )
     .min(1, 'At least one line item is required'),
@@ -57,6 +59,7 @@ const purchaseSchema = z.object({
         quantity: z.number().int().min(1, 'Min 1 unit'),
         unitType: z.string().min(1, 'Unit type is required'),
         rate: z.number().min(0, 'Rate must be positive'),
+        amount: z.number().min(0, 'Amount must be positive').optional(),
       })
     ).optional(),
 });
@@ -69,6 +72,7 @@ type CatalogStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export function CreatePurchasePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>('idle');
@@ -79,6 +83,7 @@ export function CreatePurchasePage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     setValue,
+    reset,
   } = useForm<FormValues>({
     resolver: zodResolver(purchaseSchema) as unknown as Resolver<FormValues>,
     defaultValues: {
@@ -143,18 +148,66 @@ export function CreatePurchasePage() {
       const sum = returnItems.reduce((acc, item) => {
         const qty = Number(item?.quantity) || 0;
         const rate = Number(item?.rate) || 0;
-        return acc + qty * rate;
+        const amount = item?.amount !== undefined ? Number(item.amount) : qty * rate;
+        return acc + amount;
       }, 0);
       setValue('returnsDeductedAmount', Number(sum.toFixed(2)));
     }
   }, [returnItems, setValue]);
+
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
+
+  useEffect(() => {
+    if (isEditMode && id) {
+      const loadPurchase = async () => {
+        try {
+          const purchase = await purchaseApi.get(id);
+          reset({
+            invoiceNo: purchase.invoiceNo,
+            supplierId: purchase.supplierId?.toString(),
+            invoiceDate: purchase.invoiceDate,
+            paymentMethod: purchase.paymentMethod,
+            chequeNo: purchase.chequeNo,
+            chequeBankName: purchase.chequeBankName,
+            chequeAmount: purchase.chequeAmount,
+            discountAmount: purchase.discountAmount,
+            returnsDeductedAmount: purchase.returnsDeductedAmount,
+            vatAmount: purchase.vatAmount,
+            notes: purchase.notes,
+            lineItems: purchase.lineItems?.map((li: any) => ({
+              productId: li.productId?.toString(),
+              noOfBoxes: li.noOfBoxes,
+              soldQuantity: li.soldQuantity,
+              unitType: li.unitType,
+              rate: li.rate,
+              amount: li.amount,
+            })) || [],
+            returnWarehouseId: purchase.returnWarehouseId?.toString(),
+            returnItems: purchase.returnItems?.map((ri: any) => ({
+              productId: ri.productId?.toString(),
+              quantity: ri.quantity,
+              unitType: ri.unitType,
+              rate: ri.rate,
+              amount: ri.amount,
+            })) || [],
+          });
+        } catch {
+          message.error('Failed to load purchase details');
+          navigate('/purchases');
+        }
+      };
+      loadPurchase();
+    }
+  }, [id, isEditMode, reset, navigate]);
 
   const grossTotal = useMemo(() => {
     if (!lineItems || !Array.isArray(lineItems)) return 0;
     return lineItems.reduce((sum, item) => {
       const qty = Number(item?.soldQuantity) || 0;
       const rate = Number(item?.rate) || 0;
-      return sum + qty * rate;
+      const amount = item?.amount !== undefined ? Number(item.amount) : qty * rate;
+      return sum + amount;
     }, 0);
   }, [lineItems]);
 
@@ -185,6 +238,7 @@ export function CreatePurchasePage() {
           soldQuantity: Number(item.soldQuantity || 1),
           unitType: item.unitType || 'BOX',
           rate: Number(item.rate || 0),
+          amount: item.amount !== undefined ? Number(item.amount) : undefined,
         })),
         returnWarehouseId: values.returnWarehouseId ? Number(values.returnWarehouseId) : null,
         returnItems: values.returnItems?.map((item) => ({
@@ -192,17 +246,24 @@ export function CreatePurchasePage() {
           quantity: Number(item.quantity || 1),
           unitType: item.unitType || 'BOX',
           rate: Number(item.rate || 0),
+          amount: item.amount !== undefined ? Number(item.amount) : undefined,
         })) || [],
       };
 
-      await purchaseApi.create(payload);
-      message.success('Purchase Order created successfully');
+      if (isEditMode && id) {
+        await purchaseApi.update(id, payload);
+        message.success('Purchase updated successfully');
+      } else {
+        await purchaseApi.create(payload);
+        message.success('Purchase created successfully');
+      }
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       navigate('/purchases');
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { detail?: string; message?: string } } })?.response?.data?.detail ||
         (err as { response?: { data?: { detail?: string; message?: string } } })?.response?.data?.message ||
-        'Failed to create purchase order';
+        'Failed to process purchase order';
       message.error(msg);
     }
   };
@@ -216,13 +277,13 @@ export function CreatePurchasePage() {
           icon={<ArrowLeftOutlined />} 
           onClick={() => navigate('/purchases')}
         />
-        <Title level={4} style={{ margin: 0 }}>New Purchase Order</Title>
+        <Title level={4} style={{ margin: 0 }}>{isEditMode ? 'Edit Purchase Order' : 'New Purchase Order'}</Title>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
-        <Card bordered={false} style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}>
+        <Card variant="borderless" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}>
           <Row gutter={24}>
             <Col xs={24} md={8}>
               <Form.Item
@@ -407,7 +468,8 @@ export function CreatePurchasePage() {
               <PurchaseLineItemGrid 
                 control={control} 
                 setValue={setValue} 
-                supplierProducts={supplierProducts} 
+                supplierProducts={supplierProducts}
+                setSupplierProducts={setSupplierProducts}
                 errors={errors}
               />
             )}
@@ -512,7 +574,7 @@ export function CreatePurchasePage() {
                 Cancel
               </Button>
               <Button size="large" type="primary" htmlType="submit" loading={isSubmitting}>
-                Submit Order
+                {isEditMode ? 'Update Order' : 'Submit Order'}
               </Button>
             </div>
           </div>

@@ -59,6 +59,7 @@ function App() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="purchases/new" element={<CreatePurchasePage />} />
+              <Route path="purchases/:id/edit" element={<CreatePurchasePage />} />
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
               <Route path="sales/new" element={<CreateRepOrderPage />} />
