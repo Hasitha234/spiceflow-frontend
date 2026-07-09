@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
@@ -21,6 +22,7 @@ import {
   ShoppingOutlined,
   CheckCircleOutlined,
   EyeOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi } from '../../api/sales';
@@ -33,6 +35,7 @@ const { Title, Text } = Typography;
 
 export function PurchasesPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -44,7 +47,7 @@ export function PurchasesPage() {
   const [confirmingPurchaseId, setConfirmingPurchaseId] = useState<string | null>(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | null>(null);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const purchaseRes = await purchaseApi.list({ page: 0, size: 50 });
@@ -54,13 +57,13 @@ export function PurchasesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
     // Load warehouses for confirmation dropdown
     warehouseApi.list({ size: 100 }).then(res => setWarehouses(res?.content || [])).catch(() => {});
-  }, []);
+  }, [loadData]);
 
   const handleConfirmClick = useCallback((id: string) => {
     setConfirmingPurchaseId(id);
@@ -77,9 +80,12 @@ export function PurchasesPage() {
       await purchaseApi.confirm(confirmingPurchaseId, selectedWarehouseId);
       message.success('Purchase Order confirmed successfully');
       setConfirmModalVisible(false);
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       loadData();
-    } catch {
-      message.error('Failed to confirm purchase order');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string, message?: string } } };
+      const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || 'Failed to confirm purchase order';
+      message.error(errorMsg);
     }
   };
 
@@ -87,11 +93,12 @@ export function PurchasesPage() {
     try {
       await purchaseApi.delete(id);
       message.success('Purchase Order deleted successfully');
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       loadData();
     } catch {
       message.error('Failed to delete purchase order');
     }
-  }, []);
+  }, [queryClient, loadData]);
 
   const columns = useMemo(
     () => [
@@ -154,6 +161,15 @@ export function PurchasesPage() {
             </Tooltip>
             {record.status === 'DRAFT' && (
               <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+                <Tooltip title="Edit Purchase Order">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => navigate(`/purchases/${record.id}/edit`)}
+                    className="!text-orange-400 hover:!text-orange-300"
+                  />
+                </Tooltip>
                 <Tooltip title="Confirm Purchase Order">
                   <Button
                     type="text"
@@ -185,7 +201,7 @@ export function PurchasesPage() {
         ),
       },
     ],
-    [t, handleConfirmClick, handleDelete]
+    [t, handleConfirmClick, handleDelete, navigate]
   );
 
 

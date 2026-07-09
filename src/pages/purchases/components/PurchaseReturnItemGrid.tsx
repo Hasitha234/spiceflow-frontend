@@ -36,9 +36,9 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
     if (product) {
       const rate = Number(product.ratePerSoldUnit ?? product.basePrice ?? 0);
       const unitType = product.unitType || 'BOX';
-      
       setValue(`returnItems.${index}.rate`, rate);
       setValue(`returnItems.${index}.unitType`, unitType);
+      setValue(`returnItems.${index}.amount`, undefined);
     }
   };
 
@@ -46,7 +46,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
     {
       title: 'Product',
       key: 'product',
-      width: '35%',
+      width: '30%',
       render: (_: any, __: any, index: number) => (
         <Controller
           name={`returnItems.${index}.productId`}
@@ -63,7 +63,8 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
                 }))}
                 showSearch
                 optionFilterProp="label"
-                style={{ width: '100%', minWidth: 200 }}
+                popupMatchSelectWidth={false}
+                style={{ width: '100%' }}
                 status={error ? 'error' : ''}
                 onChange={(val) => {
                   f.onChange(val);
@@ -77,20 +78,24 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
       ),
     },
     {
-      title: 'Quantity',
-      key: 'quantity',
-      width: '15%',
+      title: 'Unit',
+      key: 'unit',
+      width: '12%',
       render: (_: any, __: any, index: number) => (
         <Controller
-          name={`returnItems.${index}.quantity`}
+          name={`returnItems.${index}.unitType`}
           control={control}
           render={({ field: f, fieldState: { error } }) => (
             <div>
-              <InputNumber onFocus={(e) => e.target.select()} 
-                {...f} 
-                min={1} 
-                size="large"
-                style={{ width: '100%', minWidth: '80px', fontSize: '16px', fontWeight: 'bold' }} 
+              <Select
+                {...f}
+                size="middle"
+                options={[
+                  { label: 'Box', value: 'BOX' },
+                  { label: 'Bundle', value: 'BUNDLE' },
+                  { label: 'Each', value: 'EACH' },
+                ]}
+                style={{ width: '100%' }}
                 status={error ? 'error' : ''}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
@@ -100,24 +105,25 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
       ),
     },
     {
-      title: 'Unit',
-      key: 'unit',
-      width: '15%',
+      title: 'Quantity',
+      key: 'quantity',
+      width: '14%',
       render: (_: any, __: any, index: number) => (
         <Controller
-          name={`returnItems.${index}.unitType`}
+          name={`returnItems.${index}.quantity`}
           control={control}
           render={({ field: f, fieldState: { error } }) => (
             <div>
-              <Select
-                {...f}
-                options={[
-                  { label: 'Box', value: 'BOX' },
-                  { label: 'Bundle', value: 'BUNDLE' },
-                  { label: 'Each', value: 'EACH' },
-                ]}
-                style={{ width: '100%' }}
+              <InputNumber onFocus={(e) => e.target.select()} 
+                {...f} 
+                min={1} 
+                size="middle"
+                style={{ width: '100%' }} 
                 status={error ? 'error' : ''}
+                onChange={(val) => {
+                  f.onChange(val);
+                  setValue(`returnItems.${index}.amount`, undefined);
+                }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
             </div>
@@ -141,9 +147,13 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
                 min={0} 
                 step={0.01} 
                 precision={2} 
-                size="large"
-                style={{ width: '100%', minWidth: '100px', fontSize: '16px', fontWeight: 'bold' }} 
+                size="middle"
+                style={{ width: '100%' }} 
                 status={error ? 'error' : ''} 
+                onChange={(val) => {
+                  f.onChange(val);
+                  setValue(`returnItems.${index}.amount`, undefined);
+                }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
             </div>
@@ -159,11 +169,34 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
       render: (_: any, __: any, index: number) => {
         const qty = Number(returnItems?.[index]?.quantity) || 0;
         const rate = Number(returnItems?.[index]?.rate) || 0;
-        const rowAmount = qty * rate;
+        const autoAmount = qty * rate;
+        
         return (
-          <div style={{ fontFamily: 'monospace', fontWeight: 600, paddingTop: 4 }}>
-            {rowAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
+          <Controller
+            name={`returnItems.${index}.amount`}
+            control={control}
+            render={({ field: f, fieldState: { error } }) => {
+              const displayValue = f.value !== undefined ? f.value : autoAmount;
+              return (
+                <div>
+                  <InputNumber onFocus={(e) => e.target.select()} 
+                    {...f} 
+                    value={displayValue}
+                    min={0} 
+                    step={0.01} 
+                    precision={2} 
+                    size="middle"
+                    style={{ width: '100%', fontWeight: 600 }} 
+                    status={error ? 'error' : ''}
+                    onChange={(val) => {
+                      f.onChange(val);
+                    }}
+                  />
+                  {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
+                </div>
+              );
+            }}
+          />
         );
       }
     },
@@ -199,6 +232,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
         rowKey="id"
         pagination={false}
         size="small"
+        tableLayout="fixed"
       />
       
       <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>

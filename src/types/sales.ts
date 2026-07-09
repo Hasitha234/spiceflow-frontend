@@ -130,6 +130,7 @@ export interface Delivery {
 export interface Purchase {
   id: string;
   invoiceNo: string;
+  supplierId?: string | number;
   supplier?: { id: string; name: string };
   supplierName?: string;
   purchaseDate?: string;
@@ -147,7 +148,21 @@ export interface Purchase {
   chequeAmount?: number;
   notes?: string;
   lineItems: PurchaseLineItem[];
+  returnWarehouseId?: string | number;
+  returnWarehouse?: { id: string };
+  returnItems?: PurchaseReturnItem[];
   createdAt?: string;
+}
+
+export interface PurchaseReturnItem {
+  id?: string;
+  productId?: string | number;
+  product?: Product;
+  productSku?: string;
+  quantity?: number;
+  unitType?: string;
+  rate?: number;
+  amount?: number;
 }
 
 export interface PurchaseLineItem {
@@ -164,4 +179,5 @@ export interface PurchaseLineItem {
   totalCost?: number;
   amount?: number;
   warehouseId?: string;
+  productId?: string | number;
 }

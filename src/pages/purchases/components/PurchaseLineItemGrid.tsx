@@ -13,10 +13,11 @@ interface PurchaseLineItemGridProps {
   control: Control<FormValues>;
   setValue: UseFormSetValue<FormValues>;
   supplierProducts: Product[];
+  setSupplierProducts: React.Dispatch<React.SetStateAction<Product[]>>;
   errors: any;
 }
 
-export function PurchaseLineItemGrid({ control, setValue, supplierProducts, errors }: PurchaseLineItemGridProps) {
+export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setSupplierProducts, errors }: PurchaseLineItemGridProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'lineItems',
@@ -24,14 +25,12 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
 
   const lineItems = useWatch({ control, name: 'lineItems' });
 
-  const getMultiplier = (product: Product | undefined, unitType: string) => {
+  const getMultiplier = (product: Product | undefined) => {
     if (!product) return 1;
     const itemsPerSoldUnit = Number(product.itemsPerSoldUnit || 1);
     const soldUnitsPerBox = Number(product.soldUnitsPerBox || 1);
     
-    if (unitType === 'BOX') return itemsPerSoldUnit * soldUnitsPerBox;
-    if (unitType === 'BUNDLE') return itemsPerSoldUnit;
-    return 1; // EACH
+    return itemsPerSoldUnit * soldUnitsPerBox;
   };
 
   const handleProductSelect = (productId: string, index: number) => {
@@ -43,29 +42,59 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       
       setValue(`lineItems.${index}.rate`, rate);
       setValue(`lineItems.${index}.unitType`, unitType);
-      setValue(`lineItems.${index}.soldQuantity`, inputQty * getMultiplier(product, unitType));
+      setValue(`lineItems.${index}.soldQuantity`, inputQty * getMultiplier(product));
+      setValue(`lineItems.${index}.amount`, undefined);
     }
   };
 
   const handleQtyChange = (qty: number | null, index: number) => {
     const productId = lineItems?.[index]?.productId;
-    const unitType = lineItems?.[index]?.unitType || 'BOX';
     if (productId) {
       const product = supplierProducts.find((p) => String(p.id) === String(productId));
       if (product) {
-        setValue(`lineItems.${index}.soldQuantity`, (qty || 1) * getMultiplier(product, unitType));
+        setValue(`lineItems.${index}.soldQuantity`, (qty || 1) * getMultiplier(product));
+        setValue(`lineItems.${index}.amount`, undefined);
       }
     }
   };
 
-  const handleUnitChange = (unitType: string, index: number) => {
+
+
+  const handleTotalQtyBlur = async (totalQty: number | null, index: number) => {
+    if (!totalQty || totalQty < 1) return;
     const productId = lineItems?.[index]?.productId;
-    const inputQty = Number(lineItems?.[index]?.noOfBoxes || 1);
-    if (productId) {
-      const product = supplierProducts.find((p) => String(p.id) === String(productId));
-      if (product) {
-        setValue(`lineItems.${index}.soldQuantity`, inputQty * getMultiplier(product, unitType));
-      }
+    const noOfBoxes = Number(lineItems?.[index]?.noOfBoxes || 1);
+    const product = supplierProducts.find((p) => String(p.id) === String(productId));
+    if (!productId || !product) return;
+
+    setValue(`lineItems.${index}.amount`, undefined);
+    const newMultiplier = totalQty / noOfBoxes;
+    
+    const newItemsPerSoldUnit = product.itemsPerSoldUnit || 1;
+    const newSoldUnitsPerBox = Math.max(1, Math.round(newMultiplier / newItemsPerSoldUnit));
+
+    try {
+      const payload = {
+        ...product,
+        itemsPerSoldUnit: newItemsPerSoldUnit,
+        soldUnitsPerBox: newSoldUnitsPerBox,
+        categoryId: (product as any).categoryId,
+        supplierId: (product as any).supplierId,
+      };
+      await productApi.update(productId, payload);
+
+      // Update local state so multiplier recalculates in the UI
+      setSupplierProducts(prev => prev.map(p => 
+        String(p.id) === String(productId) 
+          ? { ...p, itemsPerSoldUnit: newItemsPerSoldUnit, soldUnitsPerBox: newSoldUnitsPerBox }
+          : p
+      ));
+
+      message.success('Product box configuration updated!');
+    } catch (e: any) {
+      console.error('Box config update failed:', e?.response?.data || e);
+      const errMsg = e?.response?.data?.message || 'Unknown error';
+      message.error(`Update failed: ${errMsg}`);
     }
   };
 
@@ -83,6 +112,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
           categoryId: (product as any).categoryId,
           supplierId: (product as any).supplierId,
         };
+        setValue(`lineItems.${index}.amount`, undefined);
         await productApi.update(productId, payload);
         message.success('Product database price updated!');
       } catch (e: any) {
@@ -97,7 +127,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
     {
       title: 'Product',
       key: 'product',
-      width: '30%',
+      width: '28%',
       render: (_: any, __: any, index: number) => (
         <Controller
           name={`lineItems.${index}.productId`}
@@ -114,7 +144,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 }))}
                 showSearch
                 optionFilterProp="label"
-                style={{ width: '100%', minWidth: 200 }}
+                popupMatchSelectWidth={false}
+                style={{ width: '100%' }}
                 status={error ? 'error' : ''}
                 onChange={(val) => {
                   f.onChange(val);
@@ -128,9 +159,39 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       ),
     },
     {
+      title: 'Unit',
+      key: 'unit',
+      width: '10%',
+      render: (_: any, __: any, index: number) => (
+        <Controller
+          name={`lineItems.${index}.unitType`}
+          control={control}
+          render={({ field: f, fieldState: { error } }) => (
+            <div>
+              <Select
+                {...f}
+                size="middle"
+                options={[
+                  { label: 'Box', value: 'BOX' },
+                  { label: 'Bundle', value: 'BUNDLE' },
+                  { label: 'Each', value: 'EACH' },
+                ]}
+                style={{ width: '100%' }}
+                status={error ? 'error' : ''}
+                onChange={(val) => {
+                  f.onChange(val);
+                }}
+              />
+              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
+            </div>
+          )}
+        />
+      ),
+    },
+    {
       title: 'Qty',
       key: 'boxes',
-      width: '12%',
+      width: '10%',
       render: (_: any, __: any, index: number) => (
         <Controller
           name={`lineItems.${index}.noOfBoxes`}
@@ -140,8 +201,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
               <InputNumber onFocus={(e) => e.target.select()} 
                 {...f} 
                 min={1} 
-                size="large"
-                style={{ width: '100%', minWidth: '80px', fontSize: '16px', fontWeight: 'bold' }} 
+                size="middle"
+                style={{ width: '100%' }} 
                 status={error ? 'error' : ''}
                 onChange={(val) => {
                   f.onChange(val);
@@ -161,8 +222,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       render: (_: any, __: any, index: number) => {
         const selectedProductId = lineItems?.[index]?.productId;
         const product = supplierProducts.find(p => String(p.id) === String(selectedProductId));
-        const unitType = lineItems?.[index]?.unitType || 'BOX';
-        const multiplier = getMultiplier(product, unitType);
+        const multiplier = getMultiplier(product);
         const uom = product?.unitOfMeasure || 'PCS';
         
         return (
@@ -174,9 +234,19 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 <InputNumber onFocus={(e) => e.target.select()} 
                   {...f} 
                   min={1}
-                  disabled
-                  style={{ width: '100%', minWidth: '80px', backgroundColor: '#f5f5f5', color: '#10b981', fontWeight: 600 }} 
-                  status={error ? 'error' : ''} 
+                  size="middle"
+                  style={{ width: '100%', color: '#10b981', fontWeight: 600 }} 
+                  status={error ? 'error' : ''}
+                  onChange={(val) => {
+                    f.onChange(val);
+                  }}
+                  onBlur={(e) => {
+                    f.onBlur();
+                    const val = parseFloat(e.target.value);
+                    if (!isNaN(val)) {
+                      handleTotalQtyBlur(val, index);
+                    }
+                  }}
                 />
                 {product && (
                   <div style={{ fontSize: '10px', color: '#52c41a', marginTop: 4, whiteSpace: 'nowrap' }}>
@@ -190,39 +260,9 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       }
     },
     {
-      title: 'Unit',
-      key: 'unit',
-      width: '10%',
-      render: (_: any, __: any, index: number) => (
-        <Controller
-          name={`lineItems.${index}.unitType`}
-          control={control}
-          render={({ field: f, fieldState: { error } }) => (
-            <div>
-              <Select
-                {...f}
-                options={[
-                  { label: 'Box', value: 'BOX' },
-                  { label: 'Bundle', value: 'BUNDLE' },
-                  { label: 'Each', value: 'EACH' },
-                ]}
-                style={{ width: '100%' }}
-                status={error ? 'error' : ''}
-                onChange={(val) => {
-                  f.onChange(val);
-                  handleUnitChange(val, index);
-                }}
-              />
-              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
-            </div>
-          )}
-        />
-      ),
-    },
-    {
       title: 'Rate',
       key: 'rate',
-      width: '16%',
+      width: '13%',
       align: 'right' as const,
       render: (_: any, __: any, index: number) => (
         <Controller
@@ -235,8 +275,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 min={0} 
                 step={0.01} 
                 precision={2} 
-                size="large"
-                style={{ width: '100%', minWidth: '100px', fontSize: '16px', fontWeight: 'bold' }} 
+                size="middle"
+                style={{ width: '100%' }} 
                 status={error ? 'error' : ''} 
                 onBlur={(e) => {
                   f.onBlur();
@@ -255,16 +295,39 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
     {
       title: 'Amount',
       key: 'amount',
-      width: '15%',
+      width: '14%',
       align: 'right' as const,
       render: (_: any, __: any, index: number) => {
         const qty = Number(lineItems?.[index]?.soldQuantity) || 0;
         const rate = Number(lineItems?.[index]?.rate) || 0;
-        const rowAmount = qty * rate;
+        const autoAmount = qty * rate;
+        
         return (
-          <div style={{ fontFamily: 'monospace', fontWeight: 600, paddingTop: 4 }}>
-            {rowAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          </div>
+          <Controller
+            name={`lineItems.${index}.amount`}
+            control={control}
+            render={({ field: f, fieldState: { error } }) => {
+              const displayValue = f.value !== undefined ? f.value : autoAmount;
+              return (
+                <div>
+                  <InputNumber onFocus={(e) => e.target.select()} 
+                    {...f} 
+                    value={displayValue}
+                    min={0} 
+                    step={0.01} 
+                    precision={2} 
+                    size="middle"
+                    style={{ width: '100%', fontWeight: 600 }} 
+                    status={error ? 'error' : ''}
+                    onChange={(val) => {
+                      f.onChange(val);
+                    }}
+                  />
+                  {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
+                </div>
+              );
+            }}
+          />
         );
       }
     },
@@ -301,6 +364,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
         rowKey="id"
         pagination={false}
         size="small"
+        tableLayout="fixed"
       />
       
       <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
