@@ -130,6 +130,7 @@ export interface Delivery {
 export interface Purchase {
   id: string;
   invoiceNo: string;
+  supplierId?: string | number;
   supplier?: { id: string; name: string };
   supplierName?: string;
   purchaseDate?: string;
