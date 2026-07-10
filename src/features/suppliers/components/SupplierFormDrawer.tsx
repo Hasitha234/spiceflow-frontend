@@ -112,20 +112,22 @@ export const SupplierFormDrawer: React.FC<SupplierFormDrawerProps> = ({
         header: { borderBottom: '1px solid #f0f0f0', padding: '16px 24px' },
         body: { padding: '24px' },
       }}
-      extra={
-        <div className="flex gap-3">
-          <Button onClick={onClose} disabled={status === 'submitting'}>
+      footer={
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+          <Button onClick={onClose} disabled={status === 'submitting'} style={{ borderRadius: 'var(--radius-md)' }}>
             Cancel
           </Button>
           <Button 
             type="primary" 
             onClick={() => form.submit()} 
             loading={status === 'submitting'}
+            style={{ borderRadius: 'var(--radius-md)' }}
           >
             {isEditing ? 'Save Changes' : 'Create Supplier'}
           </Button>
         </div>
       }
+      footerStyle={{ borderTop: '1px solid var(--surface-border)', padding: '16px 24px' }}
     >
       <Form
         form={form}

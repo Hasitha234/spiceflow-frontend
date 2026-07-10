@@ -37,6 +37,7 @@
   --surface-raised:   #1e293b; /* slate-800 */
   --surface-overlay:  #334155; /* slate-700 */
   --surface-border:   #334155; /* slate-700 */
+  --surface-border-strong: #94a3b8; /* slate-400 */
   --surface-muted:    #1e293b;
 
   /* Text — Dark */
@@ -90,6 +91,7 @@
   --surface-raised:  #ffffff;
   --surface-overlay: #f1f5f9;
   --surface-border:  #e2e8f0;
+  --surface-border-strong: #cbd5e1; /* slate-300 */
   --surface-muted:   #f8fafc;
   --text-primary:    #0f172a;
   --text-secondary:  #475569;
@@ -329,9 +331,31 @@ body {
   color: var(--text-secondary) !important;
 }
 
-/* Primary button radius — enforce structured B2B aesthetic */
+/* Enforce structural B2B corner radius on all inputs and buttons */
+.ant-input,
+.ant-input-number,
+.ant-select-selector,
 .ant-btn {
   border-radius: var(--radius-md) !important;
+}
+
+/* Fix vanishing input borders for physical materiality */
+.ant-input,
+.ant-input-number,
+.ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  border-color: var(--surface-border-strong) !important;
+}
+
+/* Fix critical WCAG accessibility failure on placeholder text */
+.ant-input::placeholder,
+.ant-input-number-input::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Increase form label weight for structural hierarchy */
+.ant-form-item-label > label {
+  font-weight: 500 !important;
+  color: var(--text-primary) !important;
 }
 
 /* Status tags */
