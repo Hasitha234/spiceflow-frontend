@@ -36,7 +36,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
   const handleProductSelect = (productId: string, index: number) => {
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
     if (product) {
-      const rate = Number(product.ratePerSoldUnit ?? product.basePrice ?? 0);
+      const rate = Number(product.basePrice || product.ratePerSoldUnit || 0);
       const unitType = product.unitType || 'BOX';
       const inputQty = Number(lineItems?.[index]?.noOfBoxes || 1);
       
