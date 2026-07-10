@@ -38,6 +38,7 @@ const si = {
   nav: {
     dashboard: 'උපකරණ පුවරුව',
     purchases: 'මිලදී ගැනීම්',
+    daySummary: 'දෛනික සාරාංශය',
     inventory: 'තොගය',
     orders: 'ලේඛකාධිකාරි ඇණවුම්',
     loading: 'පැටවීමේ පත්‍ර',
@@ -346,6 +347,15 @@ const si = {
     updateSuccess: 'භූමිකාව සාර්ථකව යාවත්කාලීන විය',
     deleteSuccess: 'භූමිකාව සාර්ථකව මකා දමා ඇත',
     deleteConfirm: 'ඔබට මෙම භූමිකාව මැකීමට අවශ්‍ය ද?',
+  },
+  daySummary: {
+    title: 'දෛනික සාරාංශය',
+    subtitle: 'නිශ්චිත දිනයක් සඳහා සියලුම මිලදී ගැනීම් බලන්න.',
+    totalPurchases: 'මුළු මිලදී ගැනීම්',
+    totalValue: 'මුළු වටිනාකම (රු.)',
+    draftCount: 'කෙටුම්පත් ඇණවුම්',
+    confirmedCount: 'තහවුරු කළ ඇණවුම්',
+    noPurchases: 'මෙම දිනය සඳහා කිසිදු මිලදී ගැනීමක් වාර්තා වී නොමැත.',
   },
 };
 
