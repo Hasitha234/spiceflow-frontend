@@ -36,7 +36,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
   const columns: ColumnsType<ProductResponse> = [
     {
-      title: 'SKU',
+      title: 'Product Code',
       dataIndex: 'sku',
       key: 'sku',
       sorter: true,
@@ -77,9 +77,9 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       ),
     },
     {
-      title: 'Rate / Bundle',
-      dataIndex: 'ratePerSoldUnit',
-      key: 'ratePerSoldUnit',
+      title: 'Rate',
+      dataIndex: 'basePrice',
+      key: 'basePrice',
       sorter: true,
       width: 130,
       align: 'right' as const,
