@@ -36,7 +36,7 @@ export const TruncatedCell: React.FC<TruncatedCellProps> = ({
     <div style={{ maxWidth: maxWidth || '100%', overflow: 'hidden' }}>
       <Text 
         className={className}
-        ellipsis={{ tooltip: { title: value, mouseEnterDelay: 0.15 } }}
+        ellipsis={{ tooltip: { title: value, mouseEnterDelay: 0.15, align: { offset: [0, 4] } } }}
         style={{ width: '100%' }}
       >
         {value}

@@ -16,7 +16,6 @@ import { useProductLookups } from '../hooks/useProductLookups';
 import { ProductTable } from '../components/ProductTable';
 import { ProductFormDrawer } from '../components/ProductFormDrawer';
 import { getTraceId } from '@/utils/getProblemDetails';
-import { pluralize } from '@/utils/pluralize';
 
 const FILTER_KEYS = ['supplierId'];
 
@@ -114,7 +113,6 @@ export function ProductListPage() {
     <PageLayout>
       <PageHeader
         title="Products"
-        subtitle={`${data?.totalElements ?? 0} ${pluralize(data?.totalElements ?? 0, 'product')}`}
         breadcrumbs={[
           { title: 'Settings', href: '/settings' },
           { title: 'Products' },

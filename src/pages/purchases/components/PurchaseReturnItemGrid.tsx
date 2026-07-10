@@ -34,7 +34,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
   const handleProductSelect = (productId: string, index: number) => {
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
     if (product) {
-      const rate = Number(product.ratePerSoldUnit ?? product.basePrice ?? 0);
+      const rate = Number(product.basePrice || product.ratePerSoldUnit || 0);
       const unitType = product.unitType || 'BOX';
       setValue(`returnItems.${index}.rate`, rate);
       setValue(`returnItems.${index}.unitType`, unitType);

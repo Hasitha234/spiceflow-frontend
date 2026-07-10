@@ -71,7 +71,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       key: 'unitType',
       width: 100,
       render: (type: string) => (
-        <Tag className="!bg-slate-800 !border-slate-700 !text-slate-300 rounded-md">
+        <Tag className="!bg-slate-100 !border-slate-200 !text-slate-700 rounded-md">
           {type}
         </Tag>
       ),
@@ -106,7 +106,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(record)}
-                className="!text-blue-400 hover:!text-blue-300"
+                className="!text-slate-400 hover:!text-slate-900 hover:!bg-slate-100 flex items-center justify-center"
               />
             </Tooltip>
             <Tooltip title="Delete">
@@ -116,6 +116,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 danger
                 icon={<DeleteOutlined />}
                 onClick={() => setDeleteTarget(record)}
+                className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 flex items-center justify-center"
               />
             </Tooltip>
           </PermissionGuard>

@@ -326,9 +326,9 @@ body {
 .ant-table-thead > tr > th {
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.025em;
   text-transform: uppercase;
-  color: var(--text-secondary) !important;
+  color: #64748B !important;
   background-color: var(--surface-muted) !important;
 }
 

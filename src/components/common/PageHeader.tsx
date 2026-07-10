@@ -23,7 +23,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   extra,
 }) => {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
           <Breadcrumb
