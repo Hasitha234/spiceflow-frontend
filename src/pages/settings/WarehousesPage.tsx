@@ -218,21 +218,21 @@ export function WarehousesPage() {
         <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                 <Statistic title="Total Warehouses" value={stats.total} prefix={<BankOutlined style={{ color: '#0F9D6C' }} />} valueStyle={{ fontWeight: 600 }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-              <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                 <Statistic title="Main Storage" value={stats.main} prefix={<BankOutlined style={{ color: '#52c41a' }} />} valueStyle={{ fontWeight: 600 }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
-              <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
                 <Statistic title="Vehicles" value={stats.vehicle} prefix={<CarOutlined style={{ color: '#1890ff' }} />} valueStyle={{ fontWeight: 600 }} />
               </Card>
             </motion.div>
@@ -242,7 +242,7 @@ export function WarehousesPage() {
         {/* SEARCH AND TABLE CARD */}
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
           <Card 
-            bordered={false} 
+            variant="borderless" 
             style={{ borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}
             styles={{ body: { padding: '24px' } }}
           >
@@ -369,4 +369,5 @@ export function WarehousesPage() {
     </ConfigProvider>
   );
 }
+
 

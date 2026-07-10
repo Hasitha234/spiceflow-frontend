@@ -101,7 +101,7 @@ export const FinanceLedgerTab: React.FC<FinanceLedgerTabProps> = ({ data }) => {
 
       <Row gutter={16}>
         <Col xs={24} lg={10}>
-          <Card className="dashboard-panel dashboard-table" title="Receivables Aging Breakdown" bordered={false}>
+          <Card className="dashboard-panel dashboard-table" title="Receivables Aging Breakdown" variant="borderless">
             <Table<ReceivableAgingBucket>
               dataSource={data?.receivablesAgingBuckets || []}
               columns={agingColumns}
@@ -124,3 +124,4 @@ export const FinanceLedgerTab: React.FC<FinanceLedgerTabProps> = ({ data }) => {
     </div>
   );
 };
+
