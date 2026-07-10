@@ -11,6 +11,7 @@ import { featureRoutes } from './routes/featureRoutes';
 // Route-level code splitting via React.lazy
 const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const DaySummaryPage = lazy(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
 const WarehousesPage = lazy(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
 const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
 const CategoriesPage = lazy(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
@@ -57,6 +58,7 @@ function App() {
             >
               <Route index element={<DashboardPage />} />
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="day-summary" element={<DaySummaryPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="purchases/:id/edit" element={<CreatePurchasePage />} />

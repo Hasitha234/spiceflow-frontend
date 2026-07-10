@@ -21,6 +21,7 @@ const { Text } = Typography;
 const menuItems = [
   { key: '/', translateKey: 'nav.dashboard' },
   { key: '/purchases', translateKey: 'nav.purchases' },
+  { key: '/day-summary', translateKey: 'nav.daySummary' },
   { key: '/inventory', translateKey: 'nav.inventory' },
   { key: '/sales', translateKey: 'nav.orders' },
   { key: '/loading', translateKey: 'nav.loading' },

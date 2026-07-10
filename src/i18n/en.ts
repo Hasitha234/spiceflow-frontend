@@ -38,6 +38,7 @@ const en = {
   nav: {
     dashboard: 'Dashboard',
     purchases: 'Purchases',
+    daySummary: 'Day Summary',
     inventory: 'Inventory',
     orders: 'Rep Orders',
     loading: 'Loading Sheets',
@@ -346,6 +347,15 @@ const en = {
     updateSuccess: 'Role updated successfully',
     deleteSuccess: 'Role deleted successfully',
     deleteConfirm: 'Are you sure you want to delete this role?',
+  },
+  daySummary: {
+    title: 'Day Summary',
+    subtitle: 'View all purchases for a specific day.',
+    totalPurchases: 'Total Purchases',
+    totalValue: 'Total Value (LKR)',
+    draftCount: 'Draft Orders',
+    confirmedCount: 'Confirmed Orders',
+    noPurchases: 'No purchases recorded for this date.',
   },
 };
 
