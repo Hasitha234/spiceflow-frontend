@@ -56,17 +56,6 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       ),
     },
     {
-      title: 'Category',
-      dataIndex: 'categoryName',
-      key: 'categoryName',
-      width: 160,
-      render: (cat: string) => (
-        <Tag className="!bg-blue-950/60 !border-blue-700/50 !text-blue-300 rounded-md">
-          {cat ?? '—'}
-        </Tag>
-      ),
-    },
-    {
       title: 'Supplier',
       dataIndex: 'supplierName',
       key: 'supplierName',
