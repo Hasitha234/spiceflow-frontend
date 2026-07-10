@@ -402,3 +402,58 @@ body {
   background: var(--surface-background) !important;
   color: var(--text-primary) !important;
 }
+
+/* --------------------------------------------------------------------------
+   SpiceFlow Table Component Styles
+   -------------------------------------------------------------------------- */
+.spiceflow-table .ant-table-thead > tr > th {
+  background-color: transparent !important;
+  color: var(--color-slate-500) !important;
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--color-slate-200) !important;
+}
+
+.spiceflow-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid var(--color-slate-100) !important;
+}
+
+.spiceflow-table .ant-table-tbody > tr:last-child > td {
+  border-bottom: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   Status Tag Overrides
+   -------------------------------------------------------------------------- */
+.ant-tag-green {
+  background-color: #d1fae5 !important; /* emerald-100 */
+  color: #047857 !important; /* emerald-700 */
+  border: 1px solid #a7f3d0 !important; /* emerald-200 */
+}
+
+.ant-tag-orange {
+  background-color: #fef3c7 !important; /* amber-100 */
+  color: #b45309 !important; /* amber-700 */
+  border: 1px solid #fde68a !important; /* amber-200 */
+}
+
+/* --------------------------------------------------------------------------
+   Sidebar Menu Overrides
+   -------------------------------------------------------------------------- */
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-light > .ant-menu .ant-menu-item-selected {
+  background-color: #ecfdf5 !important; /* Emerald 50 */
+  color: #059669 !important; /* Emerald 600 */
+  border-left: 3px solid #059669 !important;
+  border-radius: 0 8px 8px 0 !important;
+}
+
+[data-theme='dark'] .ant-menu-dark .ant-menu-item-selected,
+[data-theme='dark'] .ant-menu-item-selected {
+  background-color: rgba(5, 150, 105, 0.2) !important;
+  color: #10b981 !important; /* Emerald 500 */
+  border-left: 3px solid #10b981 !important;
+  border-radius: 0 8px 8px 0 !important;
+}

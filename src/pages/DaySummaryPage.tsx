@@ -78,7 +78,7 @@ export function DaySummaryPage() {
         align: 'right' as const,
         render: (_: unknown, record: Purchase) => {
           const val = record.netAmount !== undefined ? record.netAmount : record.totalOrderValue ?? record.totalAmount ?? 0;
-          return <span className="font-mono text-slate-700 dark:text-slate-100 font-semibold">{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+          return <span className="text-slate-900 font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
         },
       },
       {
@@ -105,76 +105,69 @@ export function DaySummaryPage() {
 
   return (
     <div className="p-6">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
-        <div>
-          <Title level={2} style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
-            {t('daySummary.title', 'Day Summary')}
-          </Title>
-          <Text style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'block', color: 'var(--text-secondary)' }}>
-            {t('daySummary.subtitle', 'View all purchases for a specific day.')}
-          </Text>
-        </div>
+      <div className="flex justify-end mb-6 w-full">
         <DatePicker
           value={selectedDate}
           onChange={(date) => date && setSelectedDate(date)}
           allowClear={false}
           size="large"
-          style={{ width: '240px', borderRadius: '6px' }}
+          className="w-60 rounded-md border-slate-300 shadow-sm"
         />
       </div>
 
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
         <Col xs={24} sm={8}>
-          <Card style={{ borderRadius: '12px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-base)' }}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)' }}>
-                  <ShoppingOutlined /> <span>{t('daySummary.totalPurchases', 'Total Purchases')}</span>
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <ShoppingOutlined className="text-emerald-600" /> <span>{t('daySummary.totalPurchases', 'Total Purchases')}</span>
                 </div>
               }
               value={purchases.length}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: 'var(--text-primary)' }}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card style={{ borderRadius: '12px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-base)' }}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)' }}>
-                  <DollarOutlined /> <span>{t('daySummary.totalValue', 'Total Value (LKR)')}</span>
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <DollarOutlined className="text-emerald-600" /> <span>{t('daySummary.totalValue', 'Total Value (LKR)')}</span>
                 </div>
               }
               value={totalValue}
               precision={2}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: 'var(--primary-main)', fontFamily: 'monospace' }}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card style={{ borderRadius: '12px', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border-base)' }}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)' }}>
-                  <FileTextOutlined /> <span>{t('daySummary.draftCount', 'Draft Orders')} / {t('daySummary.confirmedCount', 'Confirmed')}</span>
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <FileTextOutlined className="text-emerald-600" /> <span>{t('daySummary.draftCount', 'Draft Orders')} / {t('daySummary.confirmedCount', 'Confirmed')}</span>
                 </div>
               }
               value={draftCount}
               suffix={`/ ${confirmedCount}`}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: 'var(--text-primary)' }}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card style={{ borderRadius: '12px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--border-base)' }} className="overflow-hidden">
+      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden">
         <Table
           rowKey="id"
           loading={loading}
           dataSource={purchases}
           columns={columns}
-          pagination={{ pageSize: 20 }}
+          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
           locale={{ emptyText: t('daySummary.noPurchases', 'No purchases recorded for this date.') }}
+          className="spiceflow-table"
         />
       </Card>
 

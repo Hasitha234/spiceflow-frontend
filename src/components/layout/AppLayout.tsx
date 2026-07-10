@@ -102,12 +102,12 @@ export function AppLayout() {
           style={{ 
             background: 'transparent',
             borderRight: 'none',
-            padding: '16px 12px'
+            padding: '16px 12px 16px 0'
           }}
           items={menuItems.map((item) => ({
             key: item.key,
             label: t(item.translateKey),
-            style: { borderRadius: 8, marginBottom: 4 }
+            style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
           }))}
         />
       </Sider>
