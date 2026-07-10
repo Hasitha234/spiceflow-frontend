@@ -94,7 +94,7 @@ export function AppLayout() {
         </div>
         
         <Menu
-          theme="dark"
+          theme={theme === 'dark' ? 'dark' : 'light'}
           mode="inline"
           selectedKeys={[currentKey]}
           onClick={({ key }) => navigate(key)}
