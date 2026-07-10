@@ -18,7 +18,7 @@ import { ProductFormDrawer } from '../components/ProductFormDrawer';
 import { getTraceId } from '@/utils/getProblemDetails';
 import { pluralize } from '@/utils/pluralize';
 
-const FILTER_KEYS = ['categoryId', 'supplierId'];
+const FILTER_KEYS = ['supplierId'];
 
 export function ProductListPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -44,7 +44,7 @@ export function ProductListPage() {
   const { data, isLoading, isError, error, isFetching } = useProductList(pageableParams);
 
   // Lookups for filter dropdowns
-  const { categoryOptions, supplierOptions } = useProductLookups();
+  const { supplierOptions } = useProductLookups();
 
   // Filter configuration
   const filterDefs: FilterDef[] = useMemo(
@@ -56,20 +56,13 @@ export function ProductListPage() {
       },
       {
         type: 'select' as const,
-        key: 'categoryId',
-        label: 'Category',
-        placeholder: 'All Categories',
-        options: categoryOptions.map((o) => ({ ...o, value: String(o.value) })),
-      },
-      {
-        type: 'select' as const,
         key: 'supplierId',
         label: 'Supplier',
         placeholder: 'All Suppliers',
         options: supplierOptions.map((o) => ({ ...o, value: String(o.value) })),
       },
     ],
-    [categoryOptions, supplierOptions],
+    [supplierOptions],
   );
 
   // Map state for FilterPanel values
