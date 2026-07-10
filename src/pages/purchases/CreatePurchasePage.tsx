@@ -272,23 +272,24 @@ export function CreatePurchasePage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--surface-base)', paddingBottom: '120px' }}>
       {/* Top Header Navigation */}
-      <div style={{ backgroundColor: 'var(--surface-raised)', borderBottom: '1px solid var(--surface-border)', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ backgroundColor: 'var(--surface-raised)', borderBottom: '1px solid var(--surface-border)', padding: '16px 24px', display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
         <Button 
           type="text" 
           icon={<ArrowLeftOutlined />} 
           onClick={() => navigate('/purchases')}
+          className="text-slate-500 hover:text-slate-900"
         />
-        <Title level={4} style={{ margin: 0 }}>{isEditMode ? 'Edit Purchase Order' : 'New Purchase Order'}</Title>
+        <Title level={4} style={{ margin: 0, color: 'var(--text-primary)' }}>{isEditMode ? 'Edit Purchase Order' : 'New Purchase Order'}</Title>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
         <Card variant="borderless" style={{ borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }}>
-          <Row gutter={24}>
+          <Row gutter={[16, 16]}>
             <Col xs={24} md={8}>
               <Form.Item
-                label={<Text strong>Supplier</Text>}
+                label={<Text strong style={{ color: 'var(--text-secondary)' }}>Supplier</Text>}
                 validateStatus={errors.supplierId ? 'error' : ''}
                 help={errors.supplierId?.message}
                 required
@@ -299,7 +300,7 @@ export function CreatePurchasePage() {
                   render={({ field }) => (
                     <Select
                       {...field}
-                      size="large"
+                      size="middle"
                       placeholder="Select supplier"
                       options={suppliers.map((s) => ({ value: String(s.id), label: s.name }))}
                       showSearch
@@ -316,7 +317,7 @@ export function CreatePurchasePage() {
             </Col>
             <Col xs={24} md={8}>
               <Form.Item
-                label={<Text strong>Invoice No</Text>}
+                label={<Text strong style={{ color: 'var(--text-secondary)' }}>Invoice No</Text>}
                 validateStatus={errors.invoiceNo ? 'error' : ''}
                 help={errors.invoiceNo?.message}
                 required
@@ -324,13 +325,13 @@ export function CreatePurchasePage() {
                 <Controller
                   name="invoiceNo"
                   control={control}
-                  render={({ field }) => <Input size="large" {...field} placeholder="INV-2026-001" style={{ width: '100%' }} />}
+                  render={({ field }) => <Input size="middle" {...field} placeholder="INV-2026-001" style={{ width: '100%' }} />}
                 />
               </Form.Item>
             </Col>
             <Col xs={24} md={8}>
               <Form.Item
-                label={<Text strong>Invoice Date</Text>}
+                label={<Text strong style={{ color: 'var(--text-secondary)' }}>Invoice Date</Text>}
                 validateStatus={errors.invoiceDate ? 'error' : ''}
                 help={errors.invoiceDate?.message}
                 required
@@ -338,21 +339,21 @@ export function CreatePurchasePage() {
                 <Controller
                   name="invoiceDate"
                   control={control}
-                  render={({ field }) => <Input type="date" size="large" {...field} style={{ width: '100%' }} />}
+                  render={({ field }) => <Input type="date" size="middle" {...field} style={{ width: '100%' }} />}
                 />
               </Form.Item>
             </Col>
           </Row>
-          <Row gutter={24}>
+          <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
             <Col xs={24} md={8}>
-              <Form.Item label={<Text strong>Payment Method</Text>}>
+              <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Payment Method</Text>}>
                 <Controller
                   name="paymentMethod"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      size="large"
+                      size="middle"
                       style={{ width: '100%' }}
                       options={[
                         { label: 'Cash', value: 'CASH' },
@@ -369,29 +370,29 @@ export function CreatePurchasePage() {
             {paymentMethod === 'CHEQUE' && (
               <>
                 <Col xs={24} md={8}>
-                  <Form.Item label={<Text strong>Cheque Number</Text>}>
+                  <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Cheque Number</Text>}>
                     <Controller
                       name="chequeNo"
                       control={control}
-                      render={({ field }) => <Input size="large" {...field} placeholder="CHQ-123456" style={{ width: '100%' }} />}
+                      render={({ field }) => <Input size="middle" {...field} placeholder="CHQ-123456" style={{ width: '100%' }} />}
                     />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={8}>
-                  <Form.Item label={<Text strong>Bank Name</Text>}>
+                  <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Bank Name</Text>}>
                     <Controller
                       name="chequeBankName"
                       control={control}
-                      render={({ field }) => <Input size="large" {...field} placeholder="Commercial Bank" style={{ width: '100%' }} />}
+                      render={({ field }) => <Input size="middle" {...field} placeholder="Commercial Bank" style={{ width: '100%' }} />}
                     />
                   </Form.Item>
                 </Col>
                 <Col xs={24} md={8}>
-                  <Form.Item label={<Text strong>Cheque Amount</Text>} extra={<span style={{ fontSize: '0.6875rem', color: 'var(--color-emerald-500)' }}>If left 0, it auto-fills with Net Total</span>}>
+                  <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Cheque Amount</Text>} extra={<span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '4px', display: 'block' }}>If left 0, it auto-fills with Net Total</span>}>
                     <Controller
                       name="chequeAmount"
                       control={control}
-                      render={({ field }) => <InputNumber onFocus={(e) => e.target.select()} size="large" {...field} min={0} step={0.01} precision={2} style={{ width: '100%' }} placeholder="Amount" />}
+                      render={({ field }) => <InputNumber onFocus={(e) => e.target.select()} size="middle" {...field} min={0} step={0.01} precision={2} style={{ width: '100%' }} placeholder="Amount" />}
                     />
                   </Form.Item>
                 </Col>
@@ -399,25 +400,25 @@ export function CreatePurchasePage() {
             )}
 
             <Col xs={24} md={paymentMethod === 'CHEQUE' ? 24 : 16}>
-              <Form.Item label={<Text strong>Notes (Optional)</Text>}>
+              <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Notes (Optional)</Text>}>
                 <Controller
                   name="notes"
                   control={control}
-                  render={({ field }) => <Input size="large" {...field} placeholder="Add any relevant purchasing notes here..." style={{ width: '100%' }} />}
+                  render={({ field }) => <Input size="middle" {...field} placeholder="Add any relevant purchasing notes here..." style={{ width: '100%' }} />}
                 />
               </Form.Item>
             </Col>
           </Row>
-          <Row gutter={24}>
+          <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
             <Col xs={24} md={8}>
-              <Form.Item label={<Text strong>Return Warehouse (Optional)</Text>} tooltip="Select if there are returned items in this purchase">
+              <Form.Item label={<Text strong style={{ color: 'var(--text-secondary)' }}>Return Warehouse (Optional)</Text>} tooltip="Select if there are returned items in this purchase">
                 <Controller
                   name="returnWarehouseId"
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      size="large"
+                      size="middle"
                       placeholder="Select a warehouse for returns"
                       options={warehouses.map((w) => ({ value: String(w.id), label: w.name }))}
                       style={{ width: '100%' }}
@@ -533,7 +534,7 @@ export function CreatePurchasePage() {
                   name="discountAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ padding: '4px 0', backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '1rem', fontWeight: 500, width: '120px', color: 'var(--text-primary)', border: 'none', borderBottom: '1px solid #E2E8F0', borderRadius: 0, boxShadow: 'none' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -544,7 +545,7 @@ export function CreatePurchasePage() {
                   name="returnsDeductedAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ padding: '4px 0', backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '1rem', fontWeight: 500, width: '120px', color: 'var(--text-primary)', border: 'none', borderBottom: '1px solid #E2E8F0', borderRadius: 0, boxShadow: 'none' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -555,7 +556,7 @@ export function CreatePurchasePage() {
                   name="vatAmount"
                   control={control}
                   render={({ field }) => (
-                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} variant="borderless" style={{ padding: 0, backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '16px', fontWeight: 500, width: '100px', color: 'var(--text-primary)' }} placeholder="0.00" />
+                    <InputNumber onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ padding: '4px 0', backgroundColor: 'transparent', fontFamily: 'monospace', fontSize: '1rem', fontWeight: 500, width: '120px', color: 'var(--text-primary)', border: 'none', borderBottom: '1px solid #E2E8F0', borderRadius: 0, boxShadow: 'none' }} placeholder="0.00" />
                   )}
                 />
               </div>
@@ -565,10 +566,12 @@ export function CreatePurchasePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                 <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>Net Total</span>
-                <span style={{ fontFeatureSettings: "'tnum'", fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-emerald-500)' }}>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 400, color: 'var(--text-secondary)', marginRight: '4px' }}>LKR</span>
-                  {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                  <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--text-secondary)' }}>LKR</span>
+                  <span style={{ fontFeatureSettings: "'tnum'", fontSize: '1.5rem', fontWeight: 600, color: 'var(--color-emerald-600)' }}>
+                    {netTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
               </div>
               
               <Button size="large" onClick={() => navigate('/purchases')} disabled={isSubmitting}>

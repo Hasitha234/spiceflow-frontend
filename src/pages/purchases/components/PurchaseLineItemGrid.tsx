@@ -249,7 +249,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
                   }}
                 />
                 {product && (
-                  <div style={{ fontSize: '10px', color: '#52c41a', marginTop: 4, whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: '12px', color: '#94A3B8', fontFamily: 'monospace', marginTop: 4, whiteSpace: 'nowrap' }}>
                     = {lineItems?.[index]?.noOfBoxes || 0} × {multiplier} {uom}
                   </div>
                 )}
@@ -340,7 +340,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
         <Tooltip title="Delete row">
           <Button
             type="text"
-            danger
+            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md"
             icon={<DeleteOutlined />}
             onClick={() => remove(index)}
             disabled={fields.length === 1}
