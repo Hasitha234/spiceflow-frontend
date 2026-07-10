@@ -1,6 +1,5 @@
 import React from 'react';
-import { Card, Button, Typography, Skeleton, ConfigProvider } from 'antd';
-import { pluralize } from '@/utils/pluralize';
+import { Card, Typography, Skeleton, ConfigProvider } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,99 +21,64 @@ import { useGetReps, useGetDrivers, useGetShops } from '@/api/generated/sales-ma
 
 const { Title, Text } = Typography;
 
-const NEUTRAL_ICON_COLOR = '#8b949e';
-
 // --- Card Component ---
 interface CategoryCardProps {
   id: string;
   title: string;
   icon: React.ReactNode;
-  createLabel: string;
   createLink: string;
-  emptyLabel: string;
-  singularLabel: string;
-  pluralLabel?: string;
   count?: number;
   isLoading: boolean;
   isError: boolean;
-  onRetry: () => void;
 }
 
-function CategoryCard({ title, icon, createLabel, createLink, emptyLabel, singularLabel, pluralLabel, count, isLoading, isError, onRetry }: CategoryCardProps) {
+function CategoryCard({ title, icon, createLink, count, isLoading, isError }: CategoryCardProps) {
   const navigate = useNavigate();
-
-  const isEmpty = count === 0;
 
   return (
     <Card 
       hoverable
+      onClick={() => navigate(createLink)}
       style={{ 
-        height: '160px', 
-        display: 'flex',
-        flexDirection: 'column',
+        cursor: 'pointer',
+        borderRadius: 'var(--radius-lg)',
+        border: '1px solid var(--surface-border)',
+        boxShadow: 'var(--shadow-sm)',
         transition: 'all 150ms ease-in-out'
       }} 
-      styles={{ body: { padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' } }}
+      styles={{ body: { padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' } }}
     >
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: NEUTRAL_ICON_COLOR, fontSize: '18px' }}>
-            {icon}
-          </div>
-          <Text style={{ fontWeight: 600, fontSize: '16px' }}>
-            {title}
-          </Text>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', fontSize: '1.25rem' }}>
+          {icon}
         </div>
-
-        <div style={{ height: '24px', display: 'flex', alignItems: 'center' }}>
-          <AnimatePresence mode="wait">
-            {isLoading && (
-              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ width: '120px' }}>
-                <Skeleton.Button active size="small" style={{ height: '16px', width: '100px' }} />
-              </motion.div>
-            )}
-
-            {!isLoading && !isError && isEmpty && (
-              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                <Text type="secondary" style={{ fontSize: '14px' }}>{emptyLabel}</Text>
-              </motion.div>
-            )}
-
-            {isError && (
-              <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <WarningOutlined style={{ color: '#f87171', fontSize: '12px' }} />
-                <Text style={{ fontSize: '14px' }}>Couldn't load count</Text>
-                <Button 
-                  type="link" 
-                  size="small" 
-                  onClick={(e) => { e.preventDefault(); onRetry(); }} 
-                  style={{ padding: 0, height: 'auto', fontSize: '13px', color: '#0F9D6C' }}
-                >
-                  Retry
-                </Button>
-              </motion.div>
-            )}
-
-            {!isLoading && !isError && !isEmpty && (
-              <motion.div key="success" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                <Text type="secondary" style={{ fontSize: '14px' }}>
-                  <span style={{ fontWeight: 600 }}>{count}</span> {pluralize(count || 0, singularLabel, pluralLabel)}
-                </Text>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <Text style={{ fontWeight: 600, fontSize: '1rem', color: 'var(--text-primary)' }}>
+          {title}
+        </Text>
       </div>
 
-      <div style={{ marginTop: '16px' }}>
-        <Button 
-          type="primary" 
-          size="small" 
-          onClick={() => navigate(createLink)}
-          style={{ fontWeight: 500 }}
-        >
-          {createLabel}
-        </Button>
+      <div style={{ display: 'flex', alignItems: 'center' }}>
+        <AnimatePresence mode="wait">
+          {isLoading && (
+            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <Skeleton.Button active size="small" style={{ height: '16px', width: '32px', minWidth: '32px' }} />
+            </motion.div>
+          )}
+
+          {!isLoading && !isError && (
+            <motion.div key="count" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <Text style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                {count || 0}
+              </Text>
+            </motion.div>
+          )}
+
+          {isError && (
+            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <WarningOutlined style={{ color: 'var(--color-danger)', fontSize: '1rem' }} title="Couldn't load count" />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Card>
   );
@@ -146,41 +110,13 @@ export function SettingsPage() {
   const shopsQuery = useGetShops(queryParams);
 
   const categories = [
-    { 
-      id: 'products', title: 'Products', icon: <ShoppingOutlined />, 
-      createLabel: 'Create Product', createLink: 'products', emptyLabel: 'No products yet', singularLabel: 'product',
-      query: productsQuery
-    },
-    { 
-      id: 'categories', title: 'Product Categories', icon: <AppstoreOutlined />, 
-      createLabel: 'Create Category', createLink: 'categories', emptyLabel: 'No categories yet', singularLabel: 'category', pluralLabel: 'categories',
-      query: categoriesQuery
-    },
-    { 
-      id: 'suppliers', title: 'Suppliers', icon: <TeamOutlined />, 
-      createLabel: 'Create Supplier', createLink: 'suppliers', emptyLabel: 'No suppliers yet', singularLabel: 'supplier',
-      query: suppliersQuery
-    },
-    { 
-      id: 'warehouses', title: 'Warehouses', icon: <BankOutlined />, 
-      createLabel: 'Create Warehouse', createLink: 'warehouses', emptyLabel: 'No warehouses yet', singularLabel: 'warehouse',
-      query: warehousesQuery
-    },
-    { 
-      id: 'reps', title: 'Sales Reps', icon: <UserOutlined />, 
-      createLabel: 'Create Rep', createLink: 'reps', emptyLabel: 'No reps yet', singularLabel: 'rep',
-      query: repsQuery
-    },
-    { 
-      id: 'drivers', title: 'Drivers', icon: <CarOutlined />, 
-      createLabel: 'Create Driver', createLink: 'drivers', emptyLabel: 'No drivers yet', singularLabel: 'driver',
-      query: driversQuery
-    },
-    { 
-      id: 'shops', title: 'Shops', icon: <ShopOutlined />, 
-      createLabel: 'Create Shop', createLink: 'shops', emptyLabel: 'No shops yet', singularLabel: 'shop',
-      query: shopsQuery
-    },
+    { id: 'products', title: 'Products', icon: <ShoppingOutlined />, createLink: 'products', query: productsQuery },
+    { id: 'categories', title: 'Product Categories', icon: <AppstoreOutlined />, createLink: 'categories', query: categoriesQuery },
+    { id: 'suppliers', title: 'Suppliers', icon: <TeamOutlined />, createLink: 'suppliers', query: suppliersQuery },
+    { id: 'warehouses', title: 'Warehouses', icon: <BankOutlined />, createLink: 'warehouses', query: warehousesQuery },
+    { id: 'reps', title: 'Sales Reps', icon: <UserOutlined />, createLink: 'reps', query: repsQuery },
+    { id: 'drivers', title: 'Drivers', icon: <CarOutlined />, createLink: 'drivers', query: driversQuery },
+    { id: 'shops', title: 'Shops', icon: <ShopOutlined />, createLink: 'shops', query: shopsQuery },
   ];
 
   return (
@@ -192,14 +128,14 @@ export function SettingsPage() {
         },
       }}
     >
-      <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
+      <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box', backgroundColor: 'var(--surface-base)' }}>
         
         {/* HEADER AREA */}
-        <div style={{ marginBottom: '32px' }}>
-          <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
+        <div style={{ paddingTop: '32px', marginBottom: '40px' }}>
+          <Title level={1} style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--text-primary)' }}>
             {t('settings.title', 'Settings')}
           </Title>
-          <Text type="secondary" style={{ fontSize: '15px', marginTop: '4px', display: 'block' }}>
+          <Text style={{ fontSize: '1rem', marginTop: '8px', display: 'block', color: 'var(--text-secondary)' }}>
             {t('settings.description', 'Manage master data for products, suppliers, warehouses, and your team.')}
           </Text>
         </div>
@@ -215,15 +151,10 @@ export function SettingsPage() {
               id={cat.id}
               title={cat.title}
               icon={cat.icon}
-              createLabel={cat.createLabel}
               createLink={cat.createLink}
-              emptyLabel={cat.emptyLabel}
-              singularLabel={cat.singularLabel}
-              pluralLabel={cat.pluralLabel}
               count={getCount(cat.query.data)}
               isLoading={cat.query.isLoading}
               isError={cat.query.isError}
-              onRetry={() => cat.query.refetch()}
             />
           ))}
         </div>
