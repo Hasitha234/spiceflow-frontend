@@ -322,14 +322,25 @@ body {
   transition: background var(--transition-slow);
 }
 
-/* Table density — more comfortable for dense SaaS data */
 .ant-table-thead > tr > th {
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.025em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: #64748B !important;
   background-color: var(--surface-muted) !important;
+}
+
+/* Sidebar active item styling based on emerald-teal brand */
+.ant-menu-light .ant-menu-item-selected,
+.ant-menu-light.ant-menu-root.ant-menu-vertical .ant-menu-item-selected, 
+.ant-menu-light.ant-menu-root.ant-menu-inline .ant-menu-item-selected {
+  background-color: var(--color-emerald-50) !important;
+  color: var(--color-emerald-700) !important;
+}
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: var(--color-emerald-700) !important;
+  color: #ffffff !important;
 }
 
 /* Enforce structural B2B corner radius on all inputs and buttons */

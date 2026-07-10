@@ -81,13 +81,13 @@ export function WarehousesPage() {
   const columns = useMemo(
     () => [
       { 
-        title: t('warehouse.name'), 
+        title: <span style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#64748b' }}>{t('warehouse.name')}</span>, 
         dataIndex: 'name', 
         key: 'name',
-        render: (text: string) => <Text style={{ fontWeight: 500 }}>{text}</Text>
+        render: (text: string) => <Text style={{ fontWeight: 500, color: '#334155' }}>{text}</Text>
       },
       {
-        title: t('warehouse.storeType'),
+        title: <span style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#64748b' }}>{t('warehouse.storeType')}</span>,
         dataIndex: 'storeType',
         key: 'storeType',
         render: (type: string) => {
@@ -98,18 +98,18 @@ export function WarehousesPage() {
         },
       },
       { 
-        title: t('warehouse.location'), 
+        title: <span style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#64748b' }}>{t('warehouse.location')}</span>, 
         dataIndex: 'location', 
         key: 'location',
         render: (text: string) => text ? (
           <Space size={4}>
-            <EnvironmentOutlined style={{ color: 'var(--text-muted)' }} />
-            <Text type="secondary">{text}</Text>
+            <EnvironmentOutlined style={{ color: '#94a3b8' }} />
+            <Text style={{ color: '#64748b' }}>{text}</Text>
           </Space>
-        ) : <Text type="secondary" italic>No location</Text>
+        ) : <Text style={{ color: '#94a3b8', fontStyle: 'italic' }}>No location</Text>
       },
       {
-        title: t('common.actions'),
+        title: <span style={{ textTransform: 'uppercase', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', color: '#64748b' }}>{t('common.actions')}</span>,
         key: 'actions',
         align: 'right' as const,
         render: (_: unknown, record: Warehouse) => (
@@ -180,34 +180,38 @@ export function WarehousesPage() {
     <ConfigProvider
       theme={{
         token: {
-          colorPrimary: '#0F9D6C',
+          colorPrimary: '#059669',
           fontFamily: 'var(--font-sans, sans-serif)',
+          colorText: '#334155',
+          colorTextSecondary: '#64748b',
+          colorBorder: '#e2e8f0',
+          borderRadius: 6,
+          controlHeight: 36,
         },
       }}
     >
       <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
         
         {/* HEADER AREA */}
-        <Row justify="space-between" align="middle" style={{ marginBottom: '32px' }}>
+        <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
           <Col>
-            <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
+            <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0, color: '#0f172a' }}>
               {t('warehouse.title')}
             </Title>
-            <Text type="secondary" style={{ fontSize: '15px', marginTop: '4px', display: 'block' }}>
+            <Text style={{ fontSize: '15px', marginTop: '4px', display: 'block', color: '#64748b' }}>
               Manage all your inventory locations and tracking areas.
             </Text>
           </Col>
           <Col>
             <Button
               type="primary"
-              size="large"
               icon={<PlusOutlined />}
               onClick={() => {
                 setVisible(true);
                 setEditWarehouse(null);
                 reset({ name: '', storeType: 'MAIN', location: '' });
               }}
-              style={{ fontWeight: 500, borderRadius: '6px' }}
+              style={{ fontWeight: 500 }}
             >
               {t('warehouse.create')}
             </Button>
@@ -215,25 +219,25 @@ export function WarehousesPage() {
         </Row>
 
         {/* STATS CARDS */}
-        <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                <Statistic title="Total Warehouses" value={stats.total} prefix={<BankOutlined style={{ color: '#0F9D6C' }} />} valueStyle={{ fontWeight: 600 }} />
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
+                <Statistic title={<span style={{ color: '#64748b' }}>Total Warehouses</span>} value={stats.total} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
-              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                <Statistic title="Main Storage" value={stats.main} prefix={<BankOutlined style={{ color: '#52c41a' }} />} valueStyle={{ fontWeight: 600 }} />
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
+                <Statistic title={<span style={{ color: '#64748b' }}>Main Storage</span>} value={stats.main} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
-              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-                <Statistic title="Vehicles" value={stats.vehicle} prefix={<CarOutlined style={{ color: '#1890ff' }} />} valueStyle={{ fontWeight: 600 }} />
+              <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
+                <Statistic title={<span style={{ color: '#64748b' }}>Vehicles</span>} value={stats.vehicle} prefix={<CarOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
               </Card>
             </motion.div>
           </Col>
@@ -243,7 +247,7 @@ export function WarehousesPage() {
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, delay: 0.3 }}>
           <Card 
             variant="borderless" 
-            style={{ borderRadius: '12px', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}
+            style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}
             styles={{ body: { padding: '24px' } }}
           >
             <Row justify="space-between" style={{ marginBottom: '16px' }} gutter={[16, 16]}>
@@ -254,7 +258,6 @@ export function WarehousesPage() {
                   onSearch={setSearchText}
                   onChange={(e) => setSearchText(e.target.value)}
                   style={{ width: '100%' }}
-                  size="large"
                 />
               </Col>
               <Col xs={24} sm={8} md={8} lg={6}>
@@ -262,7 +265,6 @@ export function WarehousesPage() {
                   placeholder="Filter by Type"
                   allowClear
                   style={{ width: '100%' }}
-                  size="large"
                   onChange={setFilterType}
                   options={[
                     { label: 'All Types', value: null },
@@ -279,7 +281,15 @@ export function WarehousesPage() {
               columns={columns} 
               pagination={{ pageSize: 10, showSizeChanger: true }} 
               locale={{
-                emptyText: <Empty description="No warehouses found. Create one to get started!" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                emptyText: (
+                  <Empty 
+                    description={<span style={{ color: '#64748b' }}>No warehouses found. Create one to get started!</span>} 
+                  >
+                    <Button type="primary" onClick={() => setVisible(true)}>
+                      + Create Warehouse
+                    </Button>
+                  </Empty>
+                )
               }}
             />
           </Card>
