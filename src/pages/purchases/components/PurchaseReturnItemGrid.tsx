@@ -209,7 +209,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
         <Tooltip title="Delete row">
           <Button
             type="text"
-            danger
+            className="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-md"
             icon={<DeleteOutlined />}
             onClick={() => remove(index)}
           />
