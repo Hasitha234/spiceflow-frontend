@@ -143,23 +143,32 @@ export function ProductListPage() {
         }
       />
 
-      <FilterPanel
-        filters={filterDefs}
-        values={filterValues}
-        onChange={handleFilterChange}
-        onReset={resetFilters}
-      />
+      {/* MAIN DATA CONTAINER */}
+      <div style={{ 
+        borderRadius: 'var(--radius-lg)', 
+        border: '1px solid var(--surface-border)', 
+        overflow: 'hidden', 
+        background: 'var(--surface-raised)',
+        boxShadow: 'var(--shadow-sm)'
+      }}>
+        <FilterPanel
+          filters={filterDefs}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onReset={resetFilters}
+        />
 
-      <ProductTable
-        data={data?.content ?? []}
-        total={data?.totalElements ?? 0}
-        loading={isLoading || isFetching}
-        tableState={tableState}
-        onPageChange={setPage}
-        onSizeChange={setSize}
-        onSortChange={setSort}
-        onEdit={handleEdit}
-      />
+        <ProductTable
+          data={data?.content ?? []}
+          total={data?.totalElements ?? 0}
+          loading={isLoading || isFetching}
+          tableState={tableState}
+          onPageChange={setPage}
+          onSizeChange={setSize}
+          onSortChange={setSort}
+          onEdit={handleEdit}
+        />
+      </div>
 
       <ProductFormDrawer
         open={drawerOpen}

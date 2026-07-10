@@ -54,7 +54,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
   const hasActiveFilters = Object.values(values).some((v) => v && v.length > 0);
 
   return (
-    <div className="glass-subtle" style={{ marginBottom: 16, borderRadius: 12, padding: 16 }}>
+    <div className="filter-panel" style={{ padding: '16px 24px', borderBottom: '1px solid var(--surface-border)' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
         {filters.map((filter) => (
           <FilterControl

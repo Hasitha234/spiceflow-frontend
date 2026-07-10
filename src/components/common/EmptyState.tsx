@@ -21,13 +21,13 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
 }) => {
   const displayDescription = message || description || 'There are currently no items matching your criteria or available in this section.';
   return (
-    <div className="py-12 px-6 glass rounded-xl border border-slate-700/50 flex flex-col items-center justify-center text-center h-full">
+    <div className="py-12 px-6 flex flex-col items-center justify-center text-center h-full">
       <Empty
         image={icon || Empty.PRESENTED_IMAGE_SIMPLE}
         description={
           <div className="max-w-md mx-auto">
-            <p className="text-slate-200 font-semibold text-lg">{title}</p>
-            <p className="text-slate-400 text-sm mt-1">{displayDescription}</p>
+            <p style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem' }}>{title}</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', marginTop: '4px' }}>{displayDescription}</p>
           </div>
         }
       >
@@ -36,6 +36,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
             type="primary"
             icon={<PlusOutlined />}
             onClick={onAction}
+            style={{ borderRadius: 'var(--radius-md)' }}
             className="mt-4 bg-emerald-600 hover:bg-emerald-500 border-none shadow-lg shadow-emerald-900/30 font-medium"
           >
             {actionText}
