@@ -69,10 +69,14 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = methods.handleSubmit((values) => {
+    const requestData = {
+      ...values,
+      categoryId: values.categoryId ?? 1,
+    };
     if (isEditing && editingProduct?.id) {
-      updateMutation.mutate({ id: editingProduct.id, data: values });
+      updateMutation.mutate({ id: editingProduct.id, data: requestData });
     } else {
-      createMutation.mutate({ data: values });
+      createMutation.mutate({ data: requestData });
     }
   });
 
