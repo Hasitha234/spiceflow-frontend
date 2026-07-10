@@ -102,7 +102,7 @@ export const SalesReceivablesTab: React.FC<SalesReceivablesTabProps> = ({ data }
 
       <Row gutter={16}>
         <Col xs={24} lg={12}>
-          <Card className="dashboard-panel dashboard-table" title="Top Debtor Shops (Action Required)" bordered={false}>
+          <Card className="dashboard-panel dashboard-table" title="Top Debtor Shops (Action Required)" variant="borderless">
             <Table<TopDebtorShop>
               dataSource={data?.topDebtorShops || []}
               columns={debtorColumns}
@@ -125,3 +125,4 @@ export const SalesReceivablesTab: React.FC<SalesReceivablesTabProps> = ({ data }
     </div>
   );
 };
+

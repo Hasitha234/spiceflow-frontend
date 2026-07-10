@@ -195,7 +195,7 @@ export const InventoryWarehouseTab: React.FC<InventoryWarehouseTabProps> = ({ da
                   className="dashboard-panel transition-all hover:scale-[1.02] cursor-pointer" 
                   style={{ marginBottom: 0, border: '1px solid #e2e8f0' }} 
                   size="small" 
-                  bordered={false}
+                  variant="borderless"
                   hoverable
                   onClick={() => handleWarehouseClick(ws)}
                 >
@@ -231,7 +231,7 @@ export const InventoryWarehouseTab: React.FC<InventoryWarehouseTabProps> = ({ da
 
       <Row gutter={16}>
         <Col xs={24} lg={10}>
-          <Card className="dashboard-panel dashboard-table" title="Low Stock Alerts (Restock Required)" bordered={false}>
+          <Card className="dashboard-panel dashboard-table" title="Low Stock Alerts (Restock Required)" variant="borderless">
             <Table<LowStockItem>
               dataSource={data?.lowStockItems || []}
               columns={lowStockColumns}
@@ -327,3 +327,4 @@ export const InventoryWarehouseTab: React.FC<InventoryWarehouseTabProps> = ({ da
     </div>
   );
 };
+

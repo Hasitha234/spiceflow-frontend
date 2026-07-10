@@ -208,7 +208,7 @@ export function CreateRepOrderPage() {
       <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
         {/* Header Metadata Section */}
-        <Card bordered={false} style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
+        <Card variant="borderless" style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}>
           <Row gutter={24}>
             <Col xs={24} md={6}>
               <Form.Item label={<Text strong>Order Number</Text>} required>
@@ -372,7 +372,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
 
   return (
     <Card 
-      bordered={false}
+      variant="borderless"
       style={{ borderRadius: '8px', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.03)' }}
       styles={{ body: { padding: 0 } }}
     >
@@ -632,4 +632,5 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
     </Card>
   );
 }
+
 

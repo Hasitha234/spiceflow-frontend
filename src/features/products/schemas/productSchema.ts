@@ -29,7 +29,7 @@ export const defaultProductValues: ProductFormValues = {
   description: '',
   basePrice: 0,
   unitOfMeasure: 'kg',
-  categoryId: 0,
+  categoryId: undefined,
   supplierId: 0,
   netWeight: '',
   unitType: 'BOX',
