@@ -35,7 +35,7 @@ export const DataTable = <T extends object>({
   }
 
   return (
-    <div className="glass rounded-xl border border-slate-700/50 overflow-hidden shadow-xl">
+    <div className="data-table-container">
       <Table<T>
         dataSource={dataSource}
         pagination={{
