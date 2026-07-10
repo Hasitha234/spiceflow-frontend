@@ -30,7 +30,7 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   defaultSupplierId,
 }) => {
   const isEditing = !!editingProduct;
-  const { categoryOptions, supplierOptions, isLoading: lookupsLoading } = useProductLookups();
+  const { supplierOptions, isLoading: lookupsLoading } = useProductLookups();
 
   const methods = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -69,10 +69,14 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   const handleSubmit = methods.handleSubmit((values) => {
+    const requestData = {
+      ...values,
+      categoryId: values.categoryId ?? 1,
+    };
     if (isEditing && editingProduct?.id) {
-      updateMutation.mutate({ id: editingProduct.id, data: values });
+      updateMutation.mutate({ id: editingProduct.id, data: requestData });
     } else {
-      createMutation.mutate({ data: values });
+      createMutation.mutate({ data: requestData });
     }
   });
 
@@ -87,7 +91,6 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
     >
       <FormProvider {...methods}>
         <ProductForm
-          categoryOptions={categoryOptions}
           supplierOptions={supplierOptions}
           lookupsLoading={lookupsLoading}
           disabledSupplier={!!defaultSupplierId && !isEditing}

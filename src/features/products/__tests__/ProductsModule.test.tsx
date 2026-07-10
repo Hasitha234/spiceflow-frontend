@@ -36,15 +36,14 @@ describe('Products Module Reference Tests', () => {
     render(
       <FormWrapper>
         <ProductForm
-          categoryOptions={[{ label: 'Spices', value: 1 }]}
           supplierOptions={[{ label: 'Galle Suppliers', value: 1 }]}
         />
       </FormWrapper>
     );
 
-    expect(screen.getByLabelText(/SKU/i)).toBeDefined();
+    expect(screen.getByLabelText(/Product Code/i)).toBeDefined();
     expect(screen.getByLabelText(/Product Name/i)).toBeDefined();
-    expect(screen.getByLabelText(/Base Price/i)).toBeDefined();
+    expect(screen.getByLabelText(/Rate/i)).toBeDefined();
   });
 
   it('renders children inside PermissionGuard only if user has granted authority', () => {

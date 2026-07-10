@@ -5,7 +5,6 @@ import type { ProductFormValues } from '../schemas/productSchema';
 import { UNIT_TYPE_OPTIONS, UNIT_OF_MEASURE_OPTIONS } from '../constants';
 
 export interface ProductFormProps {
-  categoryOptions: { label: string; value: number }[];
   supplierOptions: { label: string; value: number }[];
   lookupsLoading?: boolean;
   disabledSupplier?: boolean;
@@ -17,7 +16,6 @@ export interface ProductFormProps {
  * All validation is driven by the Zod schema via zodResolver.
  */
 export const ProductForm: React.FC<ProductFormProps> = ({
-  categoryOptions,
   supplierOptions,
   lookupsLoading = false,
   disabledSupplier = false,
@@ -40,7 +38,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
-            label="SKU"
+            label="Product Code"
             htmlFor="sku"
             validateStatus={errors.sku ? 'error' : ''}
             help={errors.sku?.message}
@@ -74,44 +72,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
         </Col>
       </Row>
 
-      <Form.Item label="Description">
-        <Controller
-          name="description"
-          control={control}
-          render={({ field }) => (
-            <Input.TextArea {...field} rows={2} placeholder="Optional product description" />
-          )}
-        />
-      </Form.Item>
-
       {/* ── Classification ─────────────────────────────────── */}
       <h3 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem', marginTop: '24px', marginBottom: '16px' }}>Classification</h3>
       
       <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item
-            label="Category"
-            validateStatus={errors.categoryId ? 'error' : ''}
-            help={errors.categoryId?.message}
-            required
-          >
-            <Controller
-              name="categoryId"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  value={field.value || undefined}
-                  placeholder="Select category"
-                  options={categoryOptions}
-                  showSearch
-                  optionFilterProp="label"
-                />
-              )}
-            />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
+        <Col span={24}>
           <Form.Item
             label="Supplier"
             validateStatus={errors.supplierId ? 'error' : ''}
@@ -143,7 +108,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
-            label="Base Price (LKR)"
+            label="Rate (LKR)"
             htmlFor="basePrice"
             validateStatus={errors.basePrice ? 'error' : ''}
             help={errors.basePrice?.message}
@@ -166,35 +131,13 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             />
           </Form.Item>
         </Col>
-        <Col span={12}>
-          <Form.Item
-            label="Rate per Bundle (LKR)"
-            validateStatus={errors.ratePerSoldUnit ? 'error' : ''}
-            help={errors.ratePerSoldUnit?.message}
-          >
-            <Controller
-              name="ratePerSoldUnit"
-              control={control}
-              render={({ field }) => (
-                <InputNumber onFocus={(e) => e.target.select()}
-                  {...field}
-                  min={0}
-                  step={0.01}
-                  precision={2}
-                  style={{ width: '100%' }}
-                  placeholder="0.00"
-                />
-              )}
-            />
-          </Form.Item>
-        </Col>
       </Row>
 
       {/* ── Packaging ──────────────────────────────────────── */}
       <Row gutter={16}>
         <Col span={12}>
           <Form.Item
-            label="Unit of Measure"
+            label="Net Weight"
             validateStatus={errors.unitOfMeasure ? 'error' : ''}
             help={errors.unitOfMeasure?.message}
             required
@@ -224,31 +167,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               control={control}
               render={({ field }) => (
                 <Select {...field} options={[...UNIT_TYPE_OPTIONS]} />
-              )}
-            />
-          </Form.Item>
-        </Col>
-      </Row>
-
-      <Row gutter={16}>
-        <Col span={12}>
-          <Form.Item label="Net Weight">
-            <Controller
-              name="netWeight"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="e.g. 100g" />
-              )}
-            />
-          </Form.Item>
-        </Col>
-        <Col span={12}>
-          <Form.Item label="Box Configuration">
-            <Controller
-              name="boxConfiguration"
-              control={control}
-              render={({ field }) => (
-                <Input {...field} placeholder="e.g. 24 x 100g" />
               )}
             />
           </Form.Item>
