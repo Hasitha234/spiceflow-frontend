@@ -30,7 +30,7 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   defaultSupplierId,
 }) => {
   const isEditing = !!editingProduct;
-  const { categoryOptions, supplierOptions, isLoading: lookupsLoading } = useProductLookups();
+  const { supplierOptions, isLoading: lookupsLoading } = useProductLookups();
 
   const methods = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -87,7 +87,6 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
     >
       <FormProvider {...methods}>
         <ProductForm
-          categoryOptions={categoryOptions}
           supplierOptions={supplierOptions}
           lookupsLoading={lookupsLoading}
           disabledSupplier={!!defaultSupplierId && !isEditing}
