@@ -329,6 +329,7 @@ body {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--text-secondary) !important;
+  background-color: var(--surface-muted) !important;
 }
 
 /* Enforce structural B2B corner radius on all inputs and buttons */

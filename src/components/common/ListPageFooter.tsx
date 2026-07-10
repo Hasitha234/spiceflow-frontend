@@ -38,7 +38,16 @@ export const ListPageFooter: React.FC<ListPageFooterProps> = ({
   const isSinglePage = totalCount <= pageSize;
 
   return (
-    <div className="flex justify-between items-center py-4 px-6 border-t border-[#f0f0f0] bg-[#fafafa]">
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'space-between', 
+      alignItems: 'center', 
+      padding: '16px 24px', 
+      borderTop: '1px solid var(--surface-border)', 
+      backgroundColor: 'var(--surface-base)',
+      borderBottomLeftRadius: 'var(--radius-lg)',
+      borderBottomRightRadius: 'var(--radius-lg)'
+    }}>
       <Text type="secondary">
         Total {totalCount} {pluralize(totalCount, itemNameSingular, itemNamePlural)}
       </Text>

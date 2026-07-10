@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Input, Table, Typography, Empty, ConfigProvider, Space, Tooltip } from 'antd';
+import { Button, Input, Table, Typography, Empty, ConfigProvider, Space, Tooltip } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SearchOutlined,
@@ -83,7 +83,7 @@ export function SupplierListPage() {
     {
       title: 'Supplier Name',
       key: 'name',
-      width: 250, // Sensible minimum width
+      ellipsis: true, // Native table truncation protection
       render: (_, record) => (
         <TruncatedCell value={record.name || ''} className="font-semibold" />
       ),
@@ -92,7 +92,8 @@ export function SupplierListPage() {
       title: 'Tax ID',
       key: 'taxId',
       dataIndex: 'taxId',
-      render: (taxId) => <Text type="secondary">{taxId || 'N/A'}</Text>,
+      width: 160, // Strict horizontal bound to prevent vertical wrapping
+      render: (taxId) => <Text type="secondary" style={{ whiteSpace: 'nowrap' }}>{taxId || 'N/A'}</Text>,
     },
     {
       title: 'Contact Email',
@@ -117,6 +118,7 @@ export function SupplierListPage() {
       title: 'Actions',
       key: 'actions',
       align: 'right',
+      width: 140, // Strict bound to prevent icons from clipping off screen
       render: (_, record) => (
         <Space size="middle">
           <Tooltip title="Supplier Items">
@@ -169,7 +171,6 @@ export function SupplierListPage() {
         {/* HEADER AREA */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
-            <Breadcrumb items={[{ title: 'Procurement' }, { title: 'Suppliers' }]} style={{ marginBottom: '8px' }} />
             <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
               Suppliers
             </Title>
