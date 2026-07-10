@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Button, Card, Col, Form, Input, Row, Select, Space, Table, message, ConfigProvider, Typography, Statistic, Tag, Popconfirm, Tooltip, Drawer, Empty } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, BankOutlined, CarOutlined, AppstoreOutlined } from '@ant-design/icons';
+import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, BankOutlined, CarOutlined, AppstoreOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -299,8 +299,8 @@ export function WarehousesPage() {
         <Drawer 
           title={
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              {editWarehouse ? <EditOutlined style={{ color: '#0F9D6C' }} /> : <PlusOutlined style={{ color: '#0F9D6C' }} />}
-              <span style={{ fontWeight: 600, fontSize: '18px' }}>
+              {editWarehouse ? <EditOutlined style={{ color: '#059669' }} /> : <PlusOutlined style={{ color: '#059669' }} />}
+              <span style={{ fontWeight: 600, fontSize: '18px', color: '#0f172a' }}>
                 {editWarehouse ? t('warehouse.edit') : t('warehouse.create')}
               </span>
             </div>
@@ -309,8 +309,21 @@ export function WarehousesPage() {
           open={visible} 
           onClose={() => setVisible(false)}
           destroyOnClose
+          closeIcon={null}
+          extra={<Button type="text" icon={<CloseOutlined />} onClick={() => setVisible(false)} style={{ color: '#64748b' }} />}
+          footer={
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', padding: '16px' }}>
+              <Button onClick={() => setVisible(false)}>
+                {t('common.cancel')}
+              </Button>
+              <Button type="primary" htmlType="submit" form="warehouse-form" loading={isSubmitting} style={{ fontWeight: 500 }}>
+                {t('common.save')}
+              </Button>
+            </div>
+          }
+          styles={{ footer: { borderTop: '1px solid #e2e8f0', background: '#fff' } }}
         >
-          <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
+          <Form id="warehouse-form" layout="vertical" onFinish={handleSubmit(onSubmit)}>
             <Form.Item 
               label={<span style={{ fontWeight: 500 }}>{t('warehouse.name')}</span>} 
               validateStatus={errors.name ? 'error' : ''} 
@@ -320,7 +333,7 @@ export function WarehousesPage() {
               <Controller
                 name="name"
                 control={control}
-                render={({ field }) => <Input {...field} id="name" size="large" placeholder="e.g. Central Hub, Vehicle #42" />}
+                render={({ field }) => <Input {...field} id="name" placeholder="e.g. Central Hub, Vehicle #42" />}
               />
             </Form.Item>
             
@@ -337,7 +350,6 @@ export function WarehousesPage() {
                   <Select 
                     {...field} 
                     id="storeType" 
-                    size="large" 
                     options={storeTypeOptions} 
                     placeholder="Select warehouse type"
                   />
@@ -357,22 +369,12 @@ export function WarehousesPage() {
                   <Input 
                     {...field} 
                     id="location" 
-                    size="large" 
                     placeholder="e.g. 123 Main St, New York" 
                     prefix={<EnvironmentOutlined style={{ color: 'var(--text-muted)' }} />}
                   />
                 )}
               />
             </Form.Item>
-            
-            <div style={{ marginTop: '40px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
-              <Button size="large" onClick={() => setVisible(false)}>
-                {t('common.cancel')}
-              </Button>
-              <Button type="primary" size="large" htmlType="submit" loading={isSubmitting} style={{ fontWeight: 500 }}>
-                {t('common.save')}
-              </Button>
-            </div>
           </Form>
         </Drawer>
       </div>

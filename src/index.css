@@ -370,6 +370,17 @@ body {
   color: var(--text-primary) !important;
 }
 
+/* Move required asterisk to the right of the label for cleaner scanning */
+.ant-form-item-required::before {
+  display: none !important;
+}
+.ant-form-item-required::after {
+  content: "*" !important;
+  color: var(--color-danger) !important;
+  margin-inline-start: 4px !important;
+  font-family: inherit !important;
+}
+
 /* Status tags */
 .sf-tag-success { --ant-color-success: var(--color-emerald-500); }
 
