@@ -164,7 +164,7 @@ export function SupplierListPage() {
         },
       }}
     >
-      <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
+      <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box', backgroundColor: 'var(--surface-base)' }}>
         
         {/* HEADER AREA */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
@@ -190,21 +190,29 @@ export function SupplierListPage() {
           </Button>
         </div>
 
-        {/* SEARCH BAR & DEV CONTROLS */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '24px' }}>
-          <div style={{ maxWidth: '400px', width: '100%' }}>
-            <Input 
-              prefix={<SearchOutlined style={{ color: 'var(--text-secondary)' }} />} 
-              placeholder="Search suppliers by name or tax ID..." 
-              value={debouncedSearch}
-              onChange={(e) => setDebouncedSearch(e.target.value)}
-              disabled={isLoading || isError}
-            />
+        {/* MAIN DATA CONTAINER */}
+        <div style={{ 
+          borderRadius: 'var(--radius-lg)', 
+          border: '1px solid var(--surface-border)', 
+          overflow: 'hidden', 
+          background: 'var(--surface-raised)',
+          boxShadow: 'var(--shadow-sm)'
+        }}>
+          
+          {/* SEARCH TOOLBAR */}
+          <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--surface-border)', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ maxWidth: '400px', width: '100%' }}>
+              <Input 
+                prefix={<SearchOutlined style={{ color: 'var(--text-muted)' }} />} 
+                placeholder="Search suppliers by name or tax ID..." 
+                value={debouncedSearch}
+                onChange={(e) => setDebouncedSearch(e.target.value)}
+                disabled={isLoading || isError}
+                style={{ borderRadius: 'var(--radius-md)' }}
+              />
+            </div>
           </div>
-        </div>
 
-        {/* TABLE AREA */}
-        <div style={{ borderRadius: '8px', border: '1px solid #f0f0f0', overflow: 'hidden', background: '#fff' }}>
           <AnimatePresence mode="wait">
             
             {isLoading && (
@@ -214,15 +222,15 @@ export function SupplierListPage() {
             )}
 
             {isEmpty && (
-              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ padding: '64px 0', textAlign: 'center' }}>
+              <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ padding: '64px 32px', textAlign: 'center' }}>
                 <Empty 
-                  image={<ShopOutlined style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }} />}
-                  description={<Text type="secondary" style={{ fontSize: '16px' }}>No suppliers added yet</Text>}
+                  image={<ShopOutlined style={{ fontSize: 48, color: 'var(--text-muted)', marginBottom: 16 }} />}
+                  description={<Text style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>No suppliers added yet</Text>}
                 >
                   <Button 
-                    type="primary" 
+                    type="default" 
                     icon={<PlusOutlined />} 
-                    style={{ marginTop: '16px', fontWeight: 600 }}
+                    style={{ marginTop: '16px', fontWeight: 600, borderRadius: 'var(--radius-md)' }}
                     onClick={() => {
                       setEditingSupplier(null);
                       setDrawerOpen(true);
