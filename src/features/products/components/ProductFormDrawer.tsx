@@ -71,7 +71,7 @@ export const ProductFormDrawer: React.FC<ProductFormDrawerProps> = ({
   const handleSubmit = methods.handleSubmit((values) => {
     const requestData = {
       ...values,
-      categoryId: values.categoryId ?? 1,
+      categoryId: values.categoryId ?? 0,
     };
     if (isEditing && editingProduct?.id) {
       updateMutation.mutate({ id: editingProduct.id, data: requestData });
