@@ -42,9 +42,9 @@ export const RepTable: React.FC<RepTableProps> = ({
       sorter: true,
       render: (name: string, record: RepResponse) => (
         <div>
-          <div className="font-semibold text-slate-100">{name}</div>
+          <div className="font-medium text-slate-900">{name}</div>
           {record.employeeId && (
-            <div className="text-xs text-slate-400 font-mono">ID: {record.employeeId}</div>
+            <div className="text-sm text-slate-500">ID: {record.employeeId}</div>
           )}
         </div>
       ),
@@ -55,8 +55,8 @@ export const RepTable: React.FC<RepTableProps> = ({
       width: 220,
       render: (_: unknown, record: RepResponse) => (
         <div>
-          {record.email && <div className="text-slate-300 text-sm">{record.email}</div>}
-          <div className="text-xs text-slate-400 font-mono">{record.phone || 'No phone'}</div>
+          {record.email && <div className="font-medium text-slate-900">{record.email}</div>}
+          <div className="text-sm text-slate-500">{record.phone || 'No phone'}</div>
         </div>
       ),
     },
@@ -66,7 +66,7 @@ export const RepTable: React.FC<RepTableProps> = ({
       key: 'area',
       width: 180,
       render: (area?: string) => (
-        <span className="text-slate-300 font-medium">{area || '—'}</span>
+        <span className="text-slate-600">{area || '—'}</span>
       ),
     },
     {
@@ -76,7 +76,7 @@ export const RepTable: React.FC<RepTableProps> = ({
       width: 140,
       align: 'center',
       render: (count?: number) => (
-        <Tag color="blue" className="font-mono m-0 px-2.5 py-0.5 rounded-full text-xs">
+        <Tag className="bg-slate-100 text-slate-600 border border-slate-200 m-0 px-2.5 py-0.5 rounded-full text-xs">
           {count ?? 0} Shops
         </Tag>
       ),
@@ -106,16 +106,16 @@ export const RepTable: React.FC<RepTableProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(record)}
-                className="!text-blue-400 hover:!text-blue-300"
+                className="text-slate-400 hover:text-emerald-500 transition-colors"
               />
             </Tooltip>
             <Tooltip title="Delete">
               <Button
                 type="text"
                 size="small"
-                danger
                 icon={<DeleteOutlined />}
                 onClick={() => setDeleteTarget(record)}
+                className="text-slate-400 hover:text-red-500 transition-colors"
               />
             </Tooltip>
           </PermissionGuard>
@@ -158,7 +158,7 @@ export const RepTable: React.FC<RepTableProps> = ({
           pageSize: tableState.size,
           total,
           showSizeChanger: true,
-          showTotal: (totalCount) => `Total ${totalCount} reps`,
+          showTotal: (totalCount) => `Total ${totalCount} rep${totalCount === 1 ? '' : 's'}`,
         }}
         onChange={handleTableChange as never}
       />
