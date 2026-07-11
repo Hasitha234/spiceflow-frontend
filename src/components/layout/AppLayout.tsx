@@ -1,7 +1,5 @@
 import { Layout, Menu, Dropdown, Button, Space, Avatar, Typography } from 'antd';
 import { 
-  MenuFoldOutlined, 
-  MenuUnfoldOutlined, 
   LogoutOutlined, 
   GlobalOutlined,
   BulbOutlined,
@@ -147,12 +145,7 @@ export function AppLayout() {
           zIndex: 10,
         }}>
           <Space size="large">
-            <Button 
-              type="text" 
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} 
-              onClick={() => setCollapsed(!collapsed)} 
-              style={{ fontSize: 16, color: 'var(--text-primary)' }}
-            />
+            {/* Hamburger moved to default Ant Design sidebar trigger */}
           </Space>
           
           <Space size="middle">

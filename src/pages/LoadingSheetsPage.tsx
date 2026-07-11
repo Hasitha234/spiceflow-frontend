@@ -150,7 +150,7 @@ export function LoadingSheetsPage() {
   ], [handleConfirm]);
 
   return (
-    <div style={{ padding: '24px' }}>
+    <div style={{ padding: 'var(--space-8)' }}>
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
         <Col>
           <Space>
@@ -171,8 +171,16 @@ export function LoadingSheetsPage() {
         </Col>
       </Row>
 
-      <Card style={{ borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-        <Table rowKey="id" loading={loading} dataSource={sheets} columns={columns} pagination={{ pageSize: 10 }} />
+      <Card 
+        style={{ 
+          borderRadius: 'var(--radius-lg)', 
+          boxShadow: 'var(--shadow-none)', 
+          border: '1px solid var(--color-border-default)',
+          overflow: 'hidden'
+        }}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Table rowKey="id" loading={loading} dataSource={sheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table" />
       </Card>
 
       {/* Create Modal */}
