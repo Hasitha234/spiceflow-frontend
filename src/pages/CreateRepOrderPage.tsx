@@ -20,10 +20,8 @@ import {
   Breadcrumb,
 } from 'antd';
 import {
-  ArrowLeftOutlined,
   PlusOutlined,
   DeleteOutlined,
-  ShopOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import apiClient from '../api/client';
