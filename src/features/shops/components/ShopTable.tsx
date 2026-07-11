@@ -40,11 +40,13 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       dataIndex: 'name',
       key: 'name',
       sorter: true,
+      width: 250,
+      ellipsis: true,
       render: (name: string, record: ShopResponse) => (
         <div>
-          <div className="font-semibold text-slate-100">{name}</div>
+          <div className="font-medium text-slate-900">{name}</div>
           {record.ownerName && (
-            <div className="text-xs text-slate-400">Owner: {record.ownerName}</div>
+            <div className="text-sm text-slate-500">Owner: {record.ownerName}</div>
           )}
         </div>
       ),
@@ -52,11 +54,10 @@ export const ShopTable: React.FC<ShopTableProps> = ({
     {
       title: 'Route & Area',
       key: 'routeArea',
-      width: 180,
       render: (_: unknown, record: ShopResponse) => (
         <div>
-          <div className="text-slate-200 font-medium">{record.route || 'No Route'}</div>
-          <div className="text-xs text-slate-400">{record.area || '—'}</div>
+          <div className="font-medium text-slate-900">{record.route || 'No Route'}</div>
+          <div className="text-sm text-slate-500">{record.area || '—'}</div>
         </div>
       ),
     },
@@ -64,7 +65,6 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
-      width: 140,
       render: (phone?: string) => (
         <span className="text-slate-300 font-mono text-sm">{phone || '—'}</span>
       ),
@@ -137,16 +137,16 @@ export const ShopTable: React.FC<ShopTableProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(record)}
-                className="!text-blue-400 hover:!text-blue-300"
+                className="text-slate-400 hover:text-emerald-500 transition-colors"
               />
             </Tooltip>
             <Tooltip title="Delete">
               <Button
                 type="text"
                 size="small"
-                danger
                 icon={<DeleteOutlined />}
                 onClick={() => setDeleteTarget(record)}
+                className="text-slate-400 hover:text-red-500 transition-colors"
               />
             </Tooltip>
           </PermissionGuard>
@@ -190,10 +190,10 @@ export const ShopTable: React.FC<ShopTableProps> = ({
           pageSize: tableState.size,
           total,
           showSizeChanger: true,
-          showTotal: (t, range) => `${range[0]}–${range[1]} of ${t} shops`,
+          showTotal: (t, range) => `${range[0]}–${range[1]} of ${t} shop${t === 1 ? '' : 's'}`,
         }}
         onChange={handleTableChange as never}
-        scroll={{ x: 1050 }}
+        scroll={{ x: 'max-content' }}
       />
 
       <ConfirmDeleteDialog
