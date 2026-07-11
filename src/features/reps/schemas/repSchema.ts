@@ -6,9 +6,9 @@ import { z } from 'zod';
  */
 export const repSchema = z.object({
   name: z.string().min(1, 'Rep name is required'),
-  employeeId: z.string().optional(),
+  employeeId: z.string().min(1, 'Employee ID is required'),
   email: z.string().email('Invalid email address').optional().or(z.literal('')),
-  phone: z.string().optional(),
+  phone: z.string().min(1, 'Phone number is required'),
   area: z.string().optional(),
   employmentDate: z.string().optional(),
   terminationDate: z.string().optional(),

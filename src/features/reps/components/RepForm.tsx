@@ -30,7 +30,13 @@ export const RepForm: React.FC = () => {
       </Form.Item>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-        <Form.Item label="Employee ID" htmlFor="employeeId">
+        <Form.Item 
+          label="Employee ID" 
+          htmlFor="employeeId"
+          validateStatus={errors.employeeId ? 'error' : ''}
+          help={errors.employeeId?.message}
+          required
+        >
           <Controller
             name="employeeId"
             control={control}
@@ -57,7 +63,13 @@ export const RepForm: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-        <Form.Item label="Phone Number" htmlFor="phone">
+        <Form.Item 
+          label="Phone Number" 
+          htmlFor="phone"
+          validateStatus={errors.phone ? 'error' : ''}
+          help={errors.phone?.message}
+          required
+        >
           <Controller
             name="phone"
             control={control}

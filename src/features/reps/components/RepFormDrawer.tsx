@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Form } from 'antd';
 import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EntityFormDrawer } from '@/components/common';
@@ -80,9 +81,11 @@ export const RepFormDrawer: React.FC<RepFormDrawerProps> = ({
       submitText={isEditing ? 'Save Changes' : 'Register Sales Rep'}
       loading={isSaving}
     >
-      <FormProvider {...methods}>
-        <RepForm />
-      </FormProvider>
+      <Form layout="vertical" colon={false} component={false}>
+        <FormProvider {...methods}>
+          <RepForm />
+        </FormProvider>
+      </Form>
     </EntityFormDrawer>
   );
 };
