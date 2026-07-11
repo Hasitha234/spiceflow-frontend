@@ -123,12 +123,14 @@ export function RepListPage() {
         }
       />
 
-      <FilterPanel
-        filters={filterDefs}
-        values={filterValues}
-        onChange={handleFilterChange}
-        onReset={resetFilters}
-      />
+      {(data?.totalElements ?? 0) > 0 && (
+        <FilterPanel
+          filters={filterDefs}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onReset={resetFilters}
+        />
+      )}
 
       <RepTable
         data={data?.content ?? []}
