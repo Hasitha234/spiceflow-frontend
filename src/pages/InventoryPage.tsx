@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic } from 'antd';
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined } from '@ant-design/icons';
+import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message } from 'antd';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi } from '../api/inventory';
 import type { Warehouse, InventoryItem } from '../types/inventory';
 
@@ -117,25 +117,83 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [unloadModalVisible, setUnloadModalVisible] = useState(false);
+  const [allWarehouses, setAllWarehouses] = useState<Warehouse[]>([]);
+  const [targetWarehouseId, setTargetWarehouseId] = useState<number | null>(null);
+  const [unloadQuantities, setUnloadQuantities] = useState<Record<string, number>>({});
+  const [unloading, setUnloading] = useState(false);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [whRes, itemsRes, allWhRes] = await Promise.all([
+        warehouseApi.get(warehouseId),
+        inventoryItemApi.list({ warehouseId, size: 500 }),
+        warehouseApi.list({ size: 100 }),
+      ]);
+      setWarehouse(whRes);
+      setItems(itemsRes?.content || []);
+      const whList = allWhRes?.content || [];
+      setAllWarehouses(whList);
+      const mainWh = whList.find(w => w.storeType === 'MAIN');
+      if (mainWh && mainWh.id) {
+        setTargetWarehouseId(Number(mainWh.id));
+      } else if (whList.length > 0) {
+        const firstOther = whList.find(w => String(w.id) !== String(warehouseId));
+        if (firstOther && firstOther.id) setTargetWarehouseId(Number(firstOther.id));
+      }
+    } catch (error) {
+      console.error('Failed to fetch warehouse details', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [warehouseId]);
 
   useEffect(() => {
-    async function fetchData() {
-      setLoading(true);
-      try {
-        const [whRes, itemsRes] = await Promise.all([
-          warehouseApi.get(warehouseId),
-          inventoryItemApi.list({ warehouseId, size: 500 }), // Get all items for this warehouse
-        ]);
-        setWarehouse(whRes);
-        setItems(itemsRes?.content || []);
-      } catch (error) {
-        console.error('Failed to fetch warehouse details', error);
-      } finally {
-        setLoading(false);
-      }
-    }
     fetchData();
-  }, [warehouseId]);
+  }, [fetchData]);
+
+  const handleOpenUnload = () => {
+    const initialQtys: Record<string, number> = {};
+    items.forEach(item => {
+      if (item.quantityAvailable > 0 && item.productId) {
+        initialQtys[String(item.productId)] = item.quantityAvailable;
+      }
+    });
+    setUnloadQuantities(initialQtys);
+    setUnloadModalVisible(true);
+  };
+
+  const handleConfirmUnload = async () => {
+    if (!targetWarehouseId) {
+      message.error('Please select a destination warehouse');
+      return;
+    }
+    const itemsToUnload = Object.entries(unloadQuantities).filter(([, qty]) => qty > 0);
+    if (itemsToUnload.length === 0) {
+      message.warning('No items specified to unload');
+      return;
+    }
+    setUnloading(true);
+    try {
+      for (const [prodId, qty] of itemsToUnload) {
+        await inventoryItemApi.transfer({
+          fromWarehouseId: Number(warehouseId),
+          toWarehouseId: Number(targetWarehouseId),
+          productId: Number(prodId),
+          quantity: qty,
+          reason: 'Unloading vehicle after route completion',
+        });
+      }
+      message.success('Vehicle inventory successfully unloaded');
+      setUnloadModalVisible(false);
+      fetchData();
+    } catch {
+      message.error('Failed to unload some items');
+    } finally {
+      setUnloading(false);
+    }
+  };
 
   const totalProducts = items.length;
   const totalUnits = items.reduce((acc, item) => acc + item.quantityAvailable, 0);
@@ -240,9 +298,19 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           {warehouse?.name || '...'}
         </Title>
         {warehouse && (
-          <Tag color={warehouse.storeType === 'MAIN' ? 'green' : warehouse.storeType === 'VEHICLE' ? 'blue' : 'default'} className="m-0 uppercase font-semibold">
+          <Tag color={warehouse.storeType === 'MAIN' ? 'green' : warehouse.storeType === 'VEHICLE' || warehouse.storeType === 'CUSTOM' ? 'blue' : 'default'} className="m-0 uppercase font-semibold">
             {warehouse.storeType}
           </Tag>
+        )}
+        {(warehouse?.storeType === 'CUSTOM' || warehouse?.storeType === 'VEHICLE' || warehouse?.name?.startsWith('Vehicle')) && (
+          <Button
+            type="primary"
+            icon={<ReloadOutlined />}
+            onClick={handleOpenUnload}
+            className="ml-auto bg-emerald-600 hover:bg-emerald-500 shadow-sm font-medium"
+          >
+            Unload Vehicle
+          </Button>
         )}
       </div>
 
@@ -300,6 +368,77 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           className="spiceflow-table"
         />
       </Card>
+
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
+            <ReloadOutlined className="text-emerald-500" />
+            <span>Unload Vehicle Inventory</span>
+          </div>
+        }
+        open={unloadModalVisible}
+        onCancel={() => setUnloadModalVisible(false)}
+        onOk={handleConfirmUnload}
+        confirmLoading={unloading}
+        okText="Confirm Unload"
+        okButtonProps={{ className: 'bg-emerald-600 hover:bg-emerald-500' }}
+        width={700}
+      >
+        <div className="space-y-4 my-4">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Destination Warehouse</label>
+            <Select
+              value={targetWarehouseId}
+              onChange={val => setTargetWarehouseId(val)}
+              className="w-full"
+              placeholder="Select warehouse to transfer inventory into"
+            >
+              {allWarehouses
+                .filter(w => String(w.id) !== String(warehouseId))
+                .map(w => (
+                  <Select.Option key={w.id} value={w.id}>
+                    {w.name} ({w.storeType})
+                  </Select.Option>
+                ))}
+            </Select>
+          </div>
+
+          <div className="mt-4">
+            <h4 className="text-sm font-medium text-slate-700 mb-2">Select Items to Unload</h4>
+            <Table
+              dataSource={items.filter(i => i.quantityAvailable > 0 && i.productId)}
+              rowKey="productId"
+              pagination={false}
+              size="small"
+              columns={[
+                { title: 'SKU', dataIndex: 'productSku', key: 'sku', render: (val: string) => <span className="font-mono">{val}</span> },
+                { title: 'Product', dataIndex: 'productName', key: 'name' },
+                { title: 'On Vehicle', dataIndex: 'quantityAvailable', key: 'avail', align: 'right' as const, render: (val: number) => <Tag color="blue">{val}</Tag> },
+                {
+                  title: 'Qty to Unload',
+                  key: 'unloadQty',
+                  align: 'right' as const,
+                  render: (_: unknown, record: InventoryItem) => (
+                    <InputNumber
+                      min={0}
+                      max={record.quantityAvailable}
+                      value={unloadQuantities[String(record.productId)] ?? 0}
+                      onChange={val => {
+                        setUnloadQuantities(prev => ({
+                          ...prev,
+                          [String(record.productId)]: Number(val || 0),
+                        }));
+                      }}
+                      style={{ width: 100 }}
+                    />
+                  ),
+                },
+              ]}
+              locale={{ emptyText: 'No items currently loaded on this vehicle.' }}
+            />
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

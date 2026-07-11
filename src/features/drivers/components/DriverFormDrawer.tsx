@@ -86,7 +86,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
       destroyOnClose
       maskClosable={!isSubmitting}
       footer={
-        <div className="flex justify-end gap-3 py-1">
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '4px 0' }}>
           <Button onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>
@@ -94,7 +94,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
             type="primary"
             onClick={() => form.submit()}
             loading={isSubmitting}
-            className="font-medium"
+            style={{ fontWeight: 500 }}
           >
             {mode === 'create' ? 'Register Driver' : 'Save Changes'}
           </Button>
@@ -120,7 +120,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
             1. PERSONAL & CONTACT
         ======================================================== */}
         <div className="mb-10">
-          <div className="text-[12px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
+          <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)', marginBottom: '16px' }}>
             Personal & Contact
           </div>
           
@@ -170,7 +170,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
             2. LICENSING & VEHICLE
         ======================================================== */}
         <div className="mb-10">
-          <div className="text-[12px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
+          <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '32px', marginBottom: '16px' }}>
             Licensing & Vehicle
           </div>
 
@@ -241,7 +241,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
             3. STATUS & EMPLOYMENT
         ======================================================== */}
         <div className="mb-4">
-          <div className="text-[12px] font-bold text-gray-400 tracking-wider mb-4 uppercase">
+          <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--color-text-primary)', marginTop: '32px', marginBottom: '16px' }}>
             Status & Employment
           </div>
 
@@ -250,7 +250,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
               name="status"
               label="Operational Status"
               rules={[{ required: true, message: 'Status is required' }]}
-              extra={<span className="text-xs text-gray-500">Current dispatch availability</span>}
+              extra={<span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Current dispatch availability</span>}
             >
               <Select
                 disabled={isSubmitting}
@@ -267,7 +267,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
               name="isActive"
               label="Active Status"
               valuePropName="checked"
-              extra={<span className="text-xs text-gray-500">Employment status</span>}
+              extra={<span style={{ fontSize: '12px', color: 'var(--color-text-tertiary)' }}>Employment status</span>}
             >
               <Switch
                 checkedChildren="Active"

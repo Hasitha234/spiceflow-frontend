@@ -157,12 +157,12 @@ export function DriversPage() {
       render: (_, record) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div>
-            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text-muted)', display: 'block', lineHeight: 1 }}>EMAIL</Text>
-            <Text style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{record.email}</Text>
+            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', display: 'block', lineHeight: 1 }}>EMAIL</Text>
+            <Text style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>{record.email}</Text>
           </div>
           <div>
-            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text-muted)', display: 'block', lineHeight: 1 }}>PHONE</Text>
-            <Text style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{record.phone}</Text>
+            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', display: 'block', lineHeight: 1 }}>PHONE</Text>
+            <Text style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>{record.phone}</Text>
           </div>
         </div>
       ),
@@ -177,8 +177,8 @@ export function DriversPage() {
             <Tag style={{ margin: 0, border: '1px solid var(--surface-border)' }}>{record.licenseClass}</Tag>
           </div>
           <div>
-            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text-muted)', display: 'inline-block', marginRight: '4px' }}>EXPIRES</Text>
-            <Text style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{record.expiryDate}</Text>
+            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', display: 'inline-block', marginRight: '4px' }}>EXPIRES</Text>
+            <Text style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>{record.expiryDate}</Text>
           </div>
         </div>
       ),
@@ -190,8 +190,8 @@ export function DriversPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <Text style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{record.plateNumber}</Text>
           <div>
-            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--text-muted)', display: 'block', lineHeight: 1 }}>WAREHOUSE</Text>
-            <Text style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{record.warehouse}</Text>
+            <Text style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', color: 'var(--color-text-tertiary)', display: 'block', lineHeight: 1 }}>WAREHOUSE</Text>
+            <Text style={{ fontSize: '13px', color: 'var(--color-text-primary)' }}>{record.warehouse}</Text>
           </div>
         </div>
       ),
@@ -200,11 +200,17 @@ export function DriversPage() {
       title: 'Operational Status',
       key: 'operationalStatus',
       render: (_, record) => {
+        if (record.operationalStatus === 'Available') {
+          return (
+            <Tag style={{ background: 'var(--color-success-bg, #d1fae5)', color: 'var(--color-success-text, #047857)', borderColor: 'var(--color-success-border, #a7f3d0)', fontWeight: 600 }}>
+              AVAILABLE
+            </Tag>
+          );
+        }
+        
         let color = 'default';
-        if (record.operationalStatus === 'Available') color = 'success';
         if (record.operationalStatus === 'On Leave') color = 'warning';
         if (record.operationalStatus === 'Unavailable') color = 'error';
-        // FILLED pill logic -> using ant design tag with color prop fills it, but we can enforce filled style
         return <Tag color={color} style={{ border: 'none' }}>{record.operationalStatus}</Tag>;
       },
     },
@@ -257,8 +263,8 @@ export function DriversPage() {
       <div style={{ padding: 'var(--space-8)', background: 'var(--color-bg-app)', minHeight: '100vh', boxSizing: 'border-box' }}>
         
         {/* --- Test Controls --- */}
-        <div style={{ marginBottom: '24px', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--surface-raised)', padding: '12px', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
-          <Text style={{ color: 'var(--text-secondary)', marginRight: '8px' }}>Test States (List):</Text>
+        <div style={{ marginBottom: '24px', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--color-surface-default)', padding: '12px', borderRadius: '8px', border: '1px solid var(--color-border-default)' }}>
+          <Text style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Test States (List):</Text>
           <Button size="small" type={testMode === 'success (many)' ? 'primary' : 'default'} onClick={() => setTestMode('success (many)')}>Populated (Many)</Button>
           <Button size="small" type={testMode === 'success (1)' ? 'primary' : 'default'} onClick={() => setTestMode('success (1)')}>Populated (1)</Button>
           <Button size="small" type={testMode === 'empty (0)' ? 'primary' : 'default'} onClick={() => setTestMode('empty (0)')}>Empty (0)</Button>
@@ -344,8 +350,8 @@ export function DriversPage() {
                 />
                 
                 {/* CONDITIONAL PAGINATION FOOTER */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid var(--surface-border)', background: 'var(--surface-raised)' }}>
-                  <Text style={{ color: 'var(--text-secondary)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderTop: '1px solid var(--color-border-default)', background: 'var(--color-surface-default)' }}>
+                  <Text style={{ color: 'var(--color-text-secondary)' }}>
                     Total {totalCount} {getPluralizedDriverString(totalCount)}
                   </Text>
                   

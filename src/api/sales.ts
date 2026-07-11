@@ -50,11 +50,13 @@ export const loadingSheetApi = {
     apiClient.post<LoadingSheet>('/api/v1/sales/loading-sheets', data).then((r) => r.data),
   confirm: (id: string) =>
     apiClient.post<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}/confirm`).then((r) => r.data),
+  cancel: (id: string) =>
+    apiClient.post<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}/cancel`).then((r) => r.data),
 };
 
 // ─── Deliveries ───────────────────────────────────────────────────────────────
 export const deliveryApi = {
-  list: (params?: { page?: number; size?: number }) =>
+  list: (params?: { page?: number; size?: number; date?: string }) =>
     apiClient.get<PageResponse<Delivery>>('/api/v1/sales/deliveries', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Delivery>(`/api/v1/sales/deliveries/${id}`).then((r) => r.data),

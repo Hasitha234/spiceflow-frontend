@@ -84,10 +84,11 @@ export const inventoryItemApi = {
       .get<PageResponse<InventoryItem>>('/api/v1/inventory-items', { params })
       .then((r) => r.data),
   transfer: (data: {
-    sourceInventoryItemId: string;
-    targetWarehouseId: string;
+    fromWarehouseId: number;
+    toWarehouseId: number;
+    productId: number;
     quantity: number;
-    notes?: string;
+    reason?: string;
   }) => apiClient.post('/api/v1/inventory-items/transfer', data).then((r) => r.data),
   markDamaged: (data: {
     inventoryItemId: string;
