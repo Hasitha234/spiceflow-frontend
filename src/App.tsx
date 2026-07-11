@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react';
+import { Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Spin, App as AntApp } from 'antd';
@@ -7,28 +7,29 @@ import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
 import { PrivateRoute } from './components/layout/PrivateRoute';
 import { featureRoutes } from './routes/featureRoutes';
+import { lazyWithRetry } from './utils/lazyWithRetry';
 
-// Route-level code splitting via React.lazy
-const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
-const DashboardPage = lazy(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
-const DaySummaryPage = lazy(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
-const WarehousesPage = lazy(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
-const DriversPage = lazy(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
-const CategoriesPage = lazy(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
-const SettingsPage = lazy(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
-const PurchasesPage = lazy(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
-const CreatePurchasePage = lazy(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
-const InventoryPage = lazy(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
-const RepOrdersPage = lazy(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
-const CreateRepOrderPage = lazy(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
-const LoadingSheetsPage = lazy(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
-const DeliveriesPage = lazy(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
-const ReportsPage = lazy(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
-const UsersPage = lazy(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
-const RolesPage = lazy(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
-const EndOfDaySummaryPage = lazy(() => import('./pages/EndOfDaySummaryPage').then((m) => ({ default: m.EndOfDaySummaryPage })));
-const QrScanPage = lazy(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
-const NotFoundPage = lazy(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
+// Route-level code splitting via lazyWithRetry (auto-recovers from stale chunks after deploy)
+const LoginPage = lazyWithRetry(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
+const DaySummaryPage = lazyWithRetry(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
+const WarehousesPage = lazyWithRetry(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
+const DriversPage = lazyWithRetry(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
+const CategoriesPage = lazyWithRetry(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
+const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
+const PurchasesPage = lazyWithRetry(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
+const CreatePurchasePage = lazyWithRetry(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
+const InventoryPage = lazyWithRetry(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
+const RepOrdersPage = lazyWithRetry(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
+const CreateRepOrderPage = lazyWithRetry(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
+const LoadingSheetsPage = lazyWithRetry(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
+const DeliveriesPage = lazyWithRetry(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
+const ReportsPage = lazyWithRetry(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
+const UsersPage = lazyWithRetry(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
+const RolesPage = lazyWithRetry(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
+const EndOfDaySummaryPage = lazyWithRetry(() => import('./pages/EndOfDaySummaryPage').then((m) => ({ default: m.EndOfDaySummaryPage })));
+const QrScanPage = lazyWithRetry(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
+const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const queryClient = new QueryClient();
 
