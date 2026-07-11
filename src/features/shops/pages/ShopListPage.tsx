@@ -101,7 +101,7 @@ export function ShopListPage() {
     <PageLayout>
       <PageHeader
         title="Shops & Customers"
-        subtitle={`${data?.totalElements ?? 0} registered customer locations`}
+        subtitle={`${data?.totalElements ?? 0} registered customer location${(data?.totalElements ?? 0) === 1 ? '' : 's'}`}
         breadcrumbs={[
           { title: 'Distribution', href: '/shops' },
           { title: 'Shops' },
@@ -123,12 +123,14 @@ export function ShopListPage() {
         }
       />
 
-      <FilterPanel
-        filters={filterDefs}
-        values={filterValues}
-        onChange={handleFilterChange}
-        onReset={resetFilters}
-      />
+      {(data?.totalElements ?? 0) > 0 && (
+        <FilterPanel
+          filters={filterDefs}
+          values={filterValues}
+          onChange={handleFilterChange}
+          onReset={resetFilters}
+        />
+      )}
 
       <ShopTable
         data={data?.content ?? []}
