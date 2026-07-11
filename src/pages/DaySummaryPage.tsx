@@ -3,8 +3,8 @@ import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, message,
 import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { purchaseApi } from '../api/sales';
-import type { Purchase } from '../types/sales';
+import { purchaseApi, repOrderApi } from '../api/sales';
+import type { Purchase, RepOrder, RepOrderShop } from '../types/sales';
 
 const { Title } = Typography;
 
@@ -14,15 +14,19 @@ export function DaySummaryPage() {
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [repOrders, setRepOrders] = useState<RepOrder[]>([]);
+  const [selectedRepOrder, setSelectedRepOrder] = useState<RepOrder | null>(null);
 
   const loadData = useCallback(async (date: dayjs.Dayjs) => {
     setLoading(true);
     try {
-      const res = await purchaseApi.list({ 
-        date: date.format('YYYY-MM-DD'),
-        size: 100 // Load enough to cover a typical day
-      });
-      setPurchases(res?.content || []);
+      const dateStr = date.format('YYYY-MM-DD');
+      const [purchaseRes, repOrderRes] = await Promise.all([
+        purchaseApi.list({ date: dateStr, size: 100 }),
+        repOrderApi.list({ date: dateStr, size: 100 }),
+      ]);
+      setPurchases(purchaseRes?.content || []);
+      setRepOrders(repOrderRes?.content || []);
     } catch {
       message.error('Failed to load purchases for the selected date');
     } finally {
@@ -45,6 +49,18 @@ export function DaySummaryPage() {
   const confirmedCount = useMemo(() => {
     return purchases.filter(p => p.status !== 'DRAFT').length;
   }, [purchases]);
+
+  const repTotalValue = useMemo(() => {
+    return repOrders.reduce((sum, o) => sum + Number(o.netAmount ?? 0), 0);
+  }, [repOrders]);
+
+  const repDraftCount = useMemo(() => {
+    return repOrders.filter(o => o.status === 'DRAFT').length;
+  }, [repOrders]);
+
+  const repConfirmedCount = useMemo(() => {
+    return repOrders.filter(o => o.status !== 'DRAFT').length;
+  }, [repOrders]);
 
   const columns = useMemo(
     () => [
@@ -103,6 +119,71 @@ export function DaySummaryPage() {
     [t]
   );
 
+  const repColumns = useMemo(
+    () => [
+      {
+        title: 'Order No',
+        dataIndex: 'orderNumber',
+        key: 'orderNumber',
+        render: (val: string) => <span className="font-mono text-emerald-500 font-semibold">{val || '—'}</span>,
+      },
+      {
+        title: 'Rep',
+        key: 'rep',
+        render: (_: unknown, record: RepOrder) => (
+          <span className="font-medium text-slate-800 dark:text-slate-200">
+            {record.repName || '—'}
+          </span>
+        ),
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        render: (status: string) => {
+          const color = status === 'CONFIRMED' || status === 'COMPLETED' ? 'green' : 'orange';
+          return <Tag color={color}>{status || 'DRAFT'}</Tag>;
+        },
+      },
+      {
+        title: 'Shops',
+        key: 'shopsCount',
+        render: (_: unknown, record: RepOrder) => (
+          <Tag color="blue">{record.shops?.length || 0} Shops</Tag>
+        ),
+      },
+      {
+        title: 'Net Amount (LKR)',
+        key: 'netAmount',
+        align: 'right' as const,
+        render: (_: unknown, record: RepOrder) => (
+          <span className="text-slate-900 font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {Number(record.netAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        ),
+      },
+      {
+        title: t('common.actions', 'Actions'),
+        key: 'actions',
+        align: 'right' as const,
+        render: (_: unknown, record: RepOrder) => (
+          <Space>
+            <Tooltip title="View Rep Order Details">
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => setSelectedRepOrder(record)}
+                className="!text-blue-500 hover:!text-blue-400"
+              />
+            </Tooltip>
+          </Space>
+        ),
+      },
+    ],
+    [t]
+  );
+
   return (
     <div className="p-6">
       <div className="flex justify-end mb-6 w-full">
@@ -115,6 +196,7 @@ export function DaySummaryPage() {
         />
       </div>
 
+      <Title level={4} className="mb-4">Today's Purchases</Title>
       <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
         <Col xs={24} sm={8}>
           <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
@@ -167,6 +249,63 @@ export function DaySummaryPage() {
           columns={columns}
           pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
           locale={{ emptyText: t('daySummary.noPurchases', 'No purchases recorded for this date.') }}
+          className="spiceflow-table"
+        />
+      </Card>
+
+      <Title level={4} className="mt-8 mb-4">Today's Rep Orders</Title>
+      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <ShoppingOutlined className="text-emerald-600" /> <span>Total Rep Orders</span>
+                </div>
+              }
+              value={repOrders.length}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <DollarOutlined className="text-emerald-600" /> <span>Total Rep Value (LKR)</span>
+                </div>
+              }
+              value={repTotalValue}
+              precision={2}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <FileTextOutlined className="text-emerald-600" /> <span>Draft / Confirmed</span>
+                </div>
+              }
+              value={repDraftCount}
+              suffix={`/ ${repConfirmedCount}`}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={repOrders}
+          columns={repColumns}
+          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
+          locale={{ emptyText: 'No rep orders recorded for this date.' }}
           className="spiceflow-table"
         />
       </Card>
@@ -230,6 +369,83 @@ export function DaySummaryPage() {
 
             <div className="flex justify-end pt-4 mt-4 border-t border-black/10 dark:border-white/10">
               <Button onClick={() => setSelectedPurchase(null)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
+            <ShoppingOutlined className="text-emerald-500" />
+            <span>View Rep Order</span>
+          </div>
+        }
+        open={!!selectedRepOrder}
+        onCancel={() => setSelectedRepOrder(null)}
+        width={950}
+        footer={null}
+      >
+        {selectedRepOrder && (
+          <div className="space-y-6">
+            <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
+              <Col span={6}>
+                <div className="text-xs opacity-70">Order No</div>
+                <div className="font-mono font-bold text-emerald-500 text-base">{selectedRepOrder.orderNumber}</div>
+              </Col>
+              <Col span={6}>
+                <div className="text-xs opacity-70">Rep</div>
+                <div className="font-semibold text-base">{selectedRepOrder.repName || '—'}</div>
+              </Col>
+              <Col span={6}>
+                <div className="text-xs opacity-70">Order Date</div>
+                <div className="text-base">{selectedRepOrder.orderDate || '—'}</div>
+              </Col>
+              <Col span={6}>
+                <div className="text-xs opacity-70">Status</div>
+                <div className="mt-1"><Tag color={selectedRepOrder.status === 'CONFIRMED' || selectedRepOrder.status === 'COMPLETED' ? 'green' : 'orange'}>{selectedRepOrder.status}</Tag></div>
+              </Col>
+            </Row>
+
+            <div>
+              <Title level={5} className="!mb-3">Shops ({selectedRepOrder.shops?.length || 0})</Title>
+              <Table
+                dataSource={selectedRepOrder.shops || []}
+                rowKey="id"
+                pagination={false}
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded border border-slate-200 dark:border-slate-800">
+                      <Title level={5} className="!text-sm !mb-2 opacity-70">Items for {record.shop?.name}</Title>
+                      <Table
+                        dataSource={record.items || []}
+                        rowKey="id"
+                        pagination={false}
+                        size="small"
+                        columns={[
+                          { title: 'SKU', dataIndex: ['product', 'sku'], key: 'sku', render: (val: string) => <span className="font-mono text-emerald-500">{val || '—'}</span> },
+                          { title: 'Product Name', dataIndex: ['product', 'name'], key: 'name', render: (val: string) => <span className="font-medium">{val || '—'}</span> },
+                          { title: 'Quantity', dataIndex: 'quantity', key: 'qty', align: 'right' },
+                          { title: 'Unit Type', dataIndex: 'unitType', key: 'unit', render: (val: string) => <Tag color="purple">{val}</Tag> },
+                          { title: 'Rate (LKR)', dataIndex: 'rate', key: 'rate', align: 'right', render: (val: number) => Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+                          { title: 'Amount (LKR)', dataIndex: 'netAmount', key: 'amount', align: 'right', render: (val: number) => <span className="font-mono font-semibold">{Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span> },
+                        ]}
+                      />
+                    </div>
+                  ),
+                }}
+                columns={[
+                  { title: 'Shop Name', dataIndex: ['shop', 'name'], key: 'name', render: (val: string) => <span className="font-medium">{val || '—'}</span> },
+                  { title: 'Items', key: 'items', render: (_: unknown, record: RepOrderShop) => <Tag>{record.items?.length || 0} items</Tag> },
+                  { title: 'Net Amount (LKR)', dataIndex: 'netAmount', key: 'amount', align: 'right', render: (val: number) => <span className="font-mono font-semibold">{Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span> },
+                ]}
+              />
+            </div>
+
+            <div className="flex justify-end pt-4 mt-4 border-t border-black/10 dark:border-white/10">
+              <Button onClick={() => setSelectedRepOrder(null)}>
                 Close
               </Button>
             </div>
