@@ -83,6 +83,59 @@
   /* Typography */
   --font-sans: 'Inter', 'Noto Sans Sinhala', system-ui, -apple-system, sans-serif;
   --font-feature: 'tnum', 'kern', 'liga';
+
+  /* --- SPICEFLOW CONSOLIDATED TOKENS --- */
+  /* Brand & Semantic Colors */
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-subtle: #ecfdf5;
+  --color-secondary: #475569;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Surfaces & Backgrounds */
+  --color-bg-app: #f8fafc;
+  --color-surface-default: #ffffff;
+  --color-surface-subtle: #f1f5f9;
+  --color-border-default: #e2e8f0;
+  --color-border-strong: #cbd5e1;
+
+  /* Text Colors */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94a3b8;
+
+  /* Typography Scale */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  /* Spacing Scale */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+
+  /* Border Radius Scale */
+  --radius-none: 0px;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+
+  /* Shadow / Elevation Scale */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
 }
 
 /* Light theme overrides (applied via data-theme="light" on <html>) */
@@ -323,11 +376,11 @@ body {
 }
 
 .ant-table-thead > tr > th {
-  font-size: 0.75rem;
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #4b5563 !important;
+  letter-spacing: normal;
+  text-transform: capitalize;
+  color: var(--color-text-secondary) !important;
   background-color: var(--surface-muted) !important;
 }
 
@@ -365,9 +418,11 @@ body {
 
 /* Fix critical WCAG accessibility failure on placeholder text and empty states */
 .ant-input::placeholder,
-.ant-input-number-input::placeholder,
+.ant-input-number-input::placeholder {
+  color: var(--color-text-tertiary) !important;
+}
 .ant-empty-description {
-  color: var(--text-muted) !important;
+  color: #64748b !important;
 }
 
 /* Increase form label weight for structural hierarchy */
@@ -414,12 +469,12 @@ body {
    -------------------------------------------------------------------------- */
 .spiceflow-table .ant-table-thead > tr > th {
   background-color: transparent !important;
-  color: #4b5563 !important;
+  color: var(--color-text-secondary) !important;
   font-weight: 600 !important;
-  font-size: 0.75rem !important;
-  letter-spacing: 0.05em !important;
-  text-transform: uppercase !important;
-  border-bottom: 1px solid var(--color-slate-200) !important;
+  font-size: 14px !important;
+  letter-spacing: normal !important;
+  text-transform: capitalize !important;
+  border-bottom: 1px solid var(--color-border-default) !important;
 }
 
 .spiceflow-table .ant-table-tbody > tr > td {
@@ -450,16 +505,18 @@ body {
    -------------------------------------------------------------------------- */
 .ant-menu-light .ant-menu-item-selected,
 .ant-menu-light > .ant-menu .ant-menu-item-selected {
-  background-color: #ecfdf5 !important; /* Emerald 50 */
-  color: #059669 !important; /* Emerald 600 */
-  border-left: 3px solid #059669 !important;
+  background-color: var(--color-bg-app) !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--color-primary) !important;
   border-radius: 0 8px 8px 0 !important;
 }
 
 [data-theme='dark'] .ant-menu-dark .ant-menu-item-selected,
 [data-theme='dark'] .ant-menu-item-selected {
-  background-color: rgba(5, 150, 105, 0.2) !important;
-  color: #10b981 !important; /* Emerald 500 */
-  border-left: 3px solid #10b981 !important;
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: var(--color-text-primary) !important;
+  font-weight: 600 !important;
+  border-left: 3px solid var(--color-primary) !important;
   border-radius: 0 8px 8px 0 !important;
 }
