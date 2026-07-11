@@ -35,34 +35,34 @@ function ThemedApp() {
             : antdTheme.defaultAlgorithm,
         token: {
           // Brand
-          colorPrimary: '#10b981',
-          colorPrimaryHover: '#34d399',
-          colorPrimaryActive: '#059669',
+          colorPrimary: '#059669', // Emerald 600
+          colorPrimaryHover: '#047857', // Emerald 700
+          colorPrimaryActive: '#064e3b', // Emerald 900
 
           // Typography
           fontFamily:
             "'Inter', 'Noto Sans Sinhala', system-ui, -apple-system, sans-serif",
           fontSize: 14,
 
-          // Surface tokens (dark)
-          colorBgBase: currentTheme === 'dark' ? '#0d1117' : '#f8fafc',
-          colorBgContainer: currentTheme === 'dark' ? '#161b22' : '#ffffff',
-          colorBgElevated: currentTheme === 'dark' ? '#1c2333' : '#ffffff',
-          colorBgLayout: currentTheme === 'dark' ? '#0d1117' : '#f1f5f9',
+          // Surface tokens (dark/light)
+          colorBgBase: currentTheme === 'dark' ? '#0f172a' : '#f9fafb',
+          colorBgContainer: currentTheme === 'dark' ? '#1e293b' : '#ffffff',
+          colorBgElevated: currentTheme === 'dark' ? '#334155' : '#ffffff',
+          colorBgLayout: currentTheme === 'dark' ? '#0f172a' : '#f9fafb',
 
           // Border
-          colorBorder: currentTheme === 'dark' ? '#30363d' : '#e2e8f0',
-          colorBorderSecondary: currentTheme === 'dark' ? '#21262d' : '#f1f5f9',
+          colorBorder: currentTheme === 'dark' ? '#334155' : '#e5e7eb',
+          colorBorderSecondary: currentTheme === 'dark' ? '#1e293b' : '#f3f4f6',
 
           // Text
-          colorText: currentTheme === 'dark' ? '#e6edf3' : '#0f172a',
-          colorTextSecondary: currentTheme === 'dark' ? '#8b949e' : '#475569',
-          colorTextDisabled: currentTheme === 'dark' ? '#484f58' : '#94a3b8',
+          colorText: currentTheme === 'dark' ? '#f8fafc' : '#111827',
+          colorTextSecondary: currentTheme === 'dark' ? '#94a3b8' : '#4b5563',
+          colorTextDisabled: currentTheme === 'dark' ? '#475569' : '#9ca3af',
 
           // Radius
-          borderRadius: 8,
+          borderRadius: 6,
           borderRadiusLG: 12,
-          borderRadiusSM: 6,
+          borderRadiusSM: 4,
 
           // Motion
           motionDurationMid: '0.2s',
@@ -70,28 +70,26 @@ function ThemedApp() {
         },
         components: {
           Layout: {
-            siderBg: currentTheme === 'dark' ? '#161b22' : '#ffffff',
-            headerBg: currentTheme === 'dark' ? '#161b22' : '#ffffff',
+            siderBg: currentTheme === 'dark' ? '#1e293b' : '#ffffff',
+            headerBg: currentTheme === 'dark' ? '#1e293b' : '#ffffff',
           },
           Menu: {
-            darkItemBg: '#161b22',
-            darkItemSelectedBg: 'rgba(16, 185, 129, 0.12)',
-            darkItemColor: '#8b949e',
-            darkItemSelectedColor: '#10b981',
-            darkItemHoverBg: 'rgba(16, 185, 129, 0.06)',
-            darkItemHoverColor: '#e6edf3',
+            darkItemBg: '#1e293b',
+            darkItemSelectedBg: 'rgba(5, 150, 105, 0.12)', // Emerald 600
+            darkItemColor: '#94a3b8',
+            darkItemSelectedColor: '#10b981', // Emerald 500
+            darkItemHoverBg: 'rgba(5, 150, 105, 0.06)',
+            darkItemHoverColor: '#f8fafc',
           },
           Button: {
-            // Primary button uses the emerald gradient via CSS — the base
-            // color here provides the hover/focus ring fallback
-            colorPrimaryTextHover: '#34d399',
+            colorPrimaryTextHover: '#047857', // Emerald 700
           },
           Table: {
-            headerBg: currentTheme === 'dark' ? '#1c2333' : '#f8fafc',
-            rowHoverBg: currentTheme === 'dark' ? 'rgba(16,185,129,0.04)' : 'rgba(16,185,129,0.03)',
+            headerBg: currentTheme === 'dark' ? '#334155' : '#f3f4f6', // Slate-700 / Gray-100
+            rowHoverBg: currentTheme === 'dark' ? 'rgba(5,150,105,0.04)' : 'rgba(5,150,105,0.03)',
           },
           Card: {
-            colorBgContainer: currentTheme === 'dark' ? '#161b22' : '#ffffff',
+            colorBgContainer: currentTheme === 'dark' ? '#1e293b' : '#ffffff',
           },
         },
       }}

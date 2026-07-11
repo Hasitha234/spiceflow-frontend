@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic } from 'antd';
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi } from '../api/inventory';
 import type { Warehouse, InventoryItem } from '../types/inventory';
 
@@ -45,23 +45,17 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
     fetchWarehouses();
   }, []);
 
-  const getStoreTypeColor = (type: string) => {
-    switch (type) {
-      case 'MAIN': return 'green';
-      case 'VEHICLE': return 'blue';
-      default: return 'default';
-    }
-  };
+
 
   return (
     <div className="p-6">
       <div className="mb-6">
-        <Title level={2} style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: 'var(--text-primary)' }}>
+        <h2 className="text-2xl font-semibold m-0 text-slate-900">
           {t('inventory.title', 'Inventory')}
-        </Title>
-        <Text style={{ fontSize: '0.875rem', marginTop: '0.5rem', display: 'block', color: 'var(--text-secondary)' }}>
+        </h2>
+        <span className="text-slate-500 text-sm mt-2 block">
           {t('inventory.warehouseGrid', 'Select a warehouse to view inventory.')}
-        </Text>
+        </span>
       </div>
 
       {loading ? (
@@ -69,28 +63,45 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
           <Spin size="large" />
         </div>
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[24, 24]}>
           {warehouses.map((wh) => (
             <Col xs={24} sm={12} lg={8} key={wh.id}>
               <Card
                 hoverable
                 onClick={() => onSelect(wh.id)}
                 styles={{ body: { padding: '24px' } }}
-                className="rounded-lg shadow-sm border border-slate-200 h-full cursor-pointer transition-colors hover:border-emerald-600 hover:shadow-md"
+                className="rounded-lg shadow-sm border border-slate-200 h-full cursor-pointer transition-all hover:border-emerald-600 hover:shadow-md group"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <Title level={4} style={{ margin: 0, color: '#0f172a' }}>
-                    {wh.name}
-                  </Title>
-                  <Tag color={getStoreTypeColor(wh.storeType)} className="m-0 uppercase font-semibold">
-                    {wh.storeType}
-                  </Tag>
+                <div className="flex justify-between items-center h-full">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="m-0 text-lg font-semibold text-slate-900 leading-none">
+                        {wh.name}
+                      </h3>
+                      {wh.storeType === 'MAIN' && (
+                        <span className="px-2 py-0.5 text-[12px] font-semibold text-emerald-800 bg-emerald-100 rounded leading-none flex items-center">
+                          MAIN
+                        </span>
+                      )}
+                      {wh.storeType === 'VEHICLE' && (
+                        <span className="px-2 py-0.5 text-[12px] font-semibold text-blue-800 bg-blue-100 rounded leading-none flex items-center">
+                          VEHICLE
+                        </span>
+                      )}
+                      {wh.storeType === 'CUSTOM' && (
+                        <span className="px-2 py-0.5 text-[12px] font-semibold text-slate-800 bg-slate-100 rounded leading-none flex items-center">
+                          CUSTOM
+                        </span>
+                      )}
+                    </div>
+                    {wh.location && (
+                      <span className="text-slate-500 text-sm block">
+                        {wh.location}
+                      </span>
+                    )}
+                  </div>
+                  <RightOutlined className="text-slate-400 transition-colors group-hover:text-emerald-600" />
                 </div>
-                {wh.location && (
-                  <Text className="text-slate-500 block mb-4">
-                    {wh.location}
-                  </Text>
-                )}
               </Card>
             </Col>
           ))}

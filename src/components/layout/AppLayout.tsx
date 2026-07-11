@@ -19,20 +19,40 @@ const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
 const menuItems = [
-  { key: '/', translateKey: 'nav.dashboard' },
-  { key: '/purchases', translateKey: 'nav.purchases' },
-  { key: '/day-summary', translateKey: 'nav.daySummary' },
-  { key: '/inventory', translateKey: 'nav.inventory' },
-  { key: '/sales', translateKey: 'nav.orders' },
-  { key: '/loading', translateKey: 'nav.loading' },
-  { key: '/deliveries', translateKey: 'nav.deliveries' },
-  { key: '/end-of-day', translateKey: 'nav.endOfDay' },
-  { key: '/qr-scan', translateKey: 'nav.qrScan' },
-  { key: '/reports', translateKey: 'nav.reports' },
-  { key: '/settings', translateKey: 'nav.settings' },
-  { key: '/users', translateKey: 'nav.users' },
-  { key: '/roles', translateKey: 'nav.roles' },
+  {
+    type: 'group',
+    label: 'Core Workflows',
+    children: [
+      { key: '/', translateKey: 'nav.dashboard' },
+      { key: '/purchases', translateKey: 'nav.purchases' },
+      { key: '/day-summary', translateKey: 'nav.daySummary' },
+      { key: '/inventory', translateKey: 'nav.inventory' },
+      { key: '/sales', translateKey: 'nav.orders' },
+    ]
+  },
+  {
+    type: 'group',
+    label: 'Operations',
+    children: [
+      { key: '/loading', translateKey: 'nav.loading' },
+      { key: '/deliveries', translateKey: 'nav.deliveries' },
+      { key: '/end-of-day', translateKey: 'nav.endOfDay' },
+      { key: '/qr-scan', translateKey: 'nav.qrScan' },
+    ]
+  },
+  {
+    type: 'group',
+    label: 'System & Reports',
+    children: [
+      { key: '/reports', translateKey: 'nav.reports' },
+      { key: '/settings', translateKey: 'nav.settings' },
+      { key: '/users', translateKey: 'nav.users' },
+      { key: '/roles', translateKey: 'nav.roles' },
+    ]
+  }
 ];
+
+const flatMenuItems = menuItems.flatMap(group => group.children || []);
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -45,7 +65,7 @@ export function AppLayout() {
   
   const { theme, toggleTheme } = useThemeStore();
 
-  const currentKey = menuItems.reduce((best, item) => {
+  const currentKey = flatMenuItems.reduce((best, item) => {
     return location.pathname.startsWith(item.key) && item.key.length > best.length ? item.key : best;
   }, '/');
 
@@ -104,10 +124,14 @@ export function AppLayout() {
             borderRight: 'none',
             padding: '16px 12px 16px 0'
           }}
-          items={menuItems.map((item) => ({
-            key: item.key,
-            label: t(item.translateKey),
-            style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+          items={menuItems.map((group) => ({
+            type: 'group',
+            label: <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 16, marginBottom: 8 }}>{group.label}</div>,
+            children: group.children.map((item) => ({
+              key: item.key,
+              label: t(item.translateKey),
+              style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+            }))
           }))}
         />
       </Sider>
@@ -129,7 +153,6 @@ export function AppLayout() {
               onClick={() => setCollapsed(!collapsed)} 
               style={{ fontSize: 16, color: 'var(--text-primary)' }}
             />
-            <span style={{ fontSize: 18, fontWeight: 600 }}>{t(menuItems.find(i => i.key === currentKey)?.translateKey || 'nav.dashboard')}</span>
           </Space>
           
           <Space size="middle">
@@ -170,7 +193,7 @@ export function AppLayout() {
               placement="bottomRight"
             >
               <div className="hover-lift" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '0 8px', borderRadius: 24, background: 'var(--surface-muted)' }}>
-                <Avatar size="small" icon={<UserOutlined />} style={{ background: 'var(--color-emerald-600)' }} />
+                <Avatar size="small" icon={<UserOutlined />} style={{ background: '#334155' }} />
               </div>
             </Dropdown>
           </Space>
