@@ -4,7 +4,7 @@ import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined } from 
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi, repOrderApi } from '../api/sales';
-import type { Purchase, RepOrder } from '../types/sales';
+import type { Purchase, RepOrder, RepOrderShop } from '../types/sales';
 
 const { Title } = Typography;
 
@@ -438,7 +438,7 @@ export function DaySummaryPage() {
                 }}
                 columns={[
                   { title: 'Shop Name', dataIndex: ['shop', 'name'], key: 'name', render: (val: string) => <span className="font-medium">{val || '—'}</span> },
-                  { title: 'Items', key: 'items', render: (_: unknown, record: any) => <Tag>{record.items?.length || 0} items</Tag> },
+                  { title: 'Items', key: 'items', render: (_: unknown, record: RepOrderShop) => <Tag>{record.items?.length || 0} items</Tag> },
                   { title: 'Net Amount (LKR)', dataIndex: 'netAmount', key: 'amount', align: 'right', render: (val: number) => <span className="font-mono font-semibold">{Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span> },
                 ]}
               />
