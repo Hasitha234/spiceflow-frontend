@@ -11,13 +11,13 @@
    -------------------------------------------------------------------------- */
 :root {
   /* Brand (Emerald-Teal base) */
-  --color-emerald-50:  #F0FDFA; /* Teal 50 */
-  --color-emerald-100: #CCFBF1; /* Teal 100 */
-  --color-emerald-200: #99F6E4; /* Teal 200 */
-  --color-emerald-400: #2DD4BF; /* Teal 400 */
-  --color-emerald-500: #0D9488; /* Teal 500 - Brand Primary */
-  --color-emerald-600: #0F766E; /* Teal 600 */
-  --color-emerald-700: #115E59; /* Teal 700 */
+  --color-emerald-50:  #ecfdf5; /* Emerald 50 */
+  --color-emerald-100: #d1fae5; /* Emerald 100 */
+  --color-emerald-200: #a7f3d0; /* Emerald 200 */
+  --color-emerald-400: #34d399; /* Emerald 400 */
+  --color-emerald-500: #10b981; /* Emerald 500 */
+  --color-emerald-600: #059669; /* Emerald 600 - Brand Primary */
+  --color-emerald-700: #047857; /* Emerald 700 */
 
   /* Neutral — Light (Slate base) */
   --color-slate-50:  #f8fafc;
@@ -87,15 +87,15 @@
 
 /* Light theme overrides (applied via data-theme="light" on <html>) */
 [data-theme='light'] {
-  --surface-base:    #f8fafc;
+  --surface-base:    #f9fafb;
   --surface-raised:  #ffffff;
-  --surface-overlay: #f1f5f9;
-  --surface-border:  #e2e8f0;
-  --surface-border-strong: #cbd5e1; /* slate-300 */
-  --surface-muted:   #f8fafc;
-  --text-primary:    #0f172a;
-  --text-secondary:  #475569;
-  --text-muted:      #94a3b8;
+  --surface-overlay: #f3f4f6;
+  --surface-border:  #e5e7eb;
+  --surface-border-strong: #d1d5db; /* gray-300 */
+  --surface-muted:   #f9fafb;
+  --text-primary:    #111827;
+  --text-secondary:  #4b5563;
+  --text-muted:      #9ca3af;
   --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
   --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
@@ -327,8 +327,13 @@ body {
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #64748B !important;
+  color: #4b5563 !important;
   background-color: var(--surface-muted) !important;
+}
+
+/* Let the empty state hug its contents with proper padding */
+.ant-table-empty .ant-table-tbody > tr.ant-table-placeholder > td {
+  padding: 4rem 0 !important;
 }
 
 /* Sidebar active item styling based on emerald-teal brand */
@@ -408,7 +413,7 @@ body {
    -------------------------------------------------------------------------- */
 .spiceflow-table .ant-table-thead > tr > th {
   background-color: transparent !important;
-  color: var(--color-slate-500) !important;
+  color: #4b5563 !important;
   font-weight: 600 !important;
   font-size: 0.75rem !important;
   letter-spacing: 0.05em !important;

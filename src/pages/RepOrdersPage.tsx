@@ -120,18 +120,13 @@ export function RepOrdersPage() {
     <div className="p-6">
       <Row justify="space-between" align="middle" className="mb-6">
         <Col>
-          <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-emerald-500">
-              <ShoppingOutlined className="text-2xl" />
-            </div>
-            <div>
-              <Title level={3} className="!m-0">
-                {t('repOrder.repOrder', 'Rep Orders')}
-              </Title>
-              <Text type="secondary">
-                Manage sales representative field orders
-              </Text>
-            </div>
+          <div>
+            <Title level={3} className="!m-0">
+              {t('repOrder.repOrder', 'Rep Orders')}
+            </Title>
+            <Text type="secondary" className="mt-1 block">
+              Manage sales representative field orders
+            </Text>
           </div>
         </Col>
         <Col>
