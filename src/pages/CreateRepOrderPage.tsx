@@ -17,12 +17,11 @@ import {
   Typography,
   message,
   Space,
+  Breadcrumb,
 } from 'antd';
 import {
-  ArrowLeftOutlined,
   PlusOutlined,
   DeleteOutlined,
-  ShopOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import apiClient from '../api/client';
@@ -193,16 +192,9 @@ export function CreateRepOrderPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', paddingBottom: '120px' }}>
       {/* Top Header Navigation */}
-      <div style={{ backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 10, display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <Button 
-          type="text" 
-          icon={<ArrowLeftOutlined />} 
-          onClick={() => navigate('/sales')}
-        />
-        <Space>
-          <ShopOutlined style={{ color: '#10b981', fontSize: '20px' }} />
-          <Title level={4} style={{ margin: 0 }}>New Rep Order</Title>
-        </Space>
+      <div style={{ padding: '24px 24px 0 24px', maxWidth: 1200, margin: '0 auto' }}>
+        <Breadcrumb items={[{ title: 'Rep Orders', href: '/sales' }, { title: 'New Rep Order' }]} />
+        <Title level={2} style={{ marginTop: '8px', marginBottom: 0 }}>New Rep Order</Title>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -333,7 +325,7 @@ export function CreateRepOrderPage() {
           <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px', height: '96px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '24px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Net Total (All Shops)</span>
-              <span style={{ fontFamily: 'monospace', fontSize: '24px', fontWeight: 'bold', color: '#10b981' }}>LKR {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span style={{ fontFamily: 'monospace', fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>LKR {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
             
             <Button size="large" onClick={() => navigate('/sales')} disabled={submitting}>
@@ -417,7 +409,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                 name={`shops.${shopIndex}.discountAmount`}
                 control={control}
                 render={({ field }) => (
-                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />
+                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
                 )}
               />
             </Form.Item>
@@ -428,7 +420,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                 name={`shops.${shopIndex}.skuDiscountAmount`}
                 control={control}
                 render={({ field }) => (
-                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />
+                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
                 )}
               />
             </Form.Item>
@@ -462,8 +454,8 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
           <thead style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
             <tr>
               <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600 }}>Product</th>
-              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px' }}>Qty</th>
-              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '150px' }}>Rate (LKR)</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px', textAlign: 'right' }}>Qty</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '150px', textAlign: 'right' }}>Rate (LKR)</th>
               <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600, textAlign: 'right' }}>Amount (LKR)</th>
               <th style={{ padding: '12px', width: '48px' }}></th>
             </tr>
@@ -501,17 +493,17 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                     <Controller
                       name={`shops.${shopIndex}.items.${itemIndex}.quantity`}
                       control={control}
-                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />}
                     />
                   </td>
                   <td style={{ padding: '12px' }}>
                     <Controller
                       name={`shops.${shopIndex}.items.${itemIndex}.rate`}
                       control={control}
-                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />}
                     />
                   </td>
-                  <td style={{ padding: '12px 24px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: '#10b981' }}>
+                  <td style={{ padding: '12px 24px', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: '#111827' }}>
                     {amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                   </td>
                   <td style={{ padding: '12px' }}>
@@ -537,14 +529,14 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
 
       {/* Returns Table */}
       <div style={{ padding: '16px 24px 8px 24px' }}>
-        <Text strong style={{ fontSize: '16px', color: '#ff4d4f' }}>Returns</Text>
+        <Text strong style={{ fontSize: '16px', color: '#111827' }}>Returns</Text>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '14px' }}>
           <thead style={{ backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
             <tr>
               <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600 }}>Product</th>
-              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px' }}>Qty</th>
+              <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '120px', textAlign: 'right' }}>Qty</th>
               <th style={{ padding: '12px', color: '#8c8c8c', fontWeight: 600, width: '150px' }}>Return Type</th>
               <th style={{ padding: '12px 24px', color: '#8c8c8c', fontWeight: 600, textAlign: 'right', width: '200px' }}>Credit Value (LKR)</th>
               <th style={{ padding: '12px', width: '48px' }}></th>
@@ -573,7 +565,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                     <Controller
                       name={`shops.${shopIndex}.returns.${returnIndex}.quantity`}
                       control={control}
-                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={1} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />}
                     />
                   </td>
                   <td style={{ padding: '12px' }}>
@@ -598,7 +590,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                     <Controller
                       name={`shops.${shopIndex}.returns.${returnIndex}.creditValue`}
                       control={control}
-                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} />}
+                      render={({ field }) => <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />}
                     />
                   </td>
                   <td style={{ padding: '12px' }}>
@@ -616,7 +608,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
         </table>
       </div>
       <div style={{ padding: '16px 24px', backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
-        <Button type="dashed" danger icon={<PlusOutlined />} onClick={() => appendReturn(emptyReturn)}>
+        <Button type="dashed" style={{ color: '#4b5563', borderColor: '#d1d5db' }} icon={<PlusOutlined />} onClick={() => appendReturn(emptyReturn)}>
           Add Return
         </Button>
       </div>
@@ -624,7 +616,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
       <div style={{ padding: '24px', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <div style={{ textAlign: 'right' }}>
           <Text style={{ color: '#8c8c8c', marginRight: '16px' }}>Shop Subtotal:</Text>
-          <Text style={{ fontSize: '18px', fontFamily: 'monospace', color: '#10b981', fontWeight: 'bold' }}>
+          <Text style={{ fontSize: '18px', fontFamily: 'monospace', color: '#111827', fontWeight: 'bold' }}>
             LKR {shopNetTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}
           </Text>
         </div>
