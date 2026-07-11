@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { purchaseApi } from '../api/sales';
 import type { Purchase } from '../types/sales';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export function DaySummaryPage() {
   const { t } = useTranslation();

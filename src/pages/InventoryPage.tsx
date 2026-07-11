@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic } from 'antd';
 import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi } from '../api/inventory';
@@ -26,7 +27,7 @@ export function InventoryPage() {
 
 // ─── Level 1: Warehouse Grid ───────────────────────────────────────────────
 
-function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: any }) {
+function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFunction }) {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -101,7 +102,7 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: any
 
 // ─── Level 2: Warehouse Detail ─────────────────────────────────────────────
 
-function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBack: () => void; t: any }) {
+function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBack: () => void; t: TFunction }) {
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -188,10 +189,9 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         const total = record.quantityAvailable;
         const perUnit = record.itemsPerSoldUnit || 0;
         
-        let loose = total;
         if (perUnit > 0) {
-          loose = total % perUnit;
-          return <span className="font-semibold text-slate-900 tabular-nums">{loose}</span>;
+          const looseAmount = total % perUnit;
+          return <span className="font-semibold text-slate-900 tabular-nums">{looseAmount}</span>;
         }
         return <span className="text-slate-400 tabular-nums">-</span>;
       },
