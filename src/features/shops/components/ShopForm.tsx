@@ -84,7 +84,13 @@ export const ShopForm: React.FC = () => {
           />
         </Form.Item>
 
-        <Form.Item label="Phone Number" htmlFor="phone">
+        <Form.Item 
+          label="Phone Number" 
+          htmlFor="phone"
+          validateStatus={errors.phone ? 'error' : ''}
+          help={errors.phone?.message}
+          required
+        >
           <Controller
             name="phone"
             control={control}
@@ -97,7 +103,13 @@ export const ShopForm: React.FC = () => {
 
       {/* ── Routing & Area ────────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-        <Form.Item label="Route" htmlFor="route">
+        <Form.Item 
+          label="Route" 
+          htmlFor="route"
+          validateStatus={errors.route ? 'error' : ''}
+          help={errors.route?.message}
+          required
+        >
           <Controller
             name="route"
             control={control}
@@ -107,7 +119,13 @@ export const ShopForm: React.FC = () => {
           />
         </Form.Item>
 
-        <Form.Item label="Area / City" htmlFor="area">
+        <Form.Item 
+          label="Area / City" 
+          htmlFor="area"
+          validateStatus={errors.area ? 'error' : ''}
+          help={errors.area?.message}
+          required
+        >
           <Controller
             name="area"
             control={control}
@@ -118,7 +136,13 @@ export const ShopForm: React.FC = () => {
         </Form.Item>
       </div>
 
-      <Form.Item label="Address" htmlFor="address">
+      <Form.Item 
+        label="Address" 
+        htmlFor="address"
+        validateStatus={errors.address ? 'error' : ''}
+        help={errors.address?.message}
+        required
+      >
         <Controller
           name="address"
           control={control}
