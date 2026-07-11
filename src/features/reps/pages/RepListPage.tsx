@@ -101,7 +101,7 @@ export function RepListPage() {
     <PageLayout>
       <PageHeader
         title="Sales Representatives"
-        subtitle={`${data?.totalElements ?? 0} registered field sales agents`}
+        subtitle={`${data?.totalElements ?? 0} registered field sales agent${(data?.totalElements ?? 0) === 1 ? '' : 's'}`}
         breadcrumbs={[
           { title: 'Settings', href: '/settings' },
           { title: 'Sales Reps' },
