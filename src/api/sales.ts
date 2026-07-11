@@ -32,7 +32,7 @@ export const shopApi = {
 
 // ─── Rep Orders ───────────────────────────────────────────────────────────────
 export const repOrderApi = {
-  list: (params?: { repId?: string; page?: number; size?: number }) =>
+  list: (params?: { repId?: string; date?: string; page?: number; size?: number }) =>
     apiClient.get<PageResponse<RepOrder>>('/api/v1/sales/rep-orders', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<RepOrder>(`/api/v1/sales/rep-orders/${id}`).then((r) => r.data),
