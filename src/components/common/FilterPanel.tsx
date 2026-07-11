@@ -55,7 +55,7 @@ export const FilterPanel: React.FC<FilterPanelProps> = ({
 
   return (
     <div className="filter-panel" style={{ padding: '16px 24px', borderBottom: '1px solid var(--surface-border)' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 12, marginBottom: '24px' }}>
         {filters.map((filter) => (
           <FilterControl
             key={filter.key}
@@ -156,7 +156,7 @@ const DebouncedSearch: React.FC<{
       onChange={handleChange}
       allowClear
       onClear={() => onChange(null)}
-      style={{ maxWidth: 320 }}
+      style={{ width: '100%', maxWidth: 400 }}
     />
   );
 };

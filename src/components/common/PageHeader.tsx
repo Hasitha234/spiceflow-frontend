@@ -23,18 +23,18 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   extra,
 }) => {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
       <div>
         {breadcrumbs && breadcrumbs.length > 0 && (
           <Breadcrumb
             className="mb-2"
             items={breadcrumbs.map((item) => ({
               title: item.href ? (
-                <Link to={item.href} className="text-slate-400 hover:text-emerald-400 transition-colors">
+                <Link to={item.href} className="text-slate-500 hover:text-emerald-500 transition-colors">
                   {item.title}
                 </Link>
               ) : (
-                <span className="text-slate-300 font-medium">{item.title}</span>
+                <span className="text-slate-500 font-medium">{item.title}</span>
               ),
             }))}
           />
