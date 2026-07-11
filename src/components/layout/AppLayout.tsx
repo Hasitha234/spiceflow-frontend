@@ -136,18 +136,14 @@ export function AppLayout() {
       
       <Layout>
         <Header className="sf-header" style={{ 
-          padding: '0 24px', 
+          padding: '0 var(--space-6)', 
           display: 'flex', 
-          justifyContent: 'space-between', 
+          justifyContent: 'flex-end', 
           alignItems: 'center',
           position: 'sticky',
           top: 0,
           zIndex: 10,
         }}>
-          <Space size="large">
-            {/* Hamburger moved to default Ant Design sidebar trigger */}
-          </Space>
-          
           <Space size="middle">
             {/* Theme Toggle */}
             <Button 

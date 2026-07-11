@@ -254,7 +254,7 @@ export function DriversPage() {
         }
       }}
     >
-      <div style={{ padding: '24px', background: 'var(--surface-base)', minHeight: '100vh', boxSizing: 'border-box' }}>
+      <div style={{ padding: 'var(--space-8)', background: 'var(--color-bg-app)', minHeight: '100vh', boxSizing: 'border-box' }}>
         
         {/* --- Test Controls --- */}
         <div style={{ marginBottom: '24px', display: 'flex', gap: '8px', alignItems: 'center', background: 'var(--surface-raised)', padding: '12px', borderRadius: '8px', border: '1px solid var(--surface-border)' }}>
@@ -268,34 +268,38 @@ export function DriversPage() {
         {/* HEADER AREA */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
           <div>
-            <Breadcrumb items={[{ title: 'Settings' }, { title: 'Drivers' }]} style={{ marginBottom: '8px', color: 'var(--text-muted)' }} />
-            <Title level={1} style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>
+            <Breadcrumb items={[{ title: 'Settings' }, { title: 'Drivers' }]} style={{ marginBottom: '8px', color: 'var(--color-text-secondary)', fontWeight: 500 }} />
+            <Title level={1} style={{ fontSize: '24px', fontWeight: 700, color: 'var(--color-text-primary)', margin: 0 }}>
               Drivers & Logistics
             </Title>
-            <Text style={{ color: 'var(--text-secondary)', fontSize: '15px', marginTop: '4px', display: 'block' }}>
+            <Text style={{ color: 'var(--color-text-secondary)', fontWeight: 500, fontSize: '14px', marginTop: '4px', display: 'block' }}>
               {/* Correct Pluralization Applied Here */}
               {state.status === 'success' ? totalCount : 0} registered delivery {getPluralizedDriverString(state.status === 'success' ? totalCount : 0)} and fleet personnel
             </Text>
           </div>
-          <Button type="primary" icon={<PlusOutlined />} style={{ fontWeight: 600 }}>
-            Register Driver
-          </Button>
+          {totalCount > 0 && (
+            <Button type="primary" icon={<PlusOutlined />} style={{ fontWeight: 600, borderRadius: 'var(--radius-md)' }}>
+              Register Driver
+            </Button>
+          )}
         </div>
 
         {/* SEARCH BAR */}
-        <div style={{ marginBottom: '24px', maxWidth: '400px' }}>
-          <Input 
-            prefix={<SearchOutlined style={{ color: 'var(--text-muted)' }} />} 
-            placeholder="Search drivers by name, ID, or license..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            disabled={state.status === 'loading' || state.status === 'error'}
-            style={{ background: 'var(--surface-raised)', borderColor: 'var(--surface-border)' }}
-          />
-        </div>
+        {totalCount > 0 && (
+          <div style={{ marginBottom: '24px', maxWidth: '400px' }}>
+            <Input 
+              prefix={<SearchOutlined style={{ color: 'var(--color-text-tertiary)' }} />} 
+              placeholder="Search drivers by name, ID, or license..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              disabled={state.status === 'loading' || state.status === 'error'}
+              style={{ background: 'var(--surface-default)', borderColor: 'var(--color-border-strong)', borderRadius: 'var(--radius-md)' }}
+            />
+          </div>
+        )}
 
         {/* TABLE AREA */}
-        <div style={{ background: 'var(--surface-base)', borderRadius: '8px', border: '1px solid var(--surface-border)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--surface-default)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--color-border-default)', overflow: 'hidden' }}>
           <AnimatePresence mode="wait">
             
             {state.status === 'loading' && (
@@ -307,10 +311,10 @@ export function DriversPage() {
             {state.status === 'empty' && (
               <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} style={{ padding: '64px 0', textAlign: 'center' }}>
                 <Empty 
-                  image={<CarOutlined style={{ fontSize: 48, color: 'var(--text-muted)', marginBottom: 16 }} />}
-                  description={<Text style={{ color: 'var(--text-secondary)', fontSize: '16px' }}>No drivers registered yet</Text>}
+                  image={<CarOutlined style={{ fontSize: 48, color: 'var(--color-text-tertiary)', marginBottom: 16 }} />}
+                  description={<Text style={{ color: 'var(--color-text-tertiary)', fontSize: '16px' }}>No drivers registered yet</Text>}
                 >
-                  <Button type="primary" icon={<PlusOutlined />} style={{ marginTop: '16px', fontWeight: 600 }}>
+                  <Button type="primary" icon={<PlusOutlined />} style={{ marginTop: '16px', fontWeight: 600, borderRadius: 'var(--radius-md)' }}>
                     Register Driver
                   </Button>
                 </Empty>
