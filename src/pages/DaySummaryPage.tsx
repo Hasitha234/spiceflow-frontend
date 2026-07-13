@@ -483,7 +483,16 @@ export function DaySummaryPage() {
             </Descriptions>
 
             <Title level={5} className="!mb-3">Shops in Route</Title>
-            {(selectedDelivery.shops || []).map((shop: any, idx: number) => (
+            {(selectedDelivery.shops || []).map((shop: {
+              shopName?: string;
+              shopId?: number;
+              shop?: { id?: number; name?: string };
+              grossBillAmount?: number;
+              totalDiscount?: number;
+              paidAmount?: number;
+              creditAmount?: number;
+              [key: string]: unknown;
+            }, idx: number) => (
               <Card key={idx} size="small" style={{ marginBottom: '12px', borderLeft: '4px solid #10b981' }}
                 title={<Space><span>{shop.shopName || shop.shop?.name || `Shop #${shop.shopId || shop.shop?.id}`}</span><Tag color="green">Delivered</Tag></Space>}>
                 <Descriptions size="small" column={4}>
