@@ -91,6 +91,9 @@
   --color-primary-subtle: #ecfdf5;
   --color-secondary: #475569;
   --color-success: #10b981;
+  --color-success-bg: #d1fae5;
+  --color-success-text: #047857;
+  --color-success-border: #a7f3d0;
   --color-warning: #f59e0b;
   --color-danger: #ef4444;
 
@@ -381,7 +384,8 @@ body {
   letter-spacing: normal;
   text-transform: capitalize;
   color: var(--color-text-secondary) !important;
-  background-color: var(--surface-muted) !important;
+  background-color: var(--color-surface-subtle) !important;
+  padding: 16px 24px !important;
 }
 
 /* Let the empty state hug its contents with proper padding */
@@ -412,13 +416,16 @@ body {
 /* Fix vanishing input borders for physical materiality */
 .ant-input,
 .ant-input-number,
+.ant-picker,
 .ant-select:not(.ant-select-customize-input) .ant-select-selector {
-  border-color: var(--surface-border-strong) !important;
+  border-color: var(--color-border-strong) !important;
 }
 
 /* Fix critical WCAG accessibility failure on placeholder text and empty states */
 .ant-input::placeholder,
-.ant-input-number-input::placeholder {
+.ant-input-number-input::placeholder,
+.ant-select-selection-placeholder,
+.ant-picker-input > input::placeholder {
   color: var(--color-text-tertiary) !important;
 }
 .ant-empty-description {
@@ -428,7 +435,7 @@ body {
 /* Increase form label weight for structural hierarchy */
 .ant-form-item-label > label {
   font-weight: 500 !important;
-  color: var(--text-primary) !important;
+  color: var(--color-text-secondary) !important;
 }
 
 /* Move required asterisk to the right of the label for cleaner scanning */
@@ -468,12 +475,13 @@ body {
    SpiceFlow Table Component Styles
    -------------------------------------------------------------------------- */
 .spiceflow-table .ant-table-thead > tr > th {
-  background-color: transparent !important;
+  background-color: var(--color-surface-subtle) !important;
   color: var(--color-text-secondary) !important;
   font-weight: 600 !important;
   font-size: 14px !important;
   letter-spacing: normal !important;
   text-transform: capitalize !important;
+  padding: 16px 24px !important;
   border-bottom: 1px solid var(--color-border-default) !important;
 }
 

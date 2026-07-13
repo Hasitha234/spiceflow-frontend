@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, message, Space, Button, Tooltip, Modal } from 'antd';
-import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined } from '@ant-design/icons';
+import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, message, Space, Button, Tooltip, Modal, Descriptions } from 'antd';
+import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { purchaseApi, repOrderApi } from '../api/sales';
-import type { Purchase, RepOrder, RepOrderShop } from '../types/sales';
+import { purchaseApi, repOrderApi, deliveryApi } from '../api/sales';
+import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop } from '../types/sales';
 
 const { Title } = Typography;
 
@@ -16,19 +16,23 @@ export function DaySummaryPage() {
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [repOrders, setRepOrders] = useState<RepOrder[]>([]);
   const [selectedRepOrder, setSelectedRepOrder] = useState<RepOrder | null>(null);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
 
   const loadData = useCallback(async (date: dayjs.Dayjs) => {
     setLoading(true);
     try {
       const dateStr = date.format('YYYY-MM-DD');
-      const [purchaseRes, repOrderRes] = await Promise.all([
+      const [purchaseRes, repOrderRes, deliveryRes] = await Promise.all([
         purchaseApi.list({ date: dateStr, size: 100 }),
         repOrderApi.list({ date: dateStr, size: 100 }),
+        deliveryApi.list({ date: dateStr, size: 100 }),
       ]);
       setPurchases(purchaseRes?.content || []);
       setRepOrders(repOrderRes?.content || []);
+      setDeliveries(deliveryRes?.content || []);
     } catch {
-      message.error('Failed to load purchases for the selected date');
+      message.error('Failed to load summary data for the selected date');
     } finally {
       setLoading(false);
     }
@@ -61,6 +65,93 @@ export function DaySummaryPage() {
   const repConfirmedCount = useMemo(() => {
     return repOrders.filter(o => o.status !== 'DRAFT').length;
   }, [repOrders]);
+
+  const deliveryTotalSales = useMemo(() => {
+    return deliveries.reduce((sum, d) => sum + Number((d as unknown as { totalSalesValue?: number }).totalSalesValue || 0), 0);
+  }, [deliveries]);
+
+  const deliveryTotalCollected = useMemo(() => {
+    return deliveries.reduce((sum, d) => sum + Number((d as unknown as { totalCollectedAmount?: number }).totalCollectedAmount || 0), 0);
+  }, [deliveries]);
+
+  const deliveryCompletedCount = useMemo(() => {
+    return deliveries.filter(d => d.status === 'COMPLETED').length;
+  }, [deliveries]);
+
+  const deliveryColumns = useMemo(
+    () => [
+      {
+        title: 'Delivery ID',
+        dataIndex: 'id',
+        key: 'id',
+        render: (val: string) => <span className="font-mono text-emerald-500 font-semibold">#{val || '—'}</span>,
+      },
+      {
+        title: 'Loading Sheet',
+        key: 'loadingSheet',
+        render: (_: unknown, record: Delivery) => (
+          <span className="font-medium text-slate-800 dark:text-slate-200">
+            LS-{record.loadingSheet?.id || '—'} ({record.loadingSheet?.driver?.name || 'Driver'})
+          </span>
+        ),
+      },
+      {
+        title: 'Status',
+        dataIndex: 'status',
+        key: 'status',
+        render: (status: string) => {
+          const color = status === 'COMPLETED' ? 'green' : 'blue';
+          return <Tag color={color}>{status || 'IN_PROGRESS'}</Tag>;
+        },
+      },
+      {
+        title: 'Shops Visited',
+        key: 'shopsCount',
+        render: (_: unknown, record: Delivery) => (
+          <Tag color="purple">{record.shops?.length || 0} Shops</Tag>
+        ),
+      },
+      {
+        title: 'Total Sales (LKR)',
+        key: 'totalSales',
+        align: 'right' as const,
+        render: (_: unknown, record: Delivery) => (
+          <span className="text-slate-900 font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {Number((record as unknown as { totalSalesValue?: number }).totalSalesValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        ),
+      },
+      {
+        title: 'Collected (LKR)',
+        key: 'totalCollected',
+        align: 'right' as const,
+        render: (_: unknown, record: Delivery) => (
+          <span className="text-emerald-600 font-bold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {Number((record as unknown as { totalCollectedAmount?: number }).totalCollectedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        ),
+      },
+      {
+        title: t('common.actions', 'Actions'),
+        key: 'actions',
+        align: 'right' as const,
+        render: (_: unknown, record: Delivery) => (
+          <Space>
+            <Tooltip title="View Delivery Details">
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => setSelectedDelivery(record)}
+                className="!text-blue-500 hover:!text-blue-400"
+              />
+            </Tooltip>
+          </Space>
+        ),
+      },
+    ],
+    [t]
+  );
 
   const columns = useMemo(
     () => [
@@ -309,6 +400,113 @@ export function DaySummaryPage() {
           className="spiceflow-table"
         />
       </Card>
+
+      <Title level={4} className="mt-8 mb-4">Today's Deliveries</Title>
+      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <TruckOutlined className="text-emerald-600" /> <span>Total Deliveries</span>
+                </div>
+              }
+              value={deliveries.length}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <DollarOutlined className="text-emerald-600" /> <span>Total Sales / Collected (LKR)</span>
+                </div>
+              }
+              value={deliveryTotalCollected}
+              precision={2}
+              suffix={`/ ${deliveryTotalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+            <Statistic
+              title={
+                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                  <FileTextOutlined className="text-emerald-600" /> <span>Completed / In Progress</span>
+                </div>
+              }
+              value={deliveryCompletedCount}
+              suffix={`/ ${deliveries.length - deliveryCompletedCount}`}
+              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={deliveries}
+          columns={deliveryColumns}
+          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
+          locale={{ emptyText: 'No deliveries recorded for this date.' }}
+          className="spiceflow-table"
+        />
+      </Card>
+
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
+            <TruckOutlined className="text-emerald-500" />
+            <span>View Delivery #{selectedDelivery?.id}</span>
+          </div>
+        }
+        open={!!selectedDelivery}
+        onCancel={() => setSelectedDelivery(null)}
+        width={900}
+        footer={null}
+      >
+        {selectedDelivery && (
+          <div className="space-y-6">
+            <Descriptions bordered column={3} size="small" style={{ marginBottom: '24px' }}>
+              <Descriptions.Item label="Loading Sheet">LS-{selectedDelivery.loadingSheet?.id}</Descriptions.Item>
+              <Descriptions.Item label="Driver">{selectedDelivery.loadingSheet?.driver?.name || '—'}</Descriptions.Item>
+              <Descriptions.Item label="Status"><Tag color={selectedDelivery.status === 'COMPLETED' ? 'green' : 'blue'}>{selectedDelivery.status}</Tag></Descriptions.Item>
+              <Descriptions.Item label="Total Sales">LKR {Number((selectedDelivery as unknown as { totalSalesValue?: number }).totalSalesValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+              <Descriptions.Item label="Total Returns">LKR {Number((selectedDelivery as unknown as { totalReturnsValue?: number }).totalReturnsValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+              <Descriptions.Item label="Total Collected"><span className="text-emerald-600 font-bold">LKR {Number((selectedDelivery as unknown as { totalCollectedAmount?: number }).totalCollectedAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span></Descriptions.Item>
+            </Descriptions>
+
+            <Title level={5} className="!mb-3">Shops in Route</Title>
+            {(selectedDelivery.shops || []).map((shop: DeliveryShop, idx: number) => {
+              const shopData = shop as DeliveryShop & { shopName?: string; shopId?: string | number };
+              return (
+              <Card key={idx} size="small" style={{ marginBottom: '12px', borderLeft: '4px solid #10b981' }}
+                title={<Space><span>{shopData.shopName || shopData.shop?.name || `Shop #${shopData.shopId || shopData.shop?.id}`}</span><Tag color="green">Delivered</Tag></Space>}>
+                <Descriptions size="small" column={4}>
+                  <Descriptions.Item label="Gross Bill">{Number(shop.grossBillAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+                  <Descriptions.Item label="Discount">{Number(shop.totalDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+                  <Descriptions.Item label="Paid">{Number(shop.paidAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+                  <Descriptions.Item label="Credit (Loan)">{Number(shop.creditAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
+                </Descriptions>
+              </Card>
+              );
+            })}
+            {(selectedDelivery.shops || []).length === 0 && (
+              <div className="text-center p-6 text-slate-500">No shop deliveries recorded yet.</div>
+            )}
+
+            <div className="flex justify-end pt-4 mt-4 border-t border-black/10 dark:border-white/10">
+              <Button onClick={() => setSelectedDelivery(null)}>Close</Button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal
         title={

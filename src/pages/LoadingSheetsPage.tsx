@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, Col, DatePicker, Form, Modal, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
+  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
 } from 'antd';
 import {
-  PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined,
+  PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { loadingSheetApi, repOrderApi, driverApi } from '../api/sales';
@@ -99,6 +99,17 @@ export function LoadingSheetsPage() {
     }
   }, [loadData]);
 
+  const handleCancel = useCallback(async (id: number) => {
+    try {
+      await loadingSheetApi.cancel(String(id));
+      message.success('Loading sheet cancelled and rep order returned to DRAFT.');
+      loadData();
+    } catch (err: any) {
+      const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to cancel';
+      message.error(msg);
+    }
+  }, [loadData]);
+
   const columns = useMemo(() => [
     {
       title: 'ID', dataIndex: 'id', key: 'id', width: 60,
@@ -123,7 +134,7 @@ export function LoadingSheetsPage() {
     {
       title: 'Status', dataIndex: 'status', key: 'status',
       render: (status: string) => {
-        const color = status === 'CONFIRMED' ? 'green' : status === 'DRAFT' ? 'orange' : 'blue';
+        const color = status === 'CONFIRMED' ? 'green' : status === 'CANCELLED' ? 'red' : status === 'DRAFT' ? 'orange' : 'blue';
         return <Tag color={color}>{status}</Tag>;
       },
     },
@@ -139,15 +150,22 @@ export function LoadingSheetsPage() {
             <Button type="text" icon={<EyeOutlined />} onClick={() => { setSelectedSheet(record); setDetailOpen(true); }} />
           </Tooltip>
           {record.status === 'DRAFT' && (
-            <Tooltip title="Confirm & Transfer Stock">
-              <Button type="text" style={{ color: '#10b981' }} icon={<CheckCircleOutlined />}
-                onClick={() => handleConfirm(record.id)} />
-            </Tooltip>
+            <>
+              <Tooltip title="Confirm & Transfer Stock">
+                <Button type="text" style={{ color: '#10b981' }} icon={<CheckCircleOutlined />}
+                  onClick={() => handleConfirm(record.id)} />
+              </Tooltip>
+              <Popconfirm title="Cancel this DRAFT loading sheet?" onConfirm={() => handleCancel(record.id)} okText="Yes" cancelText="No">
+                <Tooltip title="Cancel Loading Sheet">
+                  <Button type="text" danger icon={<CloseCircleOutlined />} />
+                </Tooltip>
+              </Popconfirm>
+            </>
           )}
         </Space>
       ),
     },
-  ], [handleConfirm]);
+  ], [handleConfirm, handleCancel]);
 
   return (
     <div style={{ padding: 'var(--space-8)' }}>
