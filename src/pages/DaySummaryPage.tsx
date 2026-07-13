@@ -4,7 +4,7 @@ import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckO
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi, repOrderApi, deliveryApi } from '../api/sales';
-import type { Purchase, RepOrder, RepOrderShop, Delivery } from '../types/sales';
+import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop } from '../types/sales';
 
 const { Title } = Typography;
 
@@ -483,18 +483,11 @@ export function DaySummaryPage() {
             </Descriptions>
 
             <Title level={5} className="!mb-3">Shops in Route</Title>
-            {(selectedDelivery.shops || []).map((shop: {
-              shopName?: string;
-              shopId?: number;
-              shop?: { id?: number; name?: string };
-              grossBillAmount?: number;
-              totalDiscount?: number;
-              paidAmount?: number;
-              creditAmount?: number;
-              [key: string]: unknown;
-            }, idx: number) => (
+            {(selectedDelivery.shops || []).map((shop: DeliveryShop, idx: number) => {
+              const shopData = shop as DeliveryShop & { shopName?: string; shopId?: string | number };
+              return (
               <Card key={idx} size="small" style={{ marginBottom: '12px', borderLeft: '4px solid #10b981' }}
-                title={<Space><span>{shop.shopName || shop.shop?.name || `Shop #${shop.shopId || shop.shop?.id}`}</span><Tag color="green">Delivered</Tag></Space>}>
+                title={<Space><span>{shopData.shopName || shopData.shop?.name || `Shop #${shopData.shopId || shopData.shop?.id}`}</span><Tag color="green">Delivered</Tag></Space>}>
                 <Descriptions size="small" column={4}>
                   <Descriptions.Item label="Gross Bill">{Number(shop.grossBillAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
                   <Descriptions.Item label="Discount">{Number(shop.totalDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
@@ -502,7 +495,8 @@ export function DaySummaryPage() {
                   <Descriptions.Item label="Credit (Loan)">{Number(shop.creditAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
                 </Descriptions>
               </Card>
-            ))}
+              );
+            })}
             {(selectedDelivery.shops || []).length === 0 && (
               <div className="text-center p-6 text-slate-500">No shop deliveries recorded yet.</div>
             )}
