@@ -1,14 +1,12 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
+import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
 import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
 import dayjs from 'dayjs';
 import { VehicleLoadingSheetsTab } from '../features/inventory/components/VehicleLoadingSheetsTab';
-
-const { Title, Text } = Typography;
 
 export function InventoryPage() {
   const { t } = useTranslation();
@@ -130,6 +128,8 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [savingItem, setSavingItem] = useState(false);
   const [form] = Form.useForm();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [stockFilter, setStockFilter] = useState('ALL');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -281,22 +281,40 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const totalUnits = items.reduce((acc, item) => acc + item.quantityAvailable, 0);
   const totalValue = items.reduce((acc, item) => acc + (item.quantityAvailable * (item.productBasePrice || 0)), 0);
 
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesSku = item.productSku?.toLowerCase().includes(q);
+        const matchesName = item.productName?.toLowerCase().includes(q);
+        if (!matchesSku && !matchesName) return false;
+      }
+      if (stockFilter === 'IN_STOCK' && item.quantityAvailable <= 0) return false;
+      if (stockFilter === 'OUT_OF_STOCK' && item.quantityAvailable > 0) return false;
+      return true;
+    });
+  }, [items, searchQuery, stockFilter]);
+
   const columns = useMemo(() => [
     {
       title: 'SKU',
       dataIndex: 'productSku',
       key: 'productSku',
-      render: (sku: string) => <Text strong className="text-slate-900">{sku}</Text>,
+      align: 'left' as const,
+      width: 130,
+      render: (sku: string) => <span className="font-mono text-xs text-slate-500 tabular-nums">{sku || 'N/A'}</span>,
     },
     {
       title: t('purchase.product', 'Product'),
       dataIndex: 'productName',
       key: 'productName',
+      align: 'left' as const,
     },
     {
       title: t('inventory.boxes', 'Boxes'),
       key: 'boxes',
       align: 'right' as const,
+      width: 100,
       render: (_: unknown, record: InventoryItem) => {
         const total = record.quantityAvailable;
         const perBox = record.soldUnitsPerBox || 0;
@@ -305,15 +323,16 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         if (perBox > 0 && perUnit > 0) {
           const itemsPerBox = perBox * perUnit;
           const boxes = Math.floor(total / itemsPerBox);
-          return <span className="font-semibold text-slate-900 tabular-nums">{boxes}</span>;
+          return <span className="font-mono text-xs text-slate-600 tabular-nums">{boxes}</span>;
         }
-        return <span className="text-slate-400 tabular-nums">-</span>;
+        return <span className="font-mono text-xs text-slate-400 tabular-nums">-</span>;
       },
     },
     {
       title: t('inventory.bundles', 'Bundles'),
       key: 'bundles',
       align: 'right' as const,
+      width: 100,
       render: (_: unknown, record: InventoryItem) => {
         const total = record.quantityAvailable;
         const perBox = record.soldUnitsPerBox || 0;
@@ -327,24 +346,25 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
 
         if (perUnit > 0) {
           const bundles = Math.floor(remainder / perUnit);
-          return <span className="font-semibold text-slate-900 tabular-nums">{bundles}</span>;
+          return <span className="font-mono text-xs text-slate-600 tabular-nums">{bundles}</span>;
         }
-        return <span className="text-slate-400 tabular-nums">-</span>;
+        return <span className="font-mono text-xs text-slate-400 tabular-nums">-</span>;
       },
     },
     {
       title: t('inventory.loose', 'Loose'),
       key: 'loose',
       align: 'right' as const,
+      width: 100,
       render: (_: unknown, record: InventoryItem) => {
         const total = record.quantityAvailable;
         const perUnit = record.itemsPerSoldUnit || 0;
         
         if (perUnit > 0) {
           const looseAmount = total % perUnit;
-          return <span className="font-semibold text-slate-900 tabular-nums">{looseAmount}</span>;
+          return <span className="font-mono text-xs text-slate-600 tabular-nums">{looseAmount}</span>;
         }
-        return <span className="text-slate-400 tabular-nums">-</span>;
+        return <span className="font-mono text-xs text-slate-400 tabular-nums">-</span>;
       },
     },
     {
@@ -352,21 +372,24 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       dataIndex: 'quantityAvailable',
       key: 'quantityAvailable',
       align: 'right' as const,
-      render: (qty: number) => <span className="text-emerald-700 font-bold tabular-nums">{qty}</span>,
+      width: 110,
+      render: (qty: number) => <span className="font-mono text-xs font-semibold text-slate-900 tabular-nums bg-slate-50 px-2 py-1 rounded border border-slate-200/60">{qty ?? 0}</span>,
     },
     {
       title: t('inventory.totalValue', 'Total Value (LKR)'),
       key: 'totalValue',
       align: 'right' as const,
+      width: 180,
       render: (_: unknown, record: InventoryItem) => {
         const val = record.quantityAvailable * (record.productBasePrice || 0);
-        return <span className="font-semibold text-slate-900 tabular-nums">{val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+        return <span className="font-mono text-xs font-medium text-slate-700 tabular-nums">Rs. {Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
       }
     },
     {
       title: t('common.actions', 'Actions'),
       key: 'actions',
       align: 'right' as const,
+      width: 100,
       render: (_: unknown, record: InventoryItem) => (
         <Space>
           <Tooltip title={t('common.edit', 'Edit')}>
@@ -390,51 +413,61 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
 
   return (
     <div className="p-6">
-      <div className="flex items-center gap-4 mb-6">
-        <Button 
-          type="text" 
-          icon={<ArrowLeftOutlined />} 
-          onClick={onBack}
-          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 -ml-4"
-        >
-          {t('inventory.backToWarehouses', 'Back to Warehouses')}
-        </Button>
-        <Title level={2} style={{ fontSize: '1.5rem', fontWeight: 600, margin: 0, color: '#0f172a' }}>
-          {warehouse?.name || '...'}
-        </Title>
-        {warehouse && (
-          <Tag color={warehouse.storeType === 'MAIN' ? 'green' : warehouse.storeType === 'VEHICLE' || warehouse.storeType === 'CUSTOM' ? 'blue' : 'default'} className="m-0 uppercase font-semibold">
-            {warehouse.storeType}
-          </Tag>
-        )}
-        <Space className="ml-auto">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleOpenAddProduct}
-            className="bg-emerald-600 hover:bg-emerald-500 shadow-sm font-medium"
+      {/* ─── TIER 1: PAGE CONTEXT & PRIMARY ACTION BAR ─────────────────────── */}
+      <div className="mb-6">
+        <div className="mb-2">
+          <button 
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-1.5 h-8 px-2 -ml-2 rounded-md text-xs font-medium text-slate-500 hover:text-emerald-700 hover:bg-slate-100/80 transition-all focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none cursor-pointer"
           >
-            {t('inventory.addProduct', 'Add Product')}
-          </Button>
-          {(warehouse?.storeType === 'CUSTOM' || warehouse?.storeType === 'VEHICLE' || warehouse?.name?.startsWith('Vehicle')) && (
+            <ArrowLeftOutlined className="text-[10px]" />
+            {t('inventory.backToWarehouses', 'Back to Warehouses')}
+          </button>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 m-0">
+              {warehouse?.name || '...'}
+            </h1>
+            {warehouse && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 uppercase">
+                {warehouse.storeType}
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2.5 self-start sm:self-auto ml-auto">
+            {(warehouse?.storeType === 'CUSTOM' || warehouse?.storeType === 'VEHICLE' || warehouse?.name?.startsWith('Vehicle')) && (
+              <Button
+                type="default"
+                icon={<ReloadOutlined />}
+                onClick={handleOpenUnload}
+                className="h-9 px-4 rounded-md border-slate-300 text-slate-700 hover:text-emerald-700 hover:border-emerald-600 font-medium text-sm transition-all"
+              >
+                Unload Vehicle
+              </Button>
+            )}
             <Button
-              type="default"
-              icon={<ReloadOutlined />}
-              onClick={handleOpenUnload}
-              className="border-emerald-600 text-emerald-600 hover:text-emerald-700 font-medium"
+              type="primary"
+              icon={<PlusOutlined />}
+              onClick={handleOpenAddProduct}
+              className="h-9 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm inline-flex items-center gap-1.5 shadow-2xs transition-all"
             >
-              Unload Vehicle
+              {t('inventory.addProduct', 'Add Product')}
             </Button>
-          )}
-        </Space>
+          </div>
+        </div>
       </div>
 
+      {/* ─── TIER 2: KPI SUMMARY CARDS ────────────────────────────────────── */}
       <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
         <Col xs={24} sm={8}>
           <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
                   <AppstoreOutlined className="text-emerald-600" /> <span>{t('inventory.totalProducts', 'Total Products')}</span>
                 </div>
               }
@@ -447,7 +480,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
                   <ShoppingOutlined className="text-emerald-600" /> <span>{t('inventory.totalUnits', 'Total Units')}</span>
                 </div>
               }
@@ -460,7 +493,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
                   <DollarOutlined className="text-emerald-600" /> <span>{t('inventory.totalValue', 'Estimated Value (LKR)')}</span>
                 </div>
               }
@@ -472,6 +505,36 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         </Col>
       </Row>
 
+      {/* ─── TIER 3: TABLE CONTROL TOOLBAR ────────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 bg-white border border-slate-200/80 rounded-lg shadow-2xs">
+        <div className="flex items-center gap-3 flex-1 min-w-[280px] max-w-md">
+          <Input.Search
+            placeholder="Search by SKU or Product Name..."
+            allowClear
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+            size="middle"
+          />
+        </div>
+        <div className="flex items-center gap-2.5 ml-auto">
+          <Select
+            defaultValue="ALL"
+            size="middle"
+            style={{ width: 160 }}
+            onChange={setStockFilter}
+            options={[
+              { label: 'All Stock Status', value: 'ALL' },
+              { label: 'In Stock (> 0)', value: 'IN_STOCK' },
+              { label: 'Out of Stock (0)', value: 'OUT_OF_STOCK' },
+            ]}
+          />
+          <Button icon={<ReloadOutlined />} onClick={fetchData} size="middle" className="text-slate-600 hover:text-slate-900 border-slate-300">
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      {/* ─── TIER 4: INVENTORY DATA TABLE ─────────────────────────────────── */}
       {warehouse && (warehouse.storeType === 'VEHICLE' || warehouse.storeType === 'CUSTOM' || warehouse.name.startsWith('Vehicle - ')) ? (
         <Tabs
           defaultActiveKey="loadingSheets"
@@ -490,7 +553,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
               key: 'inventory',
               label: (
                 <span className="flex items-center gap-2 px-3 py-1 text-base font-medium text-slate-700">
-                  <AppstoreOutlined className="text-blue-600" /> Current Vehicle Stock ({items.length} items)
+                  <AppstoreOutlined className="text-blue-600" /> Current Vehicle Stock ({filteredItems.length} items)
                 </span>
               ),
               children: (
@@ -498,10 +561,32 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                   <Table
                     rowKey="id"
                     loading={loading}
-                    dataSource={items}
+                    dataSource={filteredItems}
                     columns={columns}
                     pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-                    locale={{ emptyText: t('inventory.noItems', 'No inventory items in this warehouse.') }}
+                    locale={{
+                      emptyText: (
+                        <div className="py-12 px-6 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+                          <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-400 mb-4 shadow-2xs">
+                            <AppstoreOutlined className="text-xl" />
+                          </div>
+                          <h3 className="text-sm font-semibold text-slate-800 mb-1">
+                            No inventory recorded for {warehouse?.name || 'this warehouse'}
+                          </h3>
+                          <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                            Products allocated to this warehouse or returned from delivery rounds will appear here.
+                          </p>
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={handleOpenAddProduct}
+                            className="h-9 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 font-medium text-sm shadow-2xs transition-all"
+                          >
+                            Add First Product
+                          </Button>
+                        </div>
+                      ),
+                    }}
                     className="spiceflow-table"
                   />
                 </Card>
@@ -514,10 +599,32 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           <Table
             rowKey="id"
             loading={loading}
-            dataSource={items}
+            dataSource={filteredItems}
             columns={columns}
             pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-            locale={{ emptyText: t('inventory.noItems', 'No inventory items in this warehouse.') }}
+            locale={{
+              emptyText: (
+                <div className="py-12 px-6 flex flex-col items-center justify-center text-center max-w-sm mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-400 mb-4 shadow-2xs">
+                    <AppstoreOutlined className="text-xl" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-slate-800 mb-1">
+                    No inventory recorded for {warehouse?.name || 'this warehouse'}
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">
+                    Products allocated to this warehouse or returned from delivery rounds will appear here.
+                  </p>
+                  <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={handleOpenAddProduct}
+                    className="h-9 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 font-medium text-sm shadow-2xs transition-all"
+                  >
+                    Add First Product
+                  </Button>
+                </div>
+              ),
+            }}
             className="spiceflow-table"
           />
         </Card>
