@@ -73,19 +73,27 @@ export function useTableState(options: UseTableStateOptions = {}) {
   );
 
   const setPage = useCallback(
-    (page: number) => update({ page: page === 0 ? null : String(page) }),
-    [update],
+    (page: number) => {
+      if (page === state.page) return;
+      update({ page: page === 0 ? null : String(page) });
+    },
+    [update, state.page],
   );
 
   const setSize = useCallback(
-    (size: number) => update({ size: String(size), page: null }),
-    [update],
+    (size: number) => {
+      if (size === state.size) return;
+      update({ size: String(size), page: null });
+    },
+    [update, state.size],
   );
 
   const setSort = useCallback(
-    (field: string, direction: 'asc' | 'desc') =>
-      update({ sort: field, dir: direction, page: null }),
-    [update],
+    (field: string, direction: 'asc' | 'desc') => {
+      if (field === state.sort && direction === state.dir) return;
+      update({ sort: field, dir: direction, page: null });
+    },
+    [update, state.sort, state.dir],
   );
 
   const setSearch = useCallback(
