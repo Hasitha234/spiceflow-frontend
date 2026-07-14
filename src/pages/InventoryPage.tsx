@@ -167,8 +167,8 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     setEditingItem(null);
     form.resetFields();
     form.setFieldsValue({
-      quantityAvailable: 0,
-      quantityReserved: 0,
+      quantityAvailable: undefined,
+      quantityReserved: undefined,
     });
     setItemModalVisible(true);
   };
@@ -751,7 +751,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 label={t('inventory.quantityAvailable', 'Quantity Available')}
                 rules={[{ required: true, message: 'Required' }]}
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber min={0} placeholder="0" onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
             <Col span={12}>
@@ -759,7 +759,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 name="quantityReserved"
                 label={t('inventory.quantityReserved', 'Quantity Reserved')}
               >
-                <InputNumber min={0} style={{ width: '100%' }} />
+                <InputNumber min={0} placeholder="0" onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
           </Row>
