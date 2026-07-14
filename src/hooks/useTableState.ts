@@ -118,6 +118,11 @@ export function useTableState(options: UseTableStateOptions = {}) {
   const pageableParams = useMemo(
     () => ({
       search: state.search || undefined,
+      ...Object.fromEntries(
+        Object.entries(state.filters)
+          .filter(([, v]) => v !== null && v !== undefined && v !== '')
+          .map(([k, v]) => [k, !isNaN(Number(v)) ? Number(v) : v])
+      ),
       pageable: {
         page: state.page,
         size: state.size,
