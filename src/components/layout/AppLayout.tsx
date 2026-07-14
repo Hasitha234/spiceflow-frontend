@@ -4,7 +4,8 @@ import {
   GlobalOutlined,
   BulbOutlined,
   MoonOutlined,
-  UserOutlined
+  UserOutlined,
+  LeftOutlined
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -97,41 +98,58 @@ export function AppLayout() {
         collapsible 
         collapsed={collapsed} 
         onCollapse={setCollapsed}
+        trigger={null}
         className="sf-sidebar"
         width={260}
+        style={{ display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0, left: 0, zIndex: 20 }}
       >
-        <div style={{ 
-          height: 64, 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: collapsed ? 'center' : 'flex-start',
-          padding: collapsed ? 0 : '0 20px',
-          overflow: 'hidden',
-          borderBottom: '1px solid var(--surface-border)',
-        }}>
-          <BrandLogo size={32} showText={!collapsed} textSize={18} badgeText="" />
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            <div style={{ 
+              height: 64, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? 0 : '0 20px',
+              overflow: 'hidden',
+              borderBottom: '1px solid var(--surface-border)',
+            }}>
+              <BrandLogo size={32} showText={!collapsed} textSize={18} badgeText="" />
+            </div>
+            
+            <Menu
+              theme={theme === 'dark' ? 'dark' : 'light'}
+              mode="inline"
+              selectedKeys={[currentKey]}
+              onClick={({ key }) => navigate(key)}
+              style={{ 
+                background: 'transparent',
+                borderRight: 'none',
+                padding: '16px 12px 16px 0'
+              }}
+              items={menuItems.map((group) => ({
+                type: 'group',
+                label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 16, marginBottom: 8, paddingLeft: collapsed ? 0 : 20, textAlign: collapsed ? 'center' : 'left' }}>{collapsed ? '•' : group.label}</div>,
+                children: group.children.map((item) => ({
+                  key: item.key,
+                  label: t(item.translateKey),
+                  style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+                }))
+              }))}
+            />
+          </div>
+
+          <div className="p-3 border-t border-slate-200 mt-auto">
+            <button
+              type="button"
+              aria-label="Collapse sidebar navigation"
+              onClick={() => setCollapsed(!collapsed)}
+              className="w-full h-9 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none cursor-pointer"
+            >
+              <LeftOutlined className={`text-xs transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`} />
+            </button>
+          </div>
         </div>
-        
-        <Menu
-          theme={theme === 'dark' ? 'dark' : 'light'}
-          mode="inline"
-          selectedKeys={[currentKey]}
-          onClick={({ key }) => navigate(key)}
-          style={{ 
-            background: 'transparent',
-            borderRight: 'none',
-            padding: '16px 12px 16px 0'
-          }}
-          items={menuItems.map((group) => ({
-            type: 'group',
-            label: <div style={{ fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-muted)', marginTop: 16, marginBottom: 8 }}>{group.label}</div>,
-            children: group.children.map((item) => ({
-              key: item.key,
-              label: t(item.translateKey),
-              style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
-            }))
-          }))}
-        />
       </Sider>
       
       <Layout>
