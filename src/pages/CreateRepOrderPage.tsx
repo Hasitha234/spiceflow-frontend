@@ -110,7 +110,7 @@ export function CreateRepOrderPage() {
     apiClient.get('/api/v1/sales/master-data/shops').then(res => setShopsList(res.data?.content || []));
     apiClient.get('/api/v1/products?size=500').then(res => setProducts(res.data?.content || []));
     apiClient.get('/api/v1/suppliers?size=500').then(res => setSuppliers(res.data?.content || []));
-    apiClient.get('/api/v1/inventory/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
+    apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
   }, []);
 
   const { control, handleSubmit, setValue } = useForm<FormValues>({

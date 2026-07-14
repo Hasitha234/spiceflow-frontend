@@ -91,25 +91,25 @@ export function EndOfDaySummaryPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card style={{ borderRadius: '12px', borderTop: '4px solid #10b981' }}>
             <Statistic title="Total Sales" value={fmt(summary?.totalSalesValue || 0)} prefix={<DollarOutlined />}
-              valueStyle={{ color: '#10b981', fontFamily: 'monospace' }} />
+              styles={{ content: { color: '#10b981', fontFamily: 'monospace' } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card style={{ borderRadius: '12px', borderTop: '4px solid #52c41a' }}>
             <Statistic title="Cash Collected" value={fmt(summary?.totalCashCollected || 0)} prefix={<DollarOutlined />}
-              valueStyle={{ color: '#52c41a', fontFamily: 'monospace' }} />
+              styles={{ content: { color: '#52c41a', fontFamily: 'monospace' } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card style={{ borderRadius: '12px', borderTop: '4px solid #1677ff' }}>
             <Statistic title="Cheques Received" value={fmt(summary?.totalChequeAmount || 0)} prefix={<BankOutlined />}
-              valueStyle={{ color: '#1677ff', fontFamily: 'monospace' }} />
+              styles={{ content: { color: '#1677ff', fontFamily: 'monospace' } }} />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
           <Card style={{ borderRadius: '12px', borderTop: '4px solid #fa8c16' }}>
             <Statistic title="Loan / Credit Given" value={fmt(summary?.totalLoanGiven || 0)} prefix={<CreditCardOutlined />}
-              valueStyle={{ color: '#fa8c16', fontFamily: 'monospace' }} />
+              styles={{ content: { color: '#fa8c16', fontFamily: 'monospace' } }} />
           </Card>
         </Col>
       </Row>
@@ -127,7 +127,7 @@ export function EndOfDaySummaryPage() {
         </Col>
         <Col xs={24} sm={8}>
           <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
-            <Statistic title="Returns Value" value={fmt(summary?.totalReturnsValue || 0)} valueStyle={{ color: '#f5222d', fontFamily: 'monospace' }} />
+            <Statistic title="Returns Value" value={fmt(summary?.totalReturnsValue || 0)} styles={{ content: { color: '#f5222d', fontFamily: 'monospace' } }} />
           </Card>
         </Col>
       </Row>

@@ -4,11 +4,13 @@ import {
   Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
 } from 'antd';
 import {
-  PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined,
+  PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { loadingSheetApi, repOrderApi, driverApi } from '../api/sales';
 import apiClient from '../api/client';
+import { UnloadToShopModal } from '../features/inventory/components/UnloadToShopModal';
+import { CancelOrderModal } from '../features/inventory/components/CancelOrderModal';
 
 const { Title, Text } = Typography;
 
@@ -28,6 +30,8 @@ export function LoadingSheetsPage() {
   const [sheets, setSheets] = useState<LoadingSheetRow[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [unloadOpen, setUnloadOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
   const [selectedSheet, setSelectedSheet] = useState<LoadingSheetRow | null>(null);
 
   // Create form data
@@ -162,6 +166,27 @@ export function LoadingSheetsPage() {
               </Popconfirm>
             </>
           )}
+          {record.status === 'CONFIRMED' && (
+            <>
+              <Button
+                type="primary"
+                size="small"
+                icon={<DollarOutlined />}
+                onClick={() => { setSelectedSheet(record); setUnloadOpen(true); }}
+                className="bg-emerald-600 hover:bg-emerald-700 font-medium"
+              >
+                Unload to Shop
+              </Button>
+              <Button
+                danger
+                size="small"
+                icon={<StopOutlined />}
+                onClick={() => { setSelectedSheet(record); setCancelOpen(true); }}
+              >
+                Cancel Order
+              </Button>
+            </>
+          )}
         </Space>
       ),
     },
@@ -263,6 +288,20 @@ export function LoadingSheetsPage() {
           </div>
         )}
       </Modal>
+
+      <UnloadToShopModal
+        visible={unloadOpen}
+        loadingSheet={selectedSheet as any}
+        onClose={() => setUnloadOpen(false)}
+        onSuccess={loadData}
+      />
+
+      <CancelOrderModal
+        visible={cancelOpen}
+        loadingSheet={selectedSheet as any}
+        onClose={() => setCancelOpen(false)}
+        onSuccess={loadData}
+      />
     </div>
   );
 }
