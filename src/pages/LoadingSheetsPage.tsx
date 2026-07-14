@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
+  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, App, Space, Descriptions,
 } from 'antd';
 import {
   PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined,
@@ -26,6 +26,7 @@ interface LoadingSheetRow {
 }
 
 export function LoadingSheetsPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [sheets, setSheets] = useState<LoadingSheetRow[]>([]);
   const [createOpen, setCreateOpen] = useState(false);

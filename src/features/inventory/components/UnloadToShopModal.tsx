@@ -117,14 +117,37 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         const delData = await deliveryApi.get(String(loadingSheet.activeDeliveryId));
         setActiveDelivery(delData);
       } else {
-        // Create new active delivery for this loading sheet
-        const newDel = await deliveryApi.create({ loadingSheetId: Number(loadingSheet.id) });
+        // Create new active delivery for this loading sheet (requires loadingSheetId and deliveryDate)
+        const dateStr = loadingSheet.loadingDate
+          ? dayjs(loadingSheet.loadingDate).format('YYYY-MM-DD')
+          : dayjs().format('YYYY-MM-DD');
+        const newDel = await deliveryApi.create({
+          loadingSheetId: Number(loadingSheet.id),
+          deliveryDate: dateStr,
+        });
         setActiveDelivery(newDel);
       }
     } catch (error: unknown) {
-      console.error('Failed to init delivery flow:', error);
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err?.response?.data?.message || 'Failed to initialize delivery workflow.');
+      const err = error as {
+        response?: {
+          data?: {
+            message?: string;
+            detail?: string;
+            title?: string;
+            errors?: Array<{ field: string; message: string }>;
+            properties?: { errors?: Array<{ field: string; message: string }> };
+          };
+        };
+      };
+      console.error('Failed to init delivery flow:', error, err?.response?.data);
+      const data = err?.response?.data;
+      const errorsList = data?.errors || data?.properties?.errors;
+      if (errorsList && Array.isArray(errorsList) && errorsList.length > 0) {
+        const errMsgs = errorsList.map(e => `${e.field}: ${e.message}`).join(', ');
+        message.error(`Validation Error (${errMsgs})`);
+      } else {
+        message.error(data?.detail || data?.message || data?.title || 'Failed to initialize delivery workflow.');
+      }
     } finally {
       setLoading(false);
     }
