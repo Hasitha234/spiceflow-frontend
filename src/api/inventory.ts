@@ -95,6 +95,26 @@ export const inventoryItemApi = {
     quantity: number;
     reason?: string;
   }) => apiClient.post('/api/v1/inventory-items/mark-damaged', data).then((r) => r.data),
+  create: (data: {
+    productId: number;
+    warehouseId: number;
+    quantityAvailable: number;
+    quantityReserved: number;
+    batchNumber?: string;
+    expirationDate?: string;
+  }) => apiClient.post<InventoryItem>('/api/v1/inventory-items', data).then((r) => r.data),
+  update: (
+    id: string,
+    data: {
+      productId: number;
+      warehouseId: number;
+      quantityAvailable: number;
+      quantityReserved: number;
+      batchNumber?: string;
+      expirationDate?: string;
+    }
+  ) => apiClient.put<InventoryItem>(`/api/v1/inventory-items/${id}`, data).then((r) => r.data),
+  delete: (id: string) => apiClient.delete(`/api/v1/inventory-items/${id}`),
 };
 
 // ─── Inventory Transactions ───────────────────────────────────────────────────

@@ -62,22 +62,39 @@ export interface RepOrder {
 }
 
 export interface LoadingSheetItem {
-  id: string;
-  product: Product;
-  quantity: number;
+  id?: string;
+  productId?: string | number;
+  productName?: string;
+  productSku?: string;
+  product?: Product;
+  quantity?: number;
+  quantityLoaded?: number;
 }
 
 export interface LoadingSheetReturn {
-  id: string;
-  product: Product;
-  quantity: number;
+  id?: string;
+  productId?: string | number;
+  productName?: string;
+  productSku?: string;
+  product?: Product;
+  quantity?: number;
+  quantityReturned?: number;
 }
 
 export interface LoadingSheet {
   id: string;
-  repOrder: RepOrder;
-  driver: Driver;
-  status: 'DRAFT' | 'CONFIRMED';
+  repOrderId?: string | number;
+  repId?: string | number;
+  repName?: string;
+  repOrder?: RepOrder;
+  driverId?: string | number;
+  driverName?: string;
+  driverVehicleNo?: string;
+  driver?: Driver;
+  hasActiveDelivery?: boolean;
+  activeDeliveryId?: string | number;
+  loadingDate?: string;
+  status: 'DRAFT' | 'CONFIRMED' | 'CANCELLED' | string;
   items: LoadingSheetItem[];
   returns: LoadingSheetReturn[];
   createdAt: string;
@@ -180,4 +197,44 @@ export interface PurchaseLineItem {
   amount?: number;
   warehouseId?: string;
   productId?: string | number;
+}
+
+export interface ChequeDetail {
+  chequeNo: string;
+  bankName?: string;
+  amount: number;
+  shopName?: string;
+  chequeDate?: string;
+}
+
+export interface DeliverySummary {
+  deliveryId: string | number;
+  driverName?: string;
+  status?: string;
+  salesValue: number;
+  collectedAmount: number;
+  shopCount: number;
+}
+
+export interface CancelledOrderSummary {
+  loadingSheetId: string | number;
+  repOrderId?: string | number;
+  driverName?: string;
+  repName?: string;
+  reason?: string;
+}
+
+export interface EndOfDaySummary {
+  date: string;
+  totalSalesValue: number;
+  totalCashCollected: number;
+  totalChequeAmount: number;
+  totalLoanGiven: number;
+  totalReturnsValue: number;
+  totalDiscounts: number;
+  deliveryCount: number;
+  shopsVisited: number;
+  chequeDetails?: ChequeDetail[];
+  deliveries?: DeliverySummary[];
+  cancelledOrders?: CancelledOrderSummary[];
 }

@@ -1,6 +1,6 @@
 import apiClient from './client';
 import type { PageResponse } from '../types/api';
-import type { Rep, Driver, Shop, RepOrder, LoadingSheet, Delivery, Purchase } from '../types/sales';
+import type { Rep, Driver, Shop, RepOrder, LoadingSheet, Delivery, Purchase, EndOfDaySummary } from '../types/sales';
 
 // ─── Master Data ──────────────────────────────────────────────────────────────
 export const repApi = {
@@ -42,7 +42,7 @@ export const repOrderApi = {
 
 // ─── Loading Sheets ───────────────────────────────────────────────────────────
 export const loadingSheetApi = {
-  list: (params?: { page?: number; size?: number }) =>
+  list: (params?: { driverId?: string | number; status?: string; page?: number; size?: number }) =>
     apiClient.get<PageResponse<LoadingSheet>>('/api/v1/sales/loading-sheets', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}`).then((r) => r.data),
@@ -50,8 +50,10 @@ export const loadingSheetApi = {
     apiClient.post<LoadingSheet>('/api/v1/sales/loading-sheets', data).then((r) => r.data),
   confirm: (id: string) =>
     apiClient.post<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}/confirm`).then((r) => r.data),
-  cancel: (id: string) =>
-    apiClient.post<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}/cancel`).then((r) => r.data),
+  cancel: (id: string, returnWarehouseId?: string | number) =>
+    apiClient.post<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}/cancel`, null, {
+      params: returnWarehouseId ? { returnWarehouseId } : undefined,
+    }).then((r) => r.data),
 };
 
 // ─── Deliveries ───────────────────────────────────────────────────────────────
@@ -95,7 +97,7 @@ export const reportApi = {
   repPerformance: (params: { startDate: string; endDate: string }) =>
     apiClient.get('/api/v1/reports/rep-performance', { params }).then((r) => r.data),
   endOfDaySummary: (date: string) =>
-    apiClient.get('/api/v1/reports/end-of-day-summary', { params: { date } }).then((r) => r.data),
+    apiClient.get<EndOfDaySummary>('/api/v1/reports/end-of-day-summary', { params: { date } }).then((r) => r.data),
 };
 
 // ─── QR Verification ──────────────────────────────────────────────────────

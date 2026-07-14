@@ -1,17 +1,18 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, message, Space, Button, Tooltip, Modal, Descriptions } from 'antd';
-import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined } from '@ant-design/icons';
+import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
-import { purchaseApi, repOrderApi, deliveryApi } from '../api/sales';
-import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop } from '../types/sales';
+import { purchaseApi, repOrderApi, deliveryApi, reportApi } from '../api/sales';
+import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop, EndOfDaySummary } from '../types/sales';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export function DaySummaryPage() {
   const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [loading, setLoading] = useState(false);
+  const [summaryData, setSummaryData] = useState<EndOfDaySummary | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [repOrders, setRepOrders] = useState<RepOrder[]>([]);
@@ -23,14 +24,16 @@ export function DaySummaryPage() {
     setLoading(true);
     try {
       const dateStr = date.format('YYYY-MM-DD');
-      const [purchaseRes, repOrderRes, deliveryRes] = await Promise.all([
+      const [purchaseRes, repOrderRes, deliveryRes, summaryRes] = await Promise.all([
         purchaseApi.list({ date: dateStr, size: 100 }),
         repOrderApi.list({ date: dateStr, size: 100 }),
         deliveryApi.list({ date: dateStr, size: 100 }),
+        reportApi.endOfDaySummary(dateStr),
       ]);
       setPurchases(purchaseRes?.content || []);
       setRepOrders(repOrderRes?.content || []);
       setDeliveries(deliveryRes?.content || []);
+      setSummaryData(summaryRes || null);
     } catch {
       message.error('Failed to load summary data for the selected date');
     } finally {
@@ -277,7 +280,11 @@ export function DaySummaryPage() {
 
   return (
     <div className="p-6">
-      <div className="flex justify-end mb-6 w-full">
+      <div className="flex justify-between items-center mb-6 w-full">
+        <div>
+          <Title level={2} className="!m-0 text-slate-800">End of Day Financial Summary</Title>
+          <Text type="secondary">Comprehensive daily audit report of purchases, sales, payments, and returns</Text>
+        </div>
         <DatePicker
           value={selectedDate}
           onChange={(date) => date && setSelectedDate(date)}
@@ -285,6 +292,147 @@ export function DaySummaryPage() {
           size="large"
           className="w-60 rounded-md border-slate-300 shadow-sm"
         />
+      </div>
+
+      {/* ─── TODAY'S INCOME & FINANCIAL OVERVIEW ─────────────────────────── */}
+      <div className="mb-10 bg-slate-50/60 p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex items-center gap-3 mb-5">
+          <DollarOutlined className="text-2xl text-emerald-600 bg-emerald-100 p-2 rounded-lg" />
+          <div>
+            <Title level={4} className="!m-0 text-slate-800">Today's Income Summary & Collection Overview</Title>
+            <Text type="secondary" className="text-xs">Real-time financial tracking of all cash, cheque, and loan collections across routes</Text>
+          </div>
+        </div>
+
+        <Row gutter={[16, 16]} className="mb-4">
+          <Col xs={24} sm={12} lg={6}>
+            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white">
+              <Statistic
+                title={<span className="text-emerald-800 font-semibold text-xs uppercase tracking-wider">💵 Total Cash Collected</span>}
+                value={summaryData?.totalCashCollected || 0}
+                precision={2}
+                prefix="Rs. "
+                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#065f46' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-blue-200 bg-gradient-to-br from-blue-50/80 to-white">
+              <Statistic
+                title={<span className="text-blue-800 font-semibold text-xs uppercase tracking-wider">🏦 Total Cheque Amount</span>}
+                value={summaryData?.totalChequeAmount || 0}
+                precision={2}
+                prefix="Rs. "
+                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#1e40af' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-amber-200 bg-gradient-to-br from-amber-50/80 to-white">
+              <Statistic
+                title={<span className="text-amber-800 font-semibold text-xs uppercase tracking-wider">📝 Total Loan / Credit Given</span>}
+                value={summaryData?.totalLoanGiven || 0}
+                precision={2}
+                prefix="Rs. "
+                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#b45309' } }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12} lg={6}>
+            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-purple-200 bg-gradient-to-br from-purple-100/60 to-white">
+              <Statistic
+                title={<span className="text-purple-900 font-semibold text-xs uppercase tracking-wider">💰 Full Income (Cash + Cheque)</span>}
+                value={(summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0)}
+                precision={2}
+                prefix="Rs. "
+                styles={{ content: { fontWeight: 800, fontSize: '1.6rem', color: '#581c87' } }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        <Row gutter={[16, 16]} className="mb-6">
+          <Col xs={24} sm={8}>
+            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
+              <div className="flex justify-between items-center">
+                <Text className="text-slate-500 font-medium">Gross Delivery Sales Value</Text>
+                <Text strong className="text-base text-slate-800">Rs. {(summaryData?.totalSalesValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+              </div>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
+              <div className="flex justify-between items-center">
+                <Text className="text-slate-500 font-medium">Total Returns & Discounts</Text>
+                <Text strong className="text-base text-rose-600">- Rs. {((summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+              </div>
+            </Card>
+          </Col>
+          <Col xs={24} sm={8}>
+            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
+              <div className="flex justify-between items-center">
+                <Text className="text-slate-500 font-medium">Completed Routes / Shops Visited</Text>
+                <Tag color="cyan" className="font-semibold text-sm">{summaryData?.deliveryCount || 0} Routes ({summaryData?.shopsVisited || 0} Shops)</Tag>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Cheque Breakdown & Cancelled Orders Tables */}
+        <Row gutter={[24, 24]}>
+          <Col xs={24} lg={14}>
+            <Card
+              title={
+                <span className="flex items-center gap-2 text-sm font-semibold text-blue-900">
+                  <BankOutlined /> Today's Cheques Received ({summaryData?.chequeDetails?.length || 0})
+                </span>
+              }
+              styles={{ body: { padding: 0 } }}
+              className="rounded-lg shadow-sm border border-blue-200 overflow-hidden bg-white"
+            >
+              <Table
+                dataSource={summaryData?.chequeDetails || []}
+                rowKey="chequeNo"
+                pagination={false}
+                size="small"
+                locale={{ emptyText: 'No cheques collected today.' }}
+                columns={[
+                  { title: 'Cheque No', dataIndex: 'chequeNo', key: 'chequeNo', render: (val) => <Text strong className="font-mono text-blue-700">{val}</Text> },
+                  { title: 'Bank Name', dataIndex: 'bankName', key: 'bankName', render: (val) => val || '—' },
+                  { title: 'Shop / Customer', dataIndex: 'shopName', key: 'shopName', render: (val) => <Text className="font-medium">{val || '—'}</Text> },
+                  { title: 'Cheque Date', dataIndex: 'chequeDate', key: 'chequeDate', render: (val) => val || '—' },
+                  { title: 'Amount (Rs)', dataIndex: 'amount', key: 'amount', align: 'right', render: (val) => <Text strong className="text-slate-800">Rs. {Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text> },
+                ]}
+              />
+            </Card>
+          </Col>
+
+          <Col xs={24} lg={10}>
+            <Card
+              title={
+                <span className="flex items-center gap-2 text-sm font-semibold text-rose-800">
+                  <ExclamationCircleOutlined /> Cancelled Loading Sheets / Orders ({summaryData?.cancelledOrders?.length || 0})
+                </span>
+              }
+              styles={{ body: { padding: 0 } }}
+              className="rounded-lg shadow-sm border border-rose-200 overflow-hidden bg-white"
+            >
+              <Table
+                dataSource={summaryData?.cancelledOrders || []}
+                rowKey="loadingSheetId"
+                pagination={false}
+                size="small"
+                locale={{ emptyText: 'No cancelled loading sheets today.' }}
+                columns={[
+                  { title: 'Sheet #', dataIndex: 'loadingSheetId', key: 'loadingSheetId', width: 80, render: (val) => <Tag color="error">#{val}</Tag> },
+                  { title: 'Driver', dataIndex: 'driverName', key: 'driverName', render: (val) => <Text strong>{val || '—'}</Text> },
+                  { title: 'Rep', dataIndex: 'repName', key: 'repName', render: (val) => val || '—' },
+                  { title: 'Status', dataIndex: 'reason', key: 'reason', render: (val) => <span className="text-xs text-slate-500">{val || 'Stock returned'}</span> },
+                ]}
+              />
+            </Card>
+          </Col>
+        </Row>
       </div>
 
       <Title level={4} className="mb-4">Today's Purchases</Title>
@@ -298,7 +446,7 @@ export function DaySummaryPage() {
                 </div>
               }
               value={purchases.length}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -312,7 +460,7 @@ export function DaySummaryPage() {
               }
               value={totalValue}
               precision={2}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -326,7 +474,7 @@ export function DaySummaryPage() {
               }
               value={draftCount}
               suffix={`/ ${confirmedCount}`}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -355,7 +503,7 @@ export function DaySummaryPage() {
                 </div>
               }
               value={repOrders.length}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -369,7 +517,7 @@ export function DaySummaryPage() {
               }
               value={repTotalValue}
               precision={2}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -383,7 +531,7 @@ export function DaySummaryPage() {
               }
               value={repDraftCount}
               suffix={`/ ${repConfirmedCount}`}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -412,7 +560,7 @@ export function DaySummaryPage() {
                 </div>
               }
               value={deliveries.length}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -427,7 +575,7 @@ export function DaySummaryPage() {
               value={deliveryTotalCollected}
               precision={2}
               suffix={`/ ${deliveryTotalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -441,7 +589,7 @@ export function DaySummaryPage() {
               }
               value={deliveryCompletedCount}
               suffix={`/ ${deliveries.length - deliveryCompletedCount}`}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>

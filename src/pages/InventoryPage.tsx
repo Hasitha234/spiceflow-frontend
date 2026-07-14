@@ -1,10 +1,12 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message } from 'antd';
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined } from '@ant-design/icons';
-import { warehouseApi, inventoryItemApi } from '../api/inventory';
-import type { Warehouse, InventoryItem } from '../types/inventory';
+import { Card, Col, Row, Tag, Typography, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
+import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
+import type { Warehouse, InventoryItem, Product } from '../types/inventory';
+import dayjs from 'dayjs';
+import { VehicleLoadingSheetsTab } from '../features/inventory/components/VehicleLoadingSheetsTab';
 
 const { Title, Text } = Typography;
 
@@ -123,18 +125,26 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [unloadQuantities, setUnloadQuantities] = useState<Record<string, number>>({});
   const [unloading, setUnloading] = useState(false);
 
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [itemModalVisible, setItemModalVisible] = useState(false);
+  const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [savingItem, setSavingItem] = useState(false);
+  const [form] = Form.useForm();
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [whRes, itemsRes, allWhRes] = await Promise.all([
+      const [whRes, itemsRes, allWhRes, productsRes] = await Promise.all([
         warehouseApi.get(warehouseId),
         inventoryItemApi.list({ warehouseId, size: 500 }),
         warehouseApi.list({ size: 100 }),
+        productApi.list({ size: 1000 }),
       ]);
       setWarehouse(whRes);
       setItems(itemsRes?.content || []);
       const whList = allWhRes?.content || [];
       setAllWarehouses(whList);
+      setAllProducts(productsRes?.content || []);
       const mainWh = whList.find(w => w.storeType === 'MAIN');
       if (mainWh && mainWh.id) {
         setTargetWarehouseId(Number(mainWh.id));
@@ -152,6 +162,78 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleOpenAddProduct = () => {
+    setEditingItem(null);
+    form.resetFields();
+    form.setFieldsValue({
+      quantityAvailable: 0,
+      quantityReserved: 0,
+    });
+    setItemModalVisible(true);
+  };
+
+  const handleOpenEditItem = (item: InventoryItem) => {
+    setEditingItem(item);
+    form.resetFields();
+    form.setFieldsValue({
+      productId: Number(item.productId),
+      quantityAvailable: item.quantityAvailable,
+      quantityReserved: item.quantityReserved || 0,
+      batchNumber: item.batchNumber || '',
+      expirationDate: item.expirationDate ? dayjs(item.expirationDate) : null,
+    });
+    setItemModalVisible(true);
+  };
+
+  const handleDeleteItem = async (item: InventoryItem) => {
+    if (item.quantityAvailable > 0 || (item.quantityReserved && item.quantityReserved > 0)) {
+      message.warning('Please edit quantity to 0 before deleting this item.');
+      return;
+    }
+    try {
+      await inventoryItemApi.delete(item.id);
+      message.success('Inventory item deleted successfully');
+      fetchData();
+    } catch {
+      message.error('Failed to delete inventory item');
+    }
+  };
+
+  const handleSaveItem = async (values: {
+    productId: number | string;
+    quantityAvailable?: number;
+    quantityReserved?: number;
+    batchNumber?: string;
+    expirationDate?: dayjs.Dayjs | null;
+  }) => {
+    setSavingItem(true);
+    try {
+      const payload = {
+        productId: Number(values.productId),
+        warehouseId: Number(warehouseId),
+        quantityAvailable: Number(values.quantityAvailable || 0),
+        quantityReserved: Number(values.quantityReserved || 0),
+        batchNumber: values.batchNumber || undefined,
+        expirationDate: values.expirationDate ? values.expirationDate.format('YYYY-MM-DD') : undefined,
+      };
+
+      if (editingItem) {
+        await inventoryItemApi.update(editingItem.id, payload);
+        message.success('Inventory item updated successfully');
+      } else {
+        await inventoryItemApi.create(payload);
+        message.success('Product added to warehouse inventory successfully');
+      }
+      setItemModalVisible(false);
+      fetchData();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message || 'Failed to save inventory item');
+    } finally {
+      setSavingItem(false);
+    }
+  };
 
   const handleOpenUnload = () => {
     const initialQtys: Record<string, number> = {};
@@ -280,7 +362,30 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         const val = record.quantityAvailable * (record.productBasePrice || 0);
         return <span className="font-semibold text-slate-900 tabular-nums">{val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
       }
+    },
+    {
+      title: t('common.actions', 'Actions'),
+      key: 'actions',
+      align: 'right' as const,
+      render: (_: unknown, record: InventoryItem) => (
+        <Space>
+          <Tooltip title={t('common.edit', 'Edit')}>
+            <Button type="text" icon={<EditOutlined className="text-emerald-600" />} onClick={() => handleOpenEditItem(record)} />
+          </Tooltip>
+          <Tooltip title={t('common.delete', 'Delete')}>
+            <Popconfirm
+              title={record.quantityAvailable > 0 || (record.quantityReserved && record.quantityReserved > 0) ? "Please edit quantity to 0 before deleting." : "Are you sure you want to delete this item?"}
+              onConfirm={() => handleDeleteItem(record)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="text" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          </Tooltip>
+        </Space>
+      ),
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   ], [t]);
 
   return (
@@ -302,16 +407,26 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
             {warehouse.storeType}
           </Tag>
         )}
-        {(warehouse?.storeType === 'CUSTOM' || warehouse?.storeType === 'VEHICLE' || warehouse?.name?.startsWith('Vehicle')) && (
+        <Space className="ml-auto">
           <Button
             type="primary"
-            icon={<ReloadOutlined />}
-            onClick={handleOpenUnload}
-            className="ml-auto bg-emerald-600 hover:bg-emerald-500 shadow-sm font-medium"
+            icon={<PlusOutlined />}
+            onClick={handleOpenAddProduct}
+            className="bg-emerald-600 hover:bg-emerald-500 shadow-sm font-medium"
           >
-            Unload Vehicle
+            {t('inventory.addProduct', 'Add Product')}
           </Button>
-        )}
+          {(warehouse?.storeType === 'CUSTOM' || warehouse?.storeType === 'VEHICLE' || warehouse?.name?.startsWith('Vehicle')) && (
+            <Button
+              type="default"
+              icon={<ReloadOutlined />}
+              onClick={handleOpenUnload}
+              className="border-emerald-600 text-emerald-600 hover:text-emerald-700 font-medium"
+            >
+              Unload Vehicle
+            </Button>
+          )}
+        </Space>
       </div>
 
       <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
@@ -324,7 +439,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 </div>
               }
               value={totalProducts}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -337,7 +452,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 </div>
               }
               value={totalUnits}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -351,23 +466,62 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
               }
               value={totalValue}
               precision={2}
-              valueStyle={{ fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' }}
+              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
       </Row>
 
-      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={items}
-          columns={columns}
-          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-          locale={{ emptyText: t('inventory.noItems', 'No inventory items in this warehouse.') }}
-          className="spiceflow-table"
+      {warehouse && (warehouse.storeType === 'VEHICLE' || warehouse.storeType === 'CUSTOM' || warehouse.name.startsWith('Vehicle - ')) ? (
+        <Tabs
+          defaultActiveKey="loadingSheets"
+          className="mt-2"
+          items={[
+            {
+              key: 'loadingSheets',
+              label: (
+                <span className="flex items-center gap-2 px-3 py-1 text-base font-medium text-slate-700">
+                  <CarOutlined className="text-emerald-600" /> Loading Sheets & Lorry Unload
+                </span>
+              ),
+              children: <VehicleLoadingSheetsTab warehouse={warehouse} />,
+            },
+            {
+              key: 'inventory',
+              label: (
+                <span className="flex items-center gap-2 px-3 py-1 text-base font-medium text-slate-700">
+                  <AppstoreOutlined className="text-blue-600" /> Current Vehicle Stock ({items.length} items)
+                </span>
+              ),
+              children: (
+                <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mt-3">
+                  <Table
+                    rowKey="id"
+                    loading={loading}
+                    dataSource={items}
+                    columns={columns}
+                    pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
+                    locale={{ emptyText: t('inventory.noItems', 'No inventory items in this warehouse.') }}
+                    className="spiceflow-table"
+                  />
+                </Card>
+              ),
+            },
+          ]}
         />
-      </Card>
+      ) : (
+        <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+          <Table
+            rowKey="id"
+            loading={loading}
+            dataSource={items}
+            columns={columns}
+            pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
+            locale={{ emptyText: t('inventory.noItems', 'No inventory items in this warehouse.') }}
+            className="spiceflow-table"
+          />
+        </Card>
+      )}
 
       <Modal
         title={
@@ -438,6 +592,85 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
             />
           </div>
         </div>
+      </Modal>
+
+      <Modal
+        title={
+          <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
+            {editingItem ? <EditOutlined className="text-emerald-500" /> : <PlusOutlined className="text-emerald-500" />}
+            <span>{editingItem ? t('inventory.editItem', 'Edit Inventory Item') : t('inventory.addItem', 'Add Product to Warehouse')}</span>
+          </div>
+        }
+        open={itemModalVisible}
+        onCancel={() => setItemModalVisible(false)}
+        onOk={() => form.submit()}
+        confirmLoading={savingItem}
+        okText={editingItem ? t('common.update', 'Update') : t('common.add', 'Add Product')}
+        okButtonProps={{ className: 'bg-emerald-600 hover:bg-emerald-500' }}
+        width={500}
+        destroyOnClose
+      >
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={handleSaveItem}
+          className="mt-4"
+        >
+          <Form.Item
+            name="productId"
+            label={t('purchase.product', 'Product')}
+            rules={[{ required: true, message: 'Please select a product' }]}
+          >
+            <Select
+              placeholder="Select a product"
+              disabled={!!editingItem}
+              showSearch
+              optionFilterProp="children"
+            >
+              {allProducts
+                .filter(p => !!editingItem || !items.some(i => String(i.productId) === String(p.id)))
+                .map(p => (
+                  <Select.Option key={p.id} value={p.id}>
+                    {p.name} ({p.sku})
+                  </Select.Option>
+                ))}
+            </Select>
+          </Form.Item>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="quantityAvailable"
+                label={t('inventory.quantityAvailable', 'Quantity Available')}
+                rules={[{ required: true, message: 'Required' }]}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="quantityReserved"
+                label={t('inventory.quantityReserved', 'Quantity Reserved')}
+              >
+                <InputNumber min={0} style={{ width: '100%' }} />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Form.Item
+            name="batchNumber"
+            label={t('inventory.batchNumber', 'Batch Number (Optional)')}
+          >
+            <Input placeholder="e.g. BATCH-001" />
+          </Form.Item>
+
+          <Form.Item
+            name="expirationDate"
+            label={t('inventory.expirationDate', 'Expiration Date (Optional)')}
+          >
+            <DatePicker style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
       </Modal>
     </div>
   );

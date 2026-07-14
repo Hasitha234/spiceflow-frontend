@@ -223,21 +223,21 @@ export function WarehousesPage() {
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
               <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
-                <Statistic title={<span style={{ color: '#64748b' }}>Total Warehouses</span>} value={stats.total} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
+                <Statistic title={<span style={{ color: '#64748b' }}>Total Warehouses</span>} value={stats.total} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} styles={{ content: { fontWeight: 600, color: '#0f172a' } }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.1 }}>
               <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
-                <Statistic title={<span style={{ color: '#64748b' }}>Main Storage</span>} value={stats.main} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
+                <Statistic title={<span style={{ color: '#64748b' }}>Main Storage</span>} value={stats.main} prefix={<BankOutlined style={{ color: '#64748b', fontSize: '24px' }} />} styles={{ content: { fontWeight: 600, color: '#0f172a' } }} />
               </Card>
             </motion.div>
           </Col>
           <Col xs={24} sm={8}>
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }}>
               <Card variant="borderless" style={{ borderRadius: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -2px rgba(0,0,0,0.05)' }}>
-                <Statistic title={<span style={{ color: '#64748b' }}>Vehicles</span>} value={stats.vehicle} prefix={<CarOutlined style={{ color: '#64748b', fontSize: '24px' }} />} valueStyle={{ fontWeight: 600, color: '#0f172a' }} />
+                <Statistic title={<span style={{ color: '#64748b' }}>Vehicles</span>} value={stats.vehicle} prefix={<CarOutlined style={{ color: '#64748b', fontSize: '24px' }} />} styles={{ content: { fontWeight: 600, color: '#0f172a' } }} />
               </Card>
             </motion.div>
           </Col>
