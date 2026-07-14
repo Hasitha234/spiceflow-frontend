@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Select, Form, Typography, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { loadingSheetApi } from '../../../api/sales';
@@ -26,14 +26,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (visible) {
-      form.resetFields();
-      fetchWarehouses();
-    }
-  }, [visible, form]);
-
-  const fetchWarehouses = async () => {
+  const fetchWarehouses = useCallback(async () => {
     setLoadingWh(true);
     try {
       const res = await warehouseApi.list({ size: 100 });
@@ -55,7 +48,14 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
     } finally {
       setLoadingWh(false);
     }
-  };
+  }, [form]);
+
+  useEffect(() => {
+    if (visible) {
+      form.resetFields();
+      fetchWarehouses();
+    }
+  }, [visible, form, fetchWarehouses]);
 
   const handleCancelOrder = async () => {
     if (!loadingSheet) return;
@@ -66,9 +66,10 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
       message.success(`Loading Sheet #${loadingSheet.id} cancelled successfully and remaining stock returned.`);
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Cancel order failed:', error);
-      message.error(error?.response?.data?.message || 'Failed to cancel loading sheet.');
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message || 'Failed to cancel loading sheet.');
     } finally {
       setSubmitting(false);
     }

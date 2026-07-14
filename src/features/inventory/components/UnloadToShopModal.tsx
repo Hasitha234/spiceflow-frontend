@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, Tag, Divider, message, Spin, Row, Col } from 'antd';
 import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
-import type { LoadingSheet, RepOrder, Delivery } from '../../../types/sales';
+import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+
+type ShopRowData = RepOrderShop | Record<string, unknown>;
+
+interface FormItemData {
+  productId?: number;
+  quantityDelivered?: number;
+  unitType?: string;
+  rate?: number;
+  discountAmount?: number;
+  isFreeItem?: boolean;
+}
 
 interface UnloadToShopModalProps {
   visible: boolean;
@@ -24,33 +35,72 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const [activeDelivery, setActiveDelivery] = useState<Delivery | null>(null);
   const [loading, setLoading] = useState(false);
   const [recordingShopId, setRecordingShopId] = useState<string | null>(null);
-  const [activeShop, setActiveShop] = useState<any | null>(null);
+  const [activeShop, setActiveShop] = useState<ShopRowData | null>(null);
   const [submittingShop, setSubmittingShop] = useState(false);
   const [completingDelivery, setCompletingDelivery] = useState(false);
   const [form] = Form.useForm();
 
-  const getShopId = (row: any) => String(row?.shop?.id ?? row?.shopId ?? row?.id ?? '');
-  const getShopName = (row: any) => row?.shop?.name || row?.shopName || 'Unknown Shop';
-  const getOwnerName = (row: any) => row?.shop?.ownerName || row?.ownerName || '';
-  const getOutstandingLoan = (row: any) => row?.shop?.outstandingLoan || row?.outstandingLoan || 0;
+  const getShopId = (row?: unknown): string => {
+    if (!row || typeof row !== 'object') return '';
+    const r = row as Record<string, unknown>;
+    if (r.shop && typeof r.shop === 'object') {
+      const s = r.shop as Record<string, unknown>;
+      if (s.id) return String(s.id);
+    }
+    if (r.shopId) return String(r.shopId);
+    if (r.id) return String(r.id);
+    return '';
+  };
+
+  const getShopName = (row?: unknown): string => {
+    if (!row || typeof row !== 'object') return 'Unknown Shop';
+    const r = row as Record<string, unknown>;
+    if (r.shop && typeof r.shop === 'object') {
+      const s = r.shop as Record<string, unknown>;
+      if (s.name) return String(s.name);
+    }
+    if (r.shopName) return String(r.shopName);
+    return 'Unknown Shop';
+  };
+
+  const getOwnerName = (row?: unknown): string => {
+    if (!row || typeof row !== 'object') return '';
+    const r = row as Record<string, unknown>;
+    if (r.shop && typeof r.shop === 'object') {
+      const s = r.shop as Record<string, unknown>;
+      if (s.ownerName) return String(s.ownerName);
+    }
+    if (r.ownerName) return String(r.ownerName);
+    return '';
+  };
+
+  const getPhone = (row?: unknown): string => {
+    if (!row || typeof row !== 'object') return 'N/A';
+    const r = row as Record<string, unknown>;
+    if (r.shop && typeof r.shop === 'object') {
+      const s = r.shop as Record<string, unknown>;
+      if (s.phone) return String(s.phone);
+    }
+    return 'N/A';
+  };
+
+  const getOutstandingLoan = (row?: unknown): number => {
+    if (!row || typeof row !== 'object') return 0;
+    const r = row as Record<string, unknown>;
+    if (r.shop && typeof r.shop === 'object') {
+      const s = r.shop as Record<string, unknown>;
+      if (s.outstandingLoan !== undefined) return Number(s.outstandingLoan);
+    }
+    if (r.outstandingLoan !== undefined) return Number(r.outstandingLoan);
+    return 0;
+  };
 
   // Watch form values for real-time payment calculations
   const cashVal = Form.useWatch('cashAmount', form) || 0;
   const chequeVal = Form.useWatch('chequeAmount', form) || 0;
   const loanVal = Form.useWatch('loanAmount', form) || 0;
 
-  useEffect(() => {
-    if (visible && loadingSheet) {
-      initDeliveryFlow();
-    } else {
-      setRepOrder(null);
-      setActiveDelivery(null);
-      setRecordingShopId(null);
-      setActiveShop(null);
-    }
-  }, [visible, loadingSheet]);
-
-  const initDeliveryFlow = async () => {
+  const initDeliveryFlow = useCallback(async () => {
     if (!loadingSheet) return;
     setLoading(true);
     try {
@@ -70,33 +120,54 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         const newDel = await deliveryApi.create({ loadingSheetId: Number(loadingSheet.id) });
         setActiveDelivery(newDel);
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to init delivery flow:', error);
-      message.error(error?.response?.data?.message || 'Failed to initialize delivery workflow.');
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message || 'Failed to initialize delivery workflow.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadingSheet]);
 
-  const handleOpenRecordShop = (shopData: any) => {
-    setActiveShop(shopData);
+  useEffect(() => {
+    if (visible && loadingSheet) {
+      initDeliveryFlow();
+    } else {
+      setRepOrder(null);
+      setActiveDelivery(null);
+      setRecordingShopId(null);
+      setActiveShop(null);
+    }
+  }, [visible, loadingSheet, initDeliveryFlow]);
+
+  const handleOpenRecordShop = (shopData: unknown) => {
+    setActiveShop(shopData as ShopRowData);
     setRecordingShopId(getShopId(shopData));
     form.resetFields();
 
-    // Calculate initial item totals and set default values
-    const totalNet = shopData.items?.reduce((sum: number, item: any) => sum + (item.netAmount || (item.quantity * item.rate)), 0) || 0;
+    const dataObj = (shopData && typeof shopData === 'object' ? shopData : {}) as Record<string, unknown>;
+    const itemsList = Array.isArray(dataObj.items) ? dataObj.items : [];
+
+    const totalNet = itemsList.reduce((sum: number, item: unknown) => {
+      const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
+      return sum + Number(it.netAmount || ((Number(it.quantity || 0)) * (Number(it.rate || 0))));
+    }, 0);
 
     form.setFieldsValue({
-      items: shopData.items?.map((i: any) => ({
-        productId: Number(i.product?.id),
-        productName: i.product?.name,
-        quantityDelivered: i.quantity,
-        unitType: i.unitType || 'PCS',
-        rate: i.rate,
-        discountAmount: i.discountAmount || 0,
-        isFreeItem: i.isFreeItem || false,
-      })) || [],
-      cashAmount: totalNet, // Default to cash for speed, operator can adjust Cash, Cheque, and Loan
+      items: itemsList.map((i: unknown) => {
+        const it = (i && typeof i === 'object' ? i : {}) as Record<string, unknown>;
+        const prod = (it.product && typeof it.product === 'object' ? it.product : {}) as Record<string, unknown>;
+        return {
+          productId: Number(prod.id),
+          productName: String(prod.name || ''),
+          quantityDelivered: Number(it.quantity || 0),
+          unitType: String(it.unitType || 'PCS'),
+          rate: Number(it.rate || 0),
+          discountAmount: 0,
+          isFreeItem: false,
+        };
+      }),
+      cashAmount: totalNet,
       chequeAmount: 0,
       loanAmount: 0,
       chequeNo: '',
@@ -111,7 +182,13 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       const values = await form.validateFields();
       setSubmittingShop(true);
 
-      const payments: any[] = [];
+      const payments: Array<{
+        paymentMethod: string;
+        amount: number;
+        chequeNo?: string;
+        chequeBankName?: string;
+        chequeDate?: string;
+      }> = [];
       if (values.cashAmount && Number(values.cashAmount) > 0) {
         payments.push({
           paymentMethod: 'CASH',
@@ -129,7 +206,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       }
 
       const payload = {
-        items: values.items.map((i: any) => ({
+        items: values.items.map((i: FormItemData) => ({
           productId: i.productId,
           quantityDelivered: Number(i.quantityDelivered),
           unitType: i.unitType,
@@ -149,9 +226,10 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       setActiveDelivery(updatedDel);
       setRecordingShopId(null);
       setActiveShop(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Record shop delivery failed:', error);
-      message.error(error?.response?.data?.message || 'Failed to record shop delivery.');
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message || 'Failed to record shop delivery.');
     } finally {
       setSubmittingShop(false);
     }
@@ -165,9 +243,10 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       message.success('Delivery marked COMPLETED and unsold vehicle inventory unloaded back to MAIN warehouse!');
       onSuccess();
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Complete delivery failed:', error);
-      message.error(error?.response?.data?.message || 'Failed to complete delivery.');
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message || 'Failed to complete delivery.');
     } finally {
       setCompletingDelivery(false);
     }
@@ -176,12 +255,12 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   if (!loadingSheet) return null;
 
   const recordedShopIds = new Set(
-    activeDelivery?.shops?.map(s => String(s.shop?.id || (s as any).shopId)) || []
+    activeDelivery?.shops?.map(s => getShopId(s as unknown as ShopRowData)) || []
   );
 
   const calculateNetBill = () => {
     const items = form.getFieldValue('items') || [];
-    return items.reduce((sum: number, i: any) => {
+    return items.reduce((sum: number, i: FormItemData) => {
       const q = Number(i.quantityDelivered || 0);
       const r = Number(i.rate || 0);
       const d = Number(i.discountAmount || 0);
@@ -233,7 +312,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   Unloading at: <Text strong>{getShopName(activeShop)}</Text>
                 </Title>
                 <Text type="secondary" className="text-xs">
-                  Owner: {getOwnerName(activeShop) || 'N/A'} | Phone: {activeShop.shop?.phone || 'N/A'}
+                  Owner: {getOwnerName(activeShop) || 'N/A'} | Phone: {getPhone(activeShop)}
                 </Text>
               </div>
               <Button size="small" onClick={() => { setRecordingShopId(null); setActiveShop(null); }}>
