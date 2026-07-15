@@ -22,10 +22,9 @@ const menuItems = [
     type: 'group',
     label: 'Core Workflows',
     children: [
-      { key: '/', translateKey: 'nav.dashboard' },
-      { key: '/purchases', translateKey: 'nav.purchases' },
       { key: '/day-summary', translateKey: 'nav.daySummary' },
       { key: '/inventory', translateKey: 'nav.inventory' },
+      { key: '/purchases', translateKey: 'nav.purchases' },
       { key: '/sales', translateKey: 'nav.orders' },
     ]
   },
@@ -35,18 +34,14 @@ const menuItems = [
     children: [
       { key: '/loading', translateKey: 'nav.loading' },
       { key: '/deliveries', translateKey: 'nav.deliveries' },
-      { key: '/end-of-day', translateKey: 'nav.endOfDay' },
       { key: '/qr-scan', translateKey: 'nav.qrScan' },
     ]
   },
   {
     type: 'group',
-    label: 'System & Reports',
+    label: 'System',
     children: [
-      { key: '/reports', translateKey: 'nav.reports' },
       { key: '/settings', translateKey: 'nav.settings' },
-      { key: '/users', translateKey: 'nav.users' },
-      { key: '/roles', translateKey: 'nav.roles' },
     ]
   }
 ];

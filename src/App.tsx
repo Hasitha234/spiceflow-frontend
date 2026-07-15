@@ -57,8 +57,7 @@ function App() {
                 </PrivateRoute>
               }
             >
-              <Route index element={<DashboardPage />} />
-              <Route path="dashboard" element={<DashboardPage />} />
+              <Route index element={<Navigate to="day-summary" replace />} />
               <Route path="day-summary" element={<DaySummaryPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="purchases/new" element={<CreatePurchasePage />} />
@@ -68,17 +67,13 @@ function App() {
               <Route path="sales/new" element={<CreateRepOrderPage />} />
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
-              <Route path="end-of-day" element={<EndOfDaySummaryPage />} />
               <Route path="qr-scan" element={<QrScanPage />} />
-              <Route path="reports" element={<ReportsPage />} />
               {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
               ))}
               <Route path="settings/warehouses" element={<WarehousesPage />} />
               <Route path="settings/drivers" element={<DriversPage />} />
               <Route path="settings/categories" element={<CategoriesPage />} />
-              <Route path="users" element={<UsersPage />} />
-              <Route path="roles" element={<RolesPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
