@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Descriptions,
+  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, App, Space, Descriptions,
 } from 'antd';
 import {
   PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined,
@@ -26,6 +26,7 @@ interface LoadingSheetRow {
 }
 
 export function LoadingSheetsPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
   const [sheets, setSheets] = useState<LoadingSheetRow[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
@@ -51,7 +52,7 @@ export function LoadingSheetsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [message]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -101,7 +102,7 @@ export function LoadingSheetsPage() {
       const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to confirm';
       message.error(msg);
     }
-  }, [loadData]);
+  }, [loadData, message]);
 
   const handleCancel = useCallback(async (id: number) => {
     try {
@@ -112,7 +113,7 @@ export function LoadingSheetsPage() {
       const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to cancel';
       message.error(msg);
     }
-  }, [loadData]);
+  }, [loadData, message]);
 
   const columns = useMemo(() => [
     {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, message, Space, Button, Tooltip, Modal, Descriptions } from 'antd';
-import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
+import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, App, Space, Button, Tooltip, Modal, Descriptions, Empty } from 'antd';
+import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined, CreditCardOutlined, ShopOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi, repOrderApi, deliveryApi, reportApi } from '../api/sales';
@@ -9,6 +9,7 @@ import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop, EndOfDay
 const { Title, Text } = Typography;
 
 export function DaySummaryPage() {
+  const { message } = App.useApp();
   const { t } = useTranslation();
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const [loading, setLoading] = useState(false);
@@ -19,6 +20,8 @@ export function DaySummaryPage() {
   const [selectedRepOrder, setSelectedRepOrder] = useState<RepOrder | null>(null);
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+
+  const fmt = (val?: number) => Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const loadData = useCallback(async (date: dayjs.Dayjs) => {
     setLoading(true);
@@ -39,7 +42,7 @@ export function DaySummaryPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [message]);
 
   useEffect(() => {
     loadData(selectedDate);
@@ -279,332 +282,248 @@ export function DaySummaryPage() {
   );
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6 w-full">
-        <div>
-          <Title level={2} className="!m-0 text-slate-800">End of Day Financial Summary</Title>
-          <Text type="secondary">Comprehensive daily audit report of purchases, sales, payments, and returns</Text>
-        </div>
-        <DatePicker
-          value={selectedDate}
-          onChange={(date) => date && setSelectedDate(date)}
-          allowClear={false}
-          size="large"
-          className="w-60 rounded-md border-slate-300 shadow-sm"
-        />
-      </div>
+    <div style={{ padding: '24px' }}>
+      {/* Header */}
+      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+        <Col>
+          <Space>
+            <div style={{ padding: '12px', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '12px' }}>
+              <FileTextOutlined style={{ fontSize: '24px', color: '#10b981' }} />
+            </div>
+            <div>
+              <Title level={3} style={{ margin: 0 }}>Day Summary & Financial Audit</Title>
+              <Text type="secondary">Comprehensive daily breakdown of cash, cheques, purchases, rep orders, and deliveries</Text>
+            </div>
+          </Space>
+        </Col>
+        <Col>
+          <DatePicker
+            size="large"
+            value={selectedDate}
+            onChange={(date) => date && setSelectedDate(date)}
+            allowClear={false}
+            style={{ width: '200px' }}
+          />
+        </Col>
+      </Row>
 
-      {/* ─── TODAY'S INCOME & FINANCIAL OVERVIEW ─────────────────────────── */}
-      <div className="mb-10 bg-slate-50/60 p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <DollarOutlined className="text-2xl text-emerald-600 bg-emerald-100 p-2 rounded-lg" />
-          <div>
-            <Title level={4} className="!m-0 text-slate-800">Today's Income Summary & Collection Overview</Title>
-            <Text type="secondary" className="text-xs">Real-time financial tracking of all cash, cheque, and loan collections across routes</Text>
-          </div>
-        </div>
+      {/* Summary Cards Row 1: Primary Income & Collections */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} sm={12} lg={6}>
+          <Card style={{ borderRadius: '12px', borderTop: '4px solid #10b981' }}>
+            <Statistic
+              title="Total Cash Collected"
+              value={fmt(summaryData?.totalCashCollected || 0)}
+              prefix={<DollarOutlined />}
+              styles={{ content: { color: '#10b981', fontFamily: 'monospace' } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card style={{ borderRadius: '12px', borderTop: '4px solid #1677ff' }}>
+            <Statistic
+              title="Cheques Received"
+              value={fmt(summaryData?.totalChequeAmount || 0)}
+              prefix={<BankOutlined />}
+              styles={{ content: { color: '#1677ff', fontFamily: 'monospace' } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card style={{ borderRadius: '12px', borderTop: '4px solid #fa8c16' }}>
+            <Statistic
+              title="Loan / Credit Given"
+              value={fmt(summaryData?.totalLoanGiven || 0)}
+              prefix={<CreditCardOutlined />}
+              styles={{ content: { color: '#fa8c16', fontFamily: 'monospace' } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card style={{ borderRadius: '12px', borderTop: '4px solid #722ed1' }}>
+            <Statistic
+              title="Full Income (Cash + Cheque)"
+              value={fmt((summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0))}
+              prefix={<DollarOutlined />}
+              styles={{ content: { color: '#722ed1', fontFamily: 'monospace', fontWeight: 700 } }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-        <Row gutter={[16, 16]} className="mb-4">
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-emerald-200 bg-gradient-to-br from-emerald-50/80 to-white">
-              <Statistic
-                title={<span className="text-emerald-800 font-semibold text-xs uppercase tracking-wider">💵 Total Cash Collected</span>}
-                value={summaryData?.totalCashCollected || 0}
-                precision={2}
-                prefix="Rs. "
-                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#065f46' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-blue-200 bg-gradient-to-br from-blue-50/80 to-white">
-              <Statistic
-                title={<span className="text-blue-800 font-semibold text-xs uppercase tracking-wider">🏦 Total Cheque Amount</span>}
-                value={summaryData?.totalChequeAmount || 0}
-                precision={2}
-                prefix="Rs. "
-                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#1e40af' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-amber-200 bg-gradient-to-br from-amber-50/80 to-white">
-              <Statistic
-                title={<span className="text-amber-800 font-semibold text-xs uppercase tracking-wider">📝 Total Loan / Credit Given</span>}
-                value={summaryData?.totalLoanGiven || 0}
-                precision={2}
-                prefix="Rs. "
-                styles={{ content: { fontWeight: 700, fontSize: '1.6rem', color: '#b45309' } }}
-              />
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} lg={6}>
-            <Card styles={{ body: { padding: '20px' } }} className="rounded-lg shadow-sm border border-purple-200 bg-gradient-to-br from-purple-100/60 to-white">
-              <Statistic
-                title={<span className="text-purple-900 font-semibold text-xs uppercase tracking-wider">💰 Full Income (Cash + Cheque)</span>}
-                value={(summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0)}
-                precision={2}
-                prefix="Rs. "
-                styles={{ content: { fontWeight: 800, fontSize: '1.6rem', color: '#581c87' } }}
-              />
-            </Card>
-          </Col>
-        </Row>
+      {/* Summary Cards Row 2: Operational Statistics */}
+      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} sm={8}>
+          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
+            <Statistic
+              title="Gross Delivery Sales Value"
+              value={fmt(summaryData?.totalSalesValue || 0)}
+              prefix={<TruckOutlined />}
+              styles={{ content: { fontFamily: 'monospace' } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
+            <Statistic
+              title="Routes / Shops Visited"
+              value={summaryData?.deliveryCount || 0}
+              suffix={`Routes (${summaryData?.shopsVisited || 0} Shops)`}
+              prefix={<ShopOutlined />}
+              styles={{ content: { color: '#1677ff' } }}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={8}>
+          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
+            <Statistic
+              title="Returns & Discounts"
+              value={`- ${fmt((summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0))}`}
+              styles={{ content: { color: '#f5222d', fontFamily: 'monospace' } }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-        <Row gutter={[16, 16]} className="mb-6">
-          <Col xs={24} sm={8}>
-            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
-              <div className="flex justify-between items-center">
-                <Text className="text-slate-500 font-medium">Gross Delivery Sales Value</Text>
-                <Text strong className="text-base text-slate-800">Rs. {(summaryData?.totalSalesValue || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
-              <div className="flex justify-between items-center">
-                <Text className="text-slate-500 font-medium">Total Returns & Discounts</Text>
-                <Text strong className="text-base text-rose-600">- Rs. {((summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
-              </div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={8}>
-            <Card styles={{ body: { padding: '16px 20px' } }} className="rounded-lg border border-slate-200 bg-white">
-              <div className="flex justify-between items-center">
-                <Text className="text-slate-500 font-medium">Completed Routes / Shops Visited</Text>
-                <Tag color="cyan" className="font-semibold text-sm">{summaryData?.deliveryCount || 0} Routes ({summaryData?.shopsVisited || 0} Shops)</Tag>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Cheque Breakdown & Cancelled Orders Tables */}
-        <Row gutter={[24, 24]}>
-          <Col xs={24} lg={14}>
-            <Card
-              title={
-                <span className="flex items-center gap-2 text-sm font-semibold text-blue-900">
-                  <BankOutlined /> Today's Cheques Received ({summaryData?.chequeDetails?.length || 0})
-                </span>
-              }
-              styles={{ body: { padding: 0 } }}
-              className="rounded-lg shadow-sm border border-blue-200 overflow-hidden bg-white"
-            >
+      {/* Cheque & Cancelled Orders Tables */}
+      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
+        <Col xs={24} lg={14}>
+          <Card
+            title={<Space><BankOutlined style={{ color: '#1677ff' }} /><span>Today's Cheques Received ({summaryData?.chequeDetails?.length || 0})</span></Space>}
+            style={{ borderRadius: '12px' }}
+          >
+            {(summaryData?.chequeDetails || []).length > 0 ? (
               <Table
                 dataSource={summaryData?.chequeDetails || []}
                 rowKey="chequeNo"
                 pagination={false}
                 size="small"
-                locale={{ emptyText: 'No cheques collected today.' }}
                 columns={[
-                  { title: 'Cheque No', dataIndex: 'chequeNo', key: 'chequeNo', render: (val) => <Text strong className="font-mono text-blue-700">{val}</Text> },
+                  { title: 'Cheque No', dataIndex: 'chequeNo', key: 'chequeNo', render: (val) => <Text code>{val}</Text> },
                   { title: 'Bank Name', dataIndex: 'bankName', key: 'bankName', render: (val) => val || '—' },
-                  { title: 'Shop / Customer', dataIndex: 'shopName', key: 'shopName', render: (val) => <Text className="font-medium">{val || '—'}</Text> },
+                  { title: 'Shop / Customer', dataIndex: 'shopName', key: 'shopName', render: (val) => <Text strong>{val || '—'}</Text> },
                   { title: 'Cheque Date', dataIndex: 'chequeDate', key: 'chequeDate', render: (val) => val || '—' },
-                  { title: 'Amount (Rs)', dataIndex: 'amount', key: 'amount', align: 'right', render: (val) => <Text strong className="text-slate-800">Rs. {Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text> },
+                  { title: 'Amount (LKR)', dataIndex: 'amount', key: 'amount', align: 'right', render: (val) => <Text style={{ fontFamily: 'monospace', fontWeight: 600 }}>{fmt(Number(val || 0))}</Text> },
                 ]}
               />
-            </Card>
-          </Col>
-
-          <Col xs={24} lg={10}>
-            <Card
-              title={
-                <span className="flex items-center gap-2 text-sm font-semibold text-rose-800">
-                  <ExclamationCircleOutlined /> Cancelled Loading Sheets / Orders ({summaryData?.cancelledOrders?.length || 0})
-                </span>
-              }
-              styles={{ body: { padding: 0 } }}
-              className="rounded-lg shadow-sm border border-rose-200 overflow-hidden bg-white"
-            >
+            ) : (
+              <Empty description="No cheques received on this date" />
+            )}
+          </Card>
+        </Col>
+        <Col xs={24} lg={10}>
+          <Card
+            title={<Space><ExclamationCircleOutlined style={{ color: '#f5222d' }} /><span>Cancelled Loading Sheets / Orders ({summaryData?.cancelledOrders?.length || 0})</span></Space>}
+            style={{ borderRadius: '12px' }}
+          >
+            {(summaryData?.cancelledOrders || []).length > 0 ? (
               <Table
                 dataSource={summaryData?.cancelledOrders || []}
                 rowKey="loadingSheetId"
                 pagination={false}
                 size="small"
-                locale={{ emptyText: 'No cancelled loading sheets today.' }}
                 columns={[
                   { title: 'Sheet #', dataIndex: 'loadingSheetId', key: 'loadingSheetId', width: 80, render: (val) => <Tag color="error">#{val}</Tag> },
                   { title: 'Driver', dataIndex: 'driverName', key: 'driverName', render: (val) => <Text strong>{val || '—'}</Text> },
                   { title: 'Rep', dataIndex: 'repName', key: 'repName', render: (val) => val || '—' },
-                  { title: 'Status', dataIndex: 'reason', key: 'reason', render: (val) => <span className="text-xs text-slate-500">{val || 'Stock returned'}</span> },
+                  { title: 'Reason', dataIndex: 'reason', key: 'reason', render: (val) => <Text type="secondary" style={{ fontSize: '12px' }}>{val || 'Stock returned'}</Text> },
                 ]}
               />
-            </Card>
+            ) : (
+              <Empty description="No cancelled loading sheets on this date" />
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Today's Purchases Breakdown */}
+      <Card
+        title={<Space><ShoppingOutlined style={{ color: '#10b981' }} /><span>Today's Purchases ({purchases.length})</span></Space>}
+        style={{ borderRadius: '12px', borderTop: '4px solid #10b981', marginBottom: '24px' }}
+      >
+        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Purchase Orders" value={purchases.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Value (LKR)" value={fmt(totalValue)} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#10b981' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Draft / Confirmed" value={draftCount} suffix={`/ ${confirmedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
           </Col>
         </Row>
-      </div>
-
-      <Title level={4} className="mb-4">Today's Purchases</Title>
-      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <ShoppingOutlined className="text-emerald-600" /> <span>{t('daySummary.totalPurchases', 'Total Purchases')}</span>
-                </div>
-              }
-              value={purchases.length}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <DollarOutlined className="text-emerald-600" /> <span>{t('daySummary.totalValue', 'Total Value (LKR)')}</span>
-                </div>
-              }
-              value={totalValue}
-              precision={2}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <FileTextOutlined className="text-emerald-600" /> <span>{t('daySummary.draftCount', 'Draft Orders')} / {t('daySummary.confirmedCount', 'Confirmed')}</span>
-                </div>
-              }
-              value={draftCount}
-              suffix={`/ ${confirmedCount}`}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={purchases}
-          columns={columns}
-          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-          locale={{ emptyText: t('daySummary.noPurchases', 'No purchases recorded for this date.') }}
-          className="spiceflow-table"
-        />
+        {purchases.length > 0 ? (
+          <Table
+            rowKey="id"
+            loading={loading}
+            dataSource={purchases}
+            columns={columns}
+            pagination={{ pageSize: 10 }}
+            size="small"
+          />
+        ) : (
+          <Empty description="No purchases recorded for this date" />
+        )}
       </Card>
 
-      <Title level={4} className="mt-8 mb-4">Today's Rep Orders</Title>
-      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <ShoppingOutlined className="text-emerald-600" /> <span>Total Rep Orders</span>
-                </div>
-              }
-              value={repOrders.length}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <DollarOutlined className="text-emerald-600" /> <span>Total Rep Value (LKR)</span>
-                </div>
-              }
-              value={repTotalValue}
-              precision={2}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <FileTextOutlined className="text-emerald-600" /> <span>Draft / Confirmed</span>
-                </div>
-              }
-              value={repDraftCount}
-              suffix={`/ ${repConfirmedCount}`}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={repOrders}
-          columns={repColumns}
-          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-          locale={{ emptyText: 'No rep orders recorded for this date.' }}
-          className="spiceflow-table"
-        />
+      {/* Today's Rep Orders Breakdown */}
+      <Card
+        title={<Space><FileTextOutlined style={{ color: '#1677ff' }} /><span>Today's Rep Orders ({repOrders.length})</span></Space>}
+        style={{ borderRadius: '12px', borderTop: '4px solid #1677ff', marginBottom: '24px' }}
+      >
+        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Rep Orders" value={repOrders.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Value (LKR)" value={fmt(repTotalValue)} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#1677ff' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Draft / Confirmed" value={repDraftCount} suffix={`/ ${repConfirmedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
+          </Col>
+        </Row>
+        {repOrders.length > 0 ? (
+          <Table
+            rowKey="id"
+            loading={loading}
+            dataSource={repOrders}
+            columns={repColumns}
+            pagination={{ pageSize: 10 }}
+            size="small"
+          />
+        ) : (
+          <Empty description="No rep orders recorded for this date" />
+        )}
       </Card>
 
-      <Title level={4} className="mt-8 mb-4">Today's Deliveries</Title>
-      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <TruckOutlined className="text-emerald-600" /> <span>Total Deliveries</span>
-                </div>
-              }
-              value={deliveries.length}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <DollarOutlined className="text-emerald-600" /> <span>Total Sales / Collected (LKR)</span>
-                </div>
-              }
-              value={deliveryTotalCollected}
-              precision={2}
-              suffix={`/ ${deliveryTotalSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
-            <Statistic
-              title={
-                <div className="flex items-center gap-2 text-slate-500 mb-2">
-                  <FileTextOutlined className="text-emerald-600" /> <span>Completed / In Progress</span>
-                </div>
-              }
-              value={deliveryCompletedCount}
-              suffix={`/ ${deliveries.length - deliveryCompletedCount}`}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mb-6">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={deliveries}
-          columns={deliveryColumns}
-          pagination={{ pageSize: 20, className: 'px-4 py-3 border-t border-slate-100 m-0' }}
-          locale={{ emptyText: 'No deliveries recorded for this date.' }}
-          className="spiceflow-table"
-        />
+      {/* Today's Deliveries Breakdown */}
+      <Card
+        title={<Space><TruckOutlined style={{ color: '#fa8c16' }} /><span>Today's Deliveries ({deliveries.length})</span></Space>}
+        style={{ borderRadius: '12px', borderTop: '4px solid #fa8c16', marginBottom: '24px' }}
+      >
+        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Deliveries" value={deliveries.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Total Collected (LKR)" value={fmt(deliveryTotalCollected)} suffix={`/ ${fmt(deliveryTotalSales)}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#fa8c16' } }} />
+          </Col>
+          <Col xs={24} sm={8}>
+            <Statistic title="Completed / In Progress" value={deliveryCompletedCount} suffix={`/ ${deliveries.length - deliveryCompletedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
+          </Col>
+        </Row>
+        {deliveries.length > 0 ? (
+          <Table
+            rowKey="id"
+            loading={loading}
+            dataSource={deliveries}
+            columns={deliveryColumns}
+            pagination={{ pageSize: 10 }}
+            size="small"
+          />
+        ) : (
+          <Empty description="No deliveries recorded for this date" />
+        )}
       </Card>
 
       <Modal

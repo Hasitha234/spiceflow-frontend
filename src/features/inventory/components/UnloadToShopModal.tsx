@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, Tag, Divider, message, Spin, Row, Col } from 'antd';
+import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, Tag, Divider, App, Spin, Row, Col } from 'antd';
 import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
@@ -31,6 +31,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   onClose,
   onSuccess,
 }) => {
+  const { message } = App.useApp();
   const [repOrder, setRepOrder] = useState<RepOrder | null>(null);
   const [activeDelivery, setActiveDelivery] = useState<Delivery | null>(null);
   const [loading, setLoading] = useState(false);
@@ -116,18 +117,41 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         const delData = await deliveryApi.get(String(loadingSheet.activeDeliveryId));
         setActiveDelivery(delData);
       } else {
-        // Create new active delivery for this loading sheet
-        const newDel = await deliveryApi.create({ loadingSheetId: Number(loadingSheet.id) });
+        // Create new active delivery for this loading sheet (requires loadingSheetId and deliveryDate)
+        const dateStr = loadingSheet.loadingDate
+          ? dayjs(loadingSheet.loadingDate).format('YYYY-MM-DD')
+          : dayjs().format('YYYY-MM-DD');
+        const newDel = await deliveryApi.create({
+          loadingSheetId: Number(loadingSheet.id),
+          deliveryDate: dateStr,
+        });
         setActiveDelivery(newDel);
       }
     } catch (error: unknown) {
-      console.error('Failed to init delivery flow:', error);
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err?.response?.data?.message || 'Failed to initialize delivery workflow.');
+      const err = error as {
+        response?: {
+          data?: {
+            message?: string;
+            detail?: string;
+            title?: string;
+            errors?: Array<{ field: string; message: string }>;
+            properties?: { errors?: Array<{ field: string; message: string }> };
+          };
+        };
+      };
+      console.error('Failed to init delivery flow:', error, err?.response?.data);
+      const data = err?.response?.data;
+      const errorsList = data?.errors || data?.properties?.errors;
+      if (errorsList && Array.isArray(errorsList) && errorsList.length > 0) {
+        const errMsgs = errorsList.map(e => `${e.field}: ${e.message}`).join(', ');
+        message.error(`Validation Error (${errMsgs})`);
+      } else {
+        message.error(data?.detail || data?.message || data?.title || 'Failed to initialize delivery workflow.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [loadingSheet]);
+  }, [loadingSheet, message]);
 
   useEffect(() => {
     if (visible && loadingSheet) {
@@ -157,14 +181,16 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       items: itemsList.map((i: unknown) => {
         const it = (i && typeof i === 'object' ? i : {}) as Record<string, unknown>;
         const prod = (it.product && typeof it.product === 'object' ? it.product : {}) as Record<string, unknown>;
+        const rawPid = prod.id !== undefined ? prod.id : (it.productId !== undefined ? it.productId : it.id);
+        const rawPname = prod.name !== undefined ? prod.name : (it.productName !== undefined ? it.productName : (it.name || ''));
         return {
-          productId: Number(prod.id),
-          productName: String(prod.name || ''),
+          productId: Number(rawPid),
+          productName: String(rawPname || ''),
           quantityDelivered: Number(it.quantity || 0),
           unitType: String(it.unitType || 'PCS'),
           rate: Number(it.rate || 0),
-          discountAmount: 0,
-          isFreeItem: false,
+          discountAmount: Number(it.discountAmount || 0),
+          isFreeItem: Boolean(it.isFreeItem || false),
         };
       }),
       cashAmount: totalNet,
@@ -205,15 +231,24 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         });
       }
 
+      const allItems = form.getFieldValue('items') || [];
       const payload = {
-        items: values.items.map((i: FormItemData) => ({
-          productId: i.productId,
-          quantityDelivered: Number(i.quantityDelivered),
-          unitType: i.unitType,
-          rate: Number(i.rate),
-          discountAmount: Number(i.discountAmount || 0),
-          isFreeItem: i.isFreeItem || false,
-        })),
+        items: allItems.map((i: FormItemData & Record<string, unknown>, index: number) => {
+          const validated = (values.items?.[index] || {}) as Record<string, unknown>;
+          const rawPid = i.productId !== undefined && !Number.isNaN(Number(i.productId))
+            ? i.productId
+            : (validated.productId !== undefined && !Number.isNaN(Number(validated.productId))
+                ? validated.productId
+                : i.id);
+          return {
+            productId: Number(rawPid),
+            quantityDelivered: Number(validated.quantityDelivered !== undefined ? validated.quantityDelivered : (i.quantityDelivered || 0)),
+            unitType: String(i.unitType || validated.unitType || 'PCS'),
+            rate: Number(validated.rate !== undefined ? validated.rate : (i.rate || 0)),
+            discountAmount: Number(validated.discountAmount !== undefined ? validated.discountAmount : (i.discountAmount || 0)),
+            isFreeItem: Boolean(i.isFreeItem || validated.isFreeItem),
+          };
+        }),
         returns: [],
         payments,
       };
@@ -227,9 +262,26 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       setRecordingShopId(null);
       setActiveShop(null);
     } catch (error: unknown) {
-      console.error('Record shop delivery failed:', error);
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err?.response?.data?.message || 'Failed to record shop delivery.');
+      const err = error as {
+        response?: {
+          data?: {
+            message?: string;
+            detail?: string;
+            title?: string;
+            errors?: Array<{ field: string; message: string }>;
+            properties?: { errors?: Array<{ field: string; message: string }> };
+          };
+        };
+      };
+      console.error('Record shop delivery failed:', error, err?.response?.data);
+      const data = err?.response?.data;
+      const errorsList = data?.errors || data?.properties?.errors;
+      if (errorsList && Array.isArray(errorsList) && errorsList.length > 0) {
+        const errMsgs = errorsList.map(e => `${e.field}: ${e.message}`).join(', ');
+        message.error(`Validation Error (${errMsgs})`);
+      } else {
+        message.error(data?.detail || data?.message || data?.title || 'Failed to record shop delivery.');
+      }
     } finally {
       setSubmittingShop(false);
     }
@@ -245,8 +297,23 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       onClose();
     } catch (error: unknown) {
       console.error('Complete delivery failed:', error);
-      const err = error as { response?: { data?: { message?: string } } };
-      message.error(err?.response?.data?.message || 'Failed to complete delivery.');
+      const err = error as {
+        response?: {
+          data?: {
+            message?: string;
+            detail?: string;
+            title?: string;
+            errors?: Array<{ field: string; message: string }>;
+          };
+        };
+      };
+      const data = err?.response?.data;
+      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        const errMsgs = data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+        message.error(`Validation Error (${errMsgs})`);
+      } else {
+        message.error(data?.detail || data?.message || data?.title || 'Failed to complete delivery.');
+      }
     } finally {
       setCompletingDelivery(false);
     }
@@ -335,7 +402,23 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                       key: 'productName',
                       render: (_, field) => {
                         const items = form.getFieldValue('items');
-                        return <Text strong>{items[field.name]?.productName}</Text>;
+                        return (
+                          <>
+                            <Form.Item name={[field.name, 'productId']} hidden noStyle>
+                              <Input />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'productName']} hidden noStyle>
+                              <Input />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'unitType']} hidden noStyle>
+                              <Input />
+                            </Form.Item>
+                            <Form.Item name={[field.name, 'isFreeItem']} hidden noStyle>
+                              <Input />
+                            </Form.Item>
+                            <Text strong>{items[field.name]?.productName}</Text>
+                          </>
+                        );
                       },
                     },
                     {
