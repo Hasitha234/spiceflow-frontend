@@ -24,6 +24,7 @@ const menuItems = [
     label: 'Core Workflows',
     children: [
       { key: '/day-summary', translateKey: 'nav.daySummary' },
+      { key: '/month-summary', translateKey: 'nav.monthSummary' },
       { key: '/inventory', translateKey: 'nav.inventory' },
       { key: '/purchases', translateKey: 'nav.purchases' },
       { key: '/sales', translateKey: 'nav.orders' },

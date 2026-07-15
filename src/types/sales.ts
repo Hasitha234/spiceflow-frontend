@@ -238,3 +238,20 @@ export interface EndOfDaySummary {
   deliveries?: DeliverySummary[];
   cancelledOrders?: CancelledOrderSummary[];
 }
+
+export interface ExpenseBreakdown {
+  category: string;
+  amount: number;
+}
+
+export interface MonthSummary {
+  yearMonth: string;
+  totalSalesValue: number;
+  totalPurchasesValue: number;
+  totalExpensesValue: number;
+  netProfit: number;
+  deliveryCount: number;
+  repOrderCount: number;
+  purchaseOrderCount: number;
+  expenseBreakdown: ExpenseBreakdown[];
+}

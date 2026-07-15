@@ -39,6 +39,7 @@ const si = {
     dashboard: 'උපකරණ පුවරුව',
     purchases: 'මිලදී ගැනීම්',
     daySummary: 'දෛනික සාරාංශය',
+    monthSummary: 'මාසික සාරාංශය',
     inventory: 'තොගය',
     orders: 'ලේඛකාධිකාරි ඇණවුම්',
     loading: 'පැටවීමේ පත්‍ර',

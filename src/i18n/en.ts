@@ -39,6 +39,7 @@ const en = {
     dashboard: 'Dashboard',
     purchases: 'Purchases',
     daySummary: 'Day Summary',
+    monthSummary: 'Month Summary',
     inventory: 'Inventory',
     orders: 'Rep Orders',
     loading: 'Loading Sheets',

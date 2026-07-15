@@ -1,6 +1,6 @@
 import apiClient from './client';
 import type { PageResponse } from '../types/api';
-import type { Rep, Driver, Shop, RepOrder, LoadingSheet, Delivery, Purchase, EndOfDaySummary } from '../types/sales';
+import type { Rep, Driver, Shop, RepOrder, LoadingSheet, Delivery, Purchase, EndOfDaySummary, MonthSummary } from '../types/sales';
 
 // ─── Master Data ──────────────────────────────────────────────────────────────
 export const repApi = {
@@ -98,6 +98,8 @@ export const reportApi = {
     apiClient.get('/api/v1/reports/rep-performance', { params }).then((r) => r.data),
   endOfDaySummary: (date: string) =>
     apiClient.get<EndOfDaySummary>('/api/v1/reports/end-of-day-summary', { params: { date } }).then((r) => r.data),
+  monthSummary: (yearMonth: string) =>
+    apiClient.get<MonthSummary>('/api/v1/reports/month-summary', { params: { yearMonth } }).then((r) => r.data),
 };
 
 // ─── QR Verification ──────────────────────────────────────────────────────

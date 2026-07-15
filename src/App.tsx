@@ -12,6 +12,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 // Route-level code splitting via lazyWithRetry (auto-recovers from stale chunks after deploy)
 const LoginPage = lazyWithRetry(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const DaySummaryPage = lazyWithRetry(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
+const MonthSummaryPage = lazyWithRetry(() => import('./pages/MonthSummaryPage').then((m) => ({ default: m.MonthSummaryPage })));
 const WarehousesPage = lazyWithRetry(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
 const DriversPage = lazyWithRetry(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
 const CategoriesPage = lazyWithRetry(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
@@ -54,6 +55,7 @@ function App() {
             >
               <Route index element={<Navigate to="day-summary" replace />} />
               <Route path="day-summary" element={<DaySummaryPage />} />
+              <Route path="month-summary" element={<MonthSummaryPage />} />
               <Route path="purchases" element={<PurchasesPage />} />
               <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="purchases/:id/edit" element={<CreatePurchasePage />} />
