@@ -52,7 +52,7 @@ export function LoadingSheetsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [message]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -102,7 +102,7 @@ export function LoadingSheetsPage() {
       const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to confirm';
       message.error(msg);
     }
-  }, [loadData]);
+  }, [loadData, message]);
 
   const handleCancel = useCallback(async (id: number) => {
     try {
@@ -113,7 +113,7 @@ export function LoadingSheetsPage() {
       const msg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to cancel';
       message.error(msg);
     }
-  }, [loadData]);
+  }, [loadData, message]);
 
   const columns = useMemo(() => [
     {

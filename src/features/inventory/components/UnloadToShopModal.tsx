@@ -151,7 +151,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [loadingSheet]);
+  }, [loadingSheet, message]);
 
   useEffect(() => {
     if (visible && loadingSheet) {

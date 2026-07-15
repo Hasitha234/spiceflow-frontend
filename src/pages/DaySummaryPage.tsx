@@ -278,7 +278,10 @@ export function DaySummaryPage() {
         ),
       },
     ],
-    return (
+    [t]
+  );
+
+  return (
     <div style={{ padding: '24px' }}>
       {/* Header */}
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
@@ -521,9 +524,6 @@ export function DaySummaryPage() {
         ) : (
           <Empty description="No deliveries recorded for this date" />
         )}
-      </Card>ies recorded for this date.' }}
-          className="spiceflow-table"
-        />
       </Card>
 
       <Modal
