@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, Col, DatePicker, Form, Modal, Popconfirm, Row, Select, Table, Tag, Tooltip, Typography, App, Space, Descriptions,
+  Button, Card, DatePicker, Form, Modal, Select, Table, Tag, Typography, App, Descriptions, Dropdown, Input,
 } from 'antd';
 import {
-  PlusOutlined, CheckCircleOutlined, EyeOutlined, ContainerOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined,
+  PlusOutlined, CheckCircleOutlined, EyeOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined, MoreOutlined, ReloadOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { loadingSheetApi, repOrderApi, driverApi } from '../api/sales';
@@ -34,6 +34,8 @@ export function LoadingSheetsPage() {
   const [unloadOpen, setUnloadOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [selectedSheet, setSelectedSheet] = useState<LoadingSheetRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
 
   // Create form data
   const [repOrders, setRepOrders] = useState<any[]>([]);
@@ -115,14 +117,48 @@ export function LoadingSheetsPage() {
     }
   }, [loadData, message]);
 
+  const filteredSheets = useMemo(() => {
+    return sheets.filter(sheet => {
+      if (statusFilter !== 'ALL' && sheet.status !== statusFilter) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesRep = sheet.repName?.toLowerCase().includes(q);
+        const matchesDriver = sheet.driverName?.toLowerCase().includes(q);
+        const matchesOrder = `RO-${sheet.repOrderId}`.toLowerCase().includes(q);
+        const matchesId = String(sheet.id).includes(q);
+        if (!matchesRep && !matchesDriver && !matchesOrder && !matchesId) return false;
+      }
+      return true;
+    });
+  }, [sheets, searchQuery, statusFilter]);
+
   const columns = useMemo(() => [
     {
       title: 'ID', dataIndex: 'id', key: 'id', width: 60,
-      render: (val: number) => <Text strong style={{ color: '#10b981' }}>#{val}</Text>,
+      render: (val: number) => (
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--font-weight-medium)',
+          color: 'var(--color-text-secondary)',
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {val}
+        </span>
+      ),
     },
     {
       title: 'Rep Order', dataIndex: 'repOrderId', key: 'repOrderId', width: 100,
-      render: (val: number) => <Text>RO-{val}</Text>,
+      render: (val: number) => (
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-sm)',
+          color: 'var(--color-text-secondary)',
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          RO-{val}
+        </span>
+      ),
     },
     {
       title: 'Rep', dataIndex: 'repName', key: 'repName',
@@ -134,13 +170,52 @@ export function LoadingSheetsPage() {
     },
     {
       title: 'Loading Date', dataIndex: 'loadingDate', key: 'loadingDate',
-      render: (val: string) => val ? dayjs(val).format('YYYY-MM-DD') : '—',
+      render: (val: string) => val ? dayjs(val).format('DD MMM YYYY') : '—',
     },
     {
-      title: 'Status', dataIndex: 'status', key: 'status',
+      title: 'Status', dataIndex: 'status', key: 'status', width: 140,
       render: (status: string) => {
-        const color = status === 'CONFIRMED' ? 'green' : status === 'CANCELLED' ? 'red' : status === 'DRAFT' ? 'orange' : 'blue';
-        return <Tag color={color}>{status}</Tag>;
+        const statusStyles: Record<string, { bg: string; color: string; border: string; icon: React.ReactNode }> = {
+          CONFIRMED: {
+            bg: 'var(--color-success-bg)',
+            color: 'var(--color-success-text)',
+            border: 'var(--color-success-border)',
+            icon: <CheckCircleOutlined style={{ fontSize: '11px' }} />,
+          },
+          CANCELLED: {
+            bg: 'var(--color-danger-bg)',
+            color: 'var(--color-danger-text)',
+            border: 'var(--color-danger-border)',
+            icon: <CloseCircleOutlined style={{ fontSize: '11px' }} />,
+          },
+          DRAFT: {
+            bg: 'var(--color-warning-bg)',
+            color: 'var(--color-warning-text)',
+            border: 'var(--color-warning-border)',
+            icon: null,
+          },
+        };
+        const s = statusStyles[status] || statusStyles.DRAFT;
+        return (
+          <span style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px',
+            fontSize: '11px',
+            fontWeight: 600,
+            letterSpacing: '0.04em',
+            textTransform: 'uppercase',
+            padding: '2px 8px',
+            borderRadius: '4px',
+            lineHeight: '18px',
+            background: s.bg,
+            color: s.color,
+            border: `1px solid ${s.border}`,
+          }}>
+            {s.icon}
+            {status}
+          </span>
+        );
       },
     },
     {
@@ -148,72 +223,148 @@ export function LoadingSheetsPage() {
       render: (_: unknown, record: LoadingSheetRow) => <Text>{record.items?.length || 0}</Text>,
     },
     {
-      title: 'Actions', key: 'actions', align: 'right' as const,
-      render: (_: unknown, record: LoadingSheetRow) => (
-        <Space>
-          <Tooltip title="View Details">
-            <Button type="text" icon={<EyeOutlined />} onClick={() => { setSelectedSheet(record); setDetailOpen(true); }} />
-          </Tooltip>
-          {record.status === 'DRAFT' && (
-            <>
-              <Tooltip title="Confirm & Transfer Stock">
-                <Button type="text" style={{ color: '#10b981' }} icon={<CheckCircleOutlined />}
-                  onClick={() => handleConfirm(record.id)} />
-              </Tooltip>
-              <Popconfirm title="Cancel this DRAFT loading sheet?" onConfirm={() => handleCancel(record.id)} okText="Yes" cancelText="No">
-                <Tooltip title="Cancel Loading Sheet">
-                  <Button type="text" danger icon={<CloseCircleOutlined />} />
-                </Tooltip>
-              </Popconfirm>
-            </>
-          )}
-          {record.status === 'CONFIRMED' && (
-            <>
-              <Button
-                type="primary"
-                size="small"
-                icon={<DollarOutlined />}
-                onClick={() => { setSelectedSheet(record); setUnloadOpen(true); }}
-                className="bg-emerald-600 hover:bg-emerald-700 font-medium"
-              >
-                Unload to Shop
-              </Button>
-              <Button
-                danger
-                size="small"
-                icon={<StopOutlined />}
-                onClick={() => { setSelectedSheet(record); setCancelOpen(true); }}
-              >
-                Cancel Order
-              </Button>
-            </>
-          )}
-        </Space>
-      ),
+      title: 'Actions', key: 'actions', align: 'right' as const, width: 80,
+      render: (_: unknown, record: LoadingSheetRow) => {
+        const items: any[] = [
+          {
+            key: 'view',
+            label: 'View Details',
+            icon: <EyeOutlined />,
+            onClick: () => { setSelectedSheet(record); setDetailOpen(true); },
+          },
+        ];
+
+        if (record.status === 'DRAFT') {
+          items.push(
+            { type: 'divider' },
+            {
+              key: 'confirm',
+              label: 'Confirm & Transfer Stock',
+              icon: <CheckCircleOutlined style={{ color: 'var(--color-success-text)' }} />,
+              onClick: () => handleConfirm(record.id),
+            },
+            {
+              key: 'cancel',
+              label: 'Cancel Loading Sheet',
+              icon: <CloseCircleOutlined />,
+              danger: true,
+              onClick: () => {
+                Modal.confirm({
+                  title: 'Cancel this DRAFT loading sheet?',
+                  onOk: () => handleCancel(record.id),
+                  okText: 'Yes',
+                  cancelText: 'No'
+                });
+              },
+            },
+          );
+        }
+
+        if (record.status === 'CONFIRMED') {
+          items.push(
+            { type: 'divider' },
+            {
+              key: 'unload',
+              label: 'Unload to Shop',
+              icon: <DollarOutlined style={{ color: 'var(--color-primary)' }} />,
+              onClick: () => { setSelectedSheet(record); setUnloadOpen(true); },
+            },
+            {
+              key: 'cancel-order',
+              label: 'Cancel Order',
+              icon: <StopOutlined />,
+              danger: true,
+              onClick: () => { setSelectedSheet(record); setCancelOpen(true); },
+            },
+          );
+        }
+
+        return (
+          <Dropdown menu={{ items }} trigger={['click']} placement="bottomRight">
+            <Button
+              type="text"
+              icon={<MoreOutlined style={{ fontSize: '16px' }} />}
+              aria-label={`Actions for loading sheet ${record.id}`}
+              style={{
+                width: 36, height: 36,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}
+            />
+          </Dropdown>
+        );
+      },
     },
   ], [handleConfirm, handleCancel]);
 
   return (
     <div style={{ padding: 'var(--space-8)' }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
-        <Col>
-          <Space>
-            <div style={{ padding: '12px', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '12px' }}>
-              <ContainerOutlined style={{ fontSize: '24px', color: '#10b981' }} />
-            </div>
-            <div>
-              <Title level={3} style={{ margin: 0 }}>Loading Sheets</Title>
-              <Text type="secondary">Load items from warehouse onto delivery vehicles</Text>
-            </div>
-          </Space>
-        </Col>
-        <Col>
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}
-            style={{ height: '40px', paddingInline: '20px' }}>
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '16px',
+        }}>
+          <h1 style={{
+            fontSize: '28px',
+            fontWeight: 700,
+            letterSpacing: '-0.025em',
+            lineHeight: 1.2,
+            color: 'var(--color-text-primary)',
+            margin: 0,
+          }}>
+            Loading Sheets
+          </h1>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={openCreate}
+            style={{ height: '40px', paddingInline: '20px' }}
+          >
             New Loading Sheet
           </Button>
-        </Col>
-      </Row>
+        </div>
+      </div>
+
+      {/* ─── TOOLBAR ───────────────────────────────────────────────── */}
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 'var(--space-3)',
+        marginBottom: 'var(--space-4)',
+        paddingBottom: 'var(--space-4)',
+        borderBottom: '1px solid var(--color-border-default)',
+      }}>
+        <div style={{ flex: 1, maxWidth: '448px' }}>
+          <Input.Search
+            placeholder="Search by rep, driver, or order number"
+            aria-label="Search loading sheets"
+            allowClear
+            onChange={(e) => setSearchQuery(e.target.value)}
+            style={{ width: '100%' }}
+            size="middle"
+          />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Select
+            defaultValue="ALL"
+            size="middle"
+            style={{ width: 160 }}
+            onChange={setStatusFilter}
+            options={[
+              { label: 'All Statuses', value: 'ALL' },
+              { label: 'Draft', value: 'DRAFT' },
+              { label: 'Confirmed', value: 'CONFIRMED' },
+              { label: 'Cancelled', value: 'CANCELLED' },
+            ]}
+          />
+          <Button icon={<ReloadOutlined />} onClick={loadData} size="middle">
+            Refresh
+          </Button>
+        </div>
+      </div>
 
       <Card 
         style={{ 
@@ -224,7 +375,7 @@ export function LoadingSheetsPage() {
         }}
         styles={{ body: { padding: 0 } }}
       >
-        <Table rowKey="id" loading={loading} dataSource={sheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table" />
+        <Table rowKey="id" loading={loading} dataSource={filteredSheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table" />
       </Card>
 
       {/* Create Modal */}
@@ -294,7 +445,7 @@ export function LoadingSheetsPage() {
         visible={unloadOpen}
         loadingSheet={selectedSheet as any}
         onClose={() => setUnloadOpen(false)}
-        onSuccess={loadData}
+
       />
 
       <CancelOrderModal

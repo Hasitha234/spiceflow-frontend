@@ -23,7 +23,7 @@ import type { RepOrder } from '../types/sales';
 import { PermissionGuard } from '../components/common';
 import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export function RepOrdersPage() {
   const navigate = useNavigate();
@@ -118,15 +118,12 @@ export function RepOrdersPage() {
 
   return (
     <div className="p-6">
-      <Row justify="space-between" align="middle" className="mb-6">
+      <Row justify="space-between" align="middle" style={{ marginBottom: '32px' }}>
         <Col>
           <div>
             <Title level={3} className="!m-0">
               {t('repOrder.repOrder', 'Rep Orders')}
             </Title>
-            <Text type="secondary" className="mt-1 block">
-              Manage sales representative field orders
-            </Text>
           </div>
         </Col>
         <Col>

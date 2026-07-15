@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, Tag, Divider, App, Spin, Row, Col } from 'antd';
+import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col } from 'antd';
 import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
@@ -22,14 +22,12 @@ interface UnloadToShopModalProps {
   visible: boolean;
   loadingSheet: LoadingSheet | null;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
 export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   visible,
   loadingSheet,
   onClose,
-  onSuccess,
 }) => {
   const { message } = App.useApp();
   const [repOrder, setRepOrder] = useState<RepOrder | null>(null);
@@ -38,7 +36,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const [recordingShopId, setRecordingShopId] = useState<string | null>(null);
   const [activeShop, setActiveShop] = useState<ShopRowData | null>(null);
   const [submittingShop, setSubmittingShop] = useState(false);
-  const [completingDelivery, setCompletingDelivery] = useState(false);
+
   const [form] = Form.useForm();
 
   const getShopId = (row?: unknown): string => {
@@ -287,37 +285,6 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     }
   };
 
-  const handleCompleteAllAndUnload = async () => {
-    if (!activeDelivery) return;
-    try {
-      setCompletingDelivery(true);
-      await deliveryApi.complete(String(activeDelivery.id));
-      message.success('Delivery marked COMPLETED and unsold vehicle inventory unloaded back to MAIN warehouse!');
-      onSuccess();
-      onClose();
-    } catch (error: unknown) {
-      console.error('Complete delivery failed:', error);
-      const err = error as {
-        response?: {
-          data?: {
-            message?: string;
-            detail?: string;
-            title?: string;
-            errors?: Array<{ field: string; message: string }>;
-          };
-        };
-      };
-      const data = err?.response?.data;
-      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-        const errMsgs = data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
-        message.error(`Validation Error (${errMsgs})`);
-      } else {
-        message.error(data?.detail || data?.message || data?.title || 'Failed to complete delivery.');
-      }
-    } finally {
-      setCompletingDelivery(false);
-    }
-  };
 
   if (!loadingSheet) return null;
 
@@ -338,31 +305,35 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   return (
     <Modal
       title={
-        <div className="flex items-center gap-2 text-emerald-700 font-semibold text-lg">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          color: 'var(--color-primary)',
+          fontWeight: 600,
+          fontSize: '18px',
+        }}>
           <CarOutlined />
           <span>Unload to Shop & Payment Collection — Sheet #{loadingSheet.id}</span>
         </div>
       }
       open={visible}
       onCancel={onClose}
-      width={900}
-      footer={[
-        <Button key="close" onClick={onClose} disabled={completingDelivery}>
-          Close & Resume Later
-        </Button>,
-        <Button
-          key="complete"
-          type="primary"
-          icon={<CheckCircleOutlined />}
-          onClick={handleCompleteAllAndUnload}
-          loading={completingDelivery}
-          className="bg-emerald-600 hover:bg-emerald-700"
-        >
-          Complete Delivery & Return Unsold Stock to Warehouse
-        </Button>,
-      ]}
+      width={800}
+      footer={
+        recordingShopId ? null : (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '4px 0' }}>
+            <Button onClick={onClose}>
+              Close
+            </Button>
+          </div>
+        )
+      }
       mask={{ closable: false }}
       destroyOnHidden
+      styles={{
+        body: { paddingBottom: '8px' },
+      }}
     >
       <Form form={form} component={false}>
         {loading ? (
@@ -388,14 +359,23 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
             </div>
 
             <div className="space-y-4">
-              <Title level={5} className="text-slate-700 text-sm mb-2">1. Delivered Items</Title>
+              <div style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                color: 'var(--color-text-primary)',
+                marginBottom: '12px',
+                paddingBottom: '8px',
+                borderBottom: '1px solid var(--color-border-default)'
+              }}>
+                1. Delivered Items
+              </div>
             <Form.List name="items">
               {(fields) => (
                 <Table
                   dataSource={fields}
                   pagination={false}
                   size="small"
-                  className="mb-6 border rounded"
+                  className="mb-6"
                   columns={[
                     {
                       title: 'Product',
@@ -416,7 +396,9 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                             <Form.Item name={[field.name, 'isFreeItem']} hidden noStyle>
                               <Input />
                             </Form.Item>
-                            <Text strong>{items[field.name]?.productName}</Text>
+                            <span style={{ fontWeight: 500, color: 'var(--color-text-primary)', textTransform: 'capitalize' }}>
+                              {items[field.name]?.productName}
+                            </span>
                           </>
                         );
                       },
@@ -437,7 +419,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                       width: 130,
                       render: (_, field) => (
                         <Form.Item name={[field.name, 'rate']} noStyle>
-                          <InputNumber min={0} className="w-full" />
+                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
                         </Form.Item>
                       ),
                     },
@@ -447,40 +429,84 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                       width: 130,
                       render: (_, field) => (
                         <Form.Item name={[field.name, 'discountAmount']} noStyle>
-                          <InputNumber min={0} className="w-full" />
+                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
                         </Form.Item>
                       ),
+                    },
+                    {
+                      title: 'Total (Rs)',
+                      key: 'lineTotal',
+                      width: 140,
+                      align: 'right' as const,
+                      render: (_, field) => {
+                        const items = form.getFieldValue('items');
+                        const item = items?.[field.name] || {};
+                        const q = Number(item.quantityDelivered || 0);
+                        const r = Number(item.rate || 0);
+                        const d = Number(item.discountAmount || 0);
+                        const total = (q * r) - d;
+                        return (
+                          <span style={{
+                            fontFamily: 'var(--font-mono)',
+                            fontWeight: 600,
+                            color: 'var(--color-text-primary)',
+                            fontVariantNumeric: 'tabular-nums',
+                          }}>
+                            {total.toLocaleString()}
+                          </span>
+                        );
+                      },
                     },
                   ]}
                 />
               )}
             </Form.List>
 
-            <Divider className="my-4" />
-
-            <Title level={5} className="text-slate-700 text-sm mb-3">2. Payment Collection Breakdown (Cash / Cheque / Loan)</Title>
-            <Card className="bg-slate-50 border-slate-200 mb-4">
-              <Row gutter={16} className="mb-4">
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              marginBottom: '16px',
+              paddingBottom: '8px',
+              borderBottom: '1px solid var(--color-border-default)'
+            }}>
+              2. Payment Collection Breakdown (Cash / Cheque / Loan)
+            </div>
+            <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+              <Row gutter={16}>
                 <Col span={8}>
-                  <Form.Item name="cashAmount" label={<Text strong className="text-emerald-700">💵 Cash Amount (Rs)</Text>}>
-                    <InputNumber min={0} className="w-full" size="large" />
+                  <Form.Item name="cashAmount" label="Cash Amount (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item name="chequeAmount" label={<Text strong className="text-blue-700">🏦 Cheque Amount (Rs)</Text>}>
-                    <InputNumber min={0} className="w-full" size="large" />
+                  <Form.Item name="chequeAmount" label="Cheque Amount (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
                 <Col span={8}>
-                  <Form.Item name="loanAmount" label={<Text strong className="text-amber-700">📝 Loan / Credit (Rs)</Text>}>
-                    <InputNumber min={0} className="w-full" size="large" placeholder="Auto / Explicit credit" />
+                  <Form.Item name="loanAmount" label="Loan / Credit (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" placeholder="Auto / Explicit credit" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
               </Row>
 
               {Number(chequeVal) > 0 && (
-                <div className="bg-blue-50/60 p-4 rounded border border-blue-200 mt-2">
-                  <Text strong className="text-blue-800 block mb-2 text-xs">CHEQUE DETAILS REQUIRED</Text>
+                <div style={{
+                  background: 'var(--color-surface-subtle)',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '16px',
+                  marginTop: '8px'
+                }}>
+                  <div style={{
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: '12px'
+                  }}>
+                    Cheque Details
+                  </div>
                   <Row gutter={16}>
                     <Col span={8}>
                       <Form.Item name="chequeNo" label="Cheque No" rules={[{ required: true, message: 'Required' }]}>
@@ -502,16 +528,64 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
               )}
             </Card>
 
-            <div className="flex justify-between items-center bg-white p-4 rounded border border-slate-200 shadow-sm">
-              <div>
-                <Text type="secondary">Total Net Bill: </Text>
-                <Text strong className="text-lg mr-6">Rs. {calculateNetBill().toLocaleString()}</Text>
-                <Text type="secondary">Total Entered: </Text>
-                <Text strong className="text-lg text-emerald-600">
-                  Rs. {(Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0)).toLocaleString()}
-                </Text>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              background: 'var(--color-surface-subtle)',
+              border: '1px solid var(--color-border-default)',
+              borderRadius: 'var(--radius-md)',
+              padding: '16px',
+              marginTop: '24px'
+            }}>
+              <div aria-live="polite" role="status" style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                <div>
+                  <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Net Bill:</span>
+                  <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Rs. {calculateNetBill().toLocaleString()}
+                  </span>
+                </div>
+                
+                <div style={{ width: '1px', height: '24px', background: 'var(--color-border-default)' }} />
+                
+                {(() => {
+                  const netBill = calculateNetBill();
+                  const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
+                  const diff = netBill - entered;
+                  
+                  let statusColor;
+                  if (diff > 0) statusColor = 'var(--color-danger-text)';
+                  else if (diff < 0) statusColor = 'var(--color-warning-text)';
+                  else statusColor = 'var(--color-success-text)';
+                  
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div>
+                        <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Entered:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 600, color: statusColor }}>
+                          Rs. {entered.toLocaleString()}
+                        </span>
+                      </div>
+                      {diff !== 0 && (
+                        <span style={{ 
+                          fontSize: '13px', 
+                          fontWeight: 600, 
+                          color: statusColor,
+                          background: diff > 0 ? 'var(--color-danger-bg)' : 'var(--color-warning-bg)',
+                          padding: '4px 8px',
+                          borderRadius: '4px'
+                        }}>
+                          {diff > 0 ? `Short by Rs. ${diff.toLocaleString()}` : `Over by Rs. ${Math.abs(diff).toLocaleString()}`}
+                        </span>
+                      )}
+                      {diff === 0 && netBill > 0 && (
+                        <CheckCircleOutlined style={{ color: 'var(--color-success-text)', fontSize: '18px' }} />
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
-              <Space>
+              <Space size={12}>
                 <Button onClick={() => { setRecordingShopId(null); setActiveShop(null); }}>
                   Cancel
                 </Button>
@@ -520,7 +594,6 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   icon={<CheckCircleOutlined />}
                   onClick={handleSaveShopDelivery}
                   loading={submittingShop}
-                  className="bg-emerald-600 hover:bg-emerald-700"
                 >
                   Save Shop Delivery
                 </Button>
@@ -531,13 +604,27 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         ) : (
           // ─── SHOP LIST FOR THIS LOADING SHEET ──────────────────────────────
           <div className="py-2">
-            <div className="mb-4">
-              <Text type="secondary" className="block">
-                Driver: <Text strong>{loadingSheet.driverName || loadingSheet.driver?.name}</Text> | Rep Order: <Text strong>{repOrder?.orderNumber || `Order #${repOrder?.id || ''}`}</Text>
-              </Text>
-              <Text className="text-xs text-slate-500">
+            <div style={{ marginBottom: '20px' }}>
+              <div style={{
+                fontSize: '14px',
+                color: 'var(--color-text-secondary)',
+                marginBottom: '4px',
+              }}>
+                Driver: <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  {loadingSheet.driverName || loadingSheet.driver?.name}
+                </span>
+                {' | '}
+                Rep Order: <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                  {repOrder?.orderNumber || `Order #${repOrder?.id || ''}`}
+                </span>
+              </div>
+              <div style={{
+                fontSize: '13px',
+                color: 'var(--color-text-tertiary)',
+                lineHeight: 1.5,
+              }}>
                 Select each shop visited during this delivery round to record exact Cash, Cheque, and Loan figures.
-              </Text>
+              </div>
             </div>
 
             <Table
@@ -557,18 +644,46 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   ),
                 },
                 {
-                  title: 'Previous Outstanding Loan',
+                  title: 'Prev. Outstanding',
                   key: 'outstandingLoan',
-                  render: (_, r) => (
-                    <Text className="text-amber-700 font-medium">
-                      Rs. {Number(getOutstandingLoan(r)).toLocaleString()}
-                    </Text>
-                  ),
+                  align: 'right' as const,
+                  render: (_, r) => {
+                    const amount = Number(getOutstandingLoan(r));
+                    const isZero = amount === 0;
+                    return (
+                      <span style={{
+                        fontFamily: 'var(--font-mono)',
+                        fontSize: 'var(--text-sm)',
+                        fontVariantNumeric: 'tabular-nums',
+                        fontWeight: isZero ? 400 : 600,
+                        color: isZero
+                          ? 'var(--color-text-tertiary)'
+                          : 'var(--color-danger-text)',
+                      }}>
+                        Rs. {amount.toLocaleString()}
+                      </span>
+                    );
+                  },
                 },
                 {
-                  title: 'Items Count',
+                  title: 'Items',
                   key: 'itemsCount',
-                  render: (_, r) => <Tag color="blue">{r.items?.length || 0} Items</Tag>,
+                  align: 'center' as const,
+                  render: (_, r) => (
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      padding: '2px 8px',
+                      borderRadius: '4px',
+                      background: 'var(--color-primary-subtle)',
+                      color: 'var(--color-primary-text)',
+                      border: '1px solid var(--color-primary-border)',
+                    }}>
+                      {r.items?.length || 0} Items
+                    </span>
+                  ),
                 },
                 {
                   title: 'Delivery Status',
@@ -576,9 +691,42 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   render: (_, r) => {
                     const isDone = recordedShopIds.has(getShopId(r));
                     return isDone ? (
-                      <Tag color="success" icon={<CheckCircleOutlined />}>Unloaded & Recorded</Tag>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase' as const,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        lineHeight: '18px',
+                        background: 'var(--color-success-bg)',
+                        color: 'var(--color-success-text)',
+                        border: '1px solid var(--color-success-border)',
+                      }}>
+                        <CheckCircleOutlined style={{ fontSize: '11px' }} />
+                        DELIVERED
+                      </span>
                     ) : (
-                      <Tag color="default">Pending Unload</Tag>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        fontSize: '11px',
+                        fontWeight: 600,
+                        letterSpacing: '0.04em',
+                        textTransform: 'uppercase' as const,
+                        padding: '2px 8px',
+                        borderRadius: '4px',
+                        lineHeight: '18px',
+                        background: 'var(--color-warning-bg)',
+                        color: 'var(--color-warning-text)',
+                        border: '1px solid var(--color-warning-border)',
+                      }}>
+                        PENDING
+                      </span>
                     );
                   },
                 },
