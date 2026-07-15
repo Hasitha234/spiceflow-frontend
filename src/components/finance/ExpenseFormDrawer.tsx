@@ -89,8 +89,8 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
           <InputNumber
             style={{ width: '100%' }}
             formatter={(value) => `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value!.replace(/Rs\.\s?|(,*)/g, '')}
-            min={0}
+            parser={(value) => value!.replace(/Rs\.\s?|(,*)/g, '') as unknown as number}
+            min={0 as number}
           />
         </Form.Item>
 
