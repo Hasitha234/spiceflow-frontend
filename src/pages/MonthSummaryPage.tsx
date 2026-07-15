@@ -49,15 +49,16 @@ export function MonthSummaryPage() {
     loadData(selectedMonth);
   };
 
-  const handleDeleteExpense = async (id: number) => {
+  const handleDeleteExpense = useCallback(async (id: number) => {
     try {
       await financeApi.deleteExpense(id);
       message.success('Expense deleted');
       loadData(selectedMonth);
-    } catch (e: any) {
-      message.error(e.response?.data?.message || 'Failed to delete expense');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err.response?.data?.message || 'Failed to delete expense');
     }
-  };
+  }, [message, loadData, selectedMonth]);
 
   const expenseColumns = useMemo(
     () => [
@@ -94,7 +95,7 @@ export function MonthSummaryPage() {
         ),
       },
     ],
-    []
+    [handleDeleteExpense]
   );
 
   const breakdownColumns = [

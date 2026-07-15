@@ -26,17 +26,18 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
       if (onSuccess) onSuccess();
       onClose();
     },
-    onError: (error: any) => {
-      message.error(error.response?.data?.message || 'Failed to add expense');
+    onError: (error: unknown) => {
+      const e = error as { response?: { data?: { message?: string } } };
+      message.error(e.response?.data?.message || 'Failed to add expense');
     },
   });
 
-  const onFinish = (values: any) => {
+  const onFinish = (values: Record<string, unknown>) => {
     const data: ExpenseRequest = {
-      amount: values.amount,
-      category: values.category,
-      description: values.description,
-      date: values.date.format('YYYY-MM-DD'),
+      amount: values.amount as number,
+      category: values.category as string,
+      description: values.description as string | undefined,
+      date: (values.date as dayjs.Dayjs).format('YYYY-MM-DD'),
     };
     createExpenseMutation.mutate(data);
   };
