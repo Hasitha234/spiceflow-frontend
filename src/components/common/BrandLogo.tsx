@@ -1,4 +1,5 @@
 import React from 'react';
+import { useAgencyStore } from '@/store/agencyStore';
 
 interface BrandLogoProps {
   size?: number;
@@ -8,6 +9,7 @@ interface BrandLogoProps {
   badgeText?: string;
   stacked?: boolean;
   lightText?: boolean;
+  forceOriginalBranding?: boolean;
 }
 
 /**
@@ -24,7 +26,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   badgeText = 'ENTERPRISE',
   stacked = false,
   lightText = false,
+  forceOriginalBranding = false,
 }) => {
+  const { agencyLogo } = useAgencyStore();
+  const displayAgencyLogo = forceOriginalBranding ? null : agencyLogo;
+
   return (
     <div
       className={`brand-logo-container ${className}`}
@@ -38,79 +44,94 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         cursor: 'pointer',
       }}
     >
-      {/* 
-        The "Interlocking Ribbon B" — Sculpture-like architectural geometry
-        with subtle gradient shading and kinetic flow curves.
-      */}
-      <div
-        style={{
-          width: size,
-          height: size,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexShrink: 0,
-          position: 'relative',
-        }}
-      >
-        <svg
-          width={size}
-          height={size}
-          viewBox="0 0 100 100"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+      {/* If agencyLogo exists, show it instead of the SVG ribbon */}
+      {displayAgencyLogo ? (
+        <div
+          style={{
+            width: showText ? 220 : 60, // Fill available width in sidebar
+            height: 60, // Fill available height (header is 64px)
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-start',
+            flexShrink: 0,
+            position: 'relative',
+          }}
         >
-          <defs>
-            <linearGradient id="primaryRibbon" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#10b981" />
-              <stop offset="50%" stopColor="#059669" />
-              <stop offset="100%" stopColor="#047857" />
-            </linearGradient>
-            <linearGradient id="accentRibbon" x1="90" y1="10" x2="10" y2="90" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#10b981" />
-            </linearGradient>
-            <filter id="subtleShadow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#10b981" floodOpacity="0.25" />
-            </filter>
-          </defs>
+          <img src={displayAgencyLogo} alt="Agency Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'left center' }} />
+        </div>
+      ) : (
+        /* The "Interlocking Ribbon B" — Sculpture-like architectural geometry
+           with subtle gradient shading and kinetic flow curves. */
+        <div
+          style={{
+            width: size,
+            height: size,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+            position: 'relative',
+          }}
+        >
+          <svg
+            width={size}
+            height={size}
+            viewBox="0 0 100 100"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <linearGradient id="primaryRibbon" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#10b981" />
+                <stop offset="50%" stopColor="#059669" />
+                <stop offset="100%" stopColor="#047857" />
+              </linearGradient>
+              <linearGradient id="accentRibbon" x1="90" y1="10" x2="10" y2="90" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="100%" stopColor="#10b981" />
+              </linearGradient>
+              <filter id="subtleShadow" x="-20%" y="-20%" width="140%" height="140%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#10b981" floodOpacity="0.25" />
+              </filter>
+            </defs>
 
-          {/* Outer Rounded Container with subtle depth */}
-          <rect
-            x="8"
-            y="8"
-            width="84"
-            height="84"
-            rx="24"
-            fill="url(#primaryRibbon)"
-            filter="url(#subtleShadow)"
-          />
+            {/* Outer Rounded Container with subtle depth */}
+            <rect
+              x="8"
+              y="8"
+              width="84"
+              height="84"
+              rx="24"
+              fill="url(#primaryRibbon)"
+              filter="url(#subtleShadow)"
+            />
 
-          {/* Precision Architectural Weave — Interlocking 'B' & Data Flow */}
-          <path
-            d="M32 26 V74 M32 26 H56 C65 26 72 32 72 40 C72 47 67 51 58 52 C68 53 74 58 74 67 C74 76 66 82 56 82 H32"
-            stroke="#ffffff"
-            strokeWidth="10"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+            {/* Precision Architectural Weave — Interlocking 'B' & Data Flow */}
+            <path
+              d="M32 26 V74 M32 26 H56 C65 26 72 32 72 40 C72 47 67 51 58 52 C68 53 74 58 74 67 C74 76 66 82 56 82 H32"
+              stroke="#ffffff"
+              strokeWidth="10"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
 
-          {/* Kinetic Ascending Arrow / Portal Node */}
-          <path
-            d="M50 44 L60 52 L50 60"
-            stroke="#a7f3d0"
-            strokeWidth="8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+            {/* Kinetic Ascending Arrow / Portal Node */}
+            <path
+              d="M50 44 L60 52 L50 60"
+              stroke="#a7f3d0"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
 
-          {/* Paul Rand Focus Node */}
-          <circle cx="74" cy="26" r="5" fill="#fef08a" />
-        </svg>
-      </div>
+            {/* Paul Rand Focus Node */}
+            <circle cx="74" cy="26" r="5" fill="#fef08a" />
+          </svg>
+        </div>
+      )}
 
       {/* High-Taste Editorial Typography */}
-      {showText && (
+      {showText && !displayAgencyLogo && (
         <div
           style={{
             display: 'flex',

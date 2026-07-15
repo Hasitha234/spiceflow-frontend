@@ -186,7 +186,7 @@ export function LoginPage() {
         }}
       >
         <div>
-          <BrandLogo size={48} textSize={26} badgeText="" lightText={true} />
+          <BrandLogo size={48} textSize={26} badgeText="" lightText={true} forceOriginalBranding={true} />
         </div>
         <div style={{ maxWidth: '576px' }}>
           <h1 style={{ 

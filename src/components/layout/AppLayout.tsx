@@ -13,6 +13,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { BrandLogo } from '@/components/common/BrandLogo';
+import { useAgencyStore } from '@/store/agencyStore';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -56,6 +57,7 @@ export function AppLayout() {
   
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.clearAuth);
+  const { agencyName } = useAgencyStore();
   
   const { theme, toggleTheme } = useThemeStore();
 
@@ -157,7 +159,17 @@ export function AppLayout() {
           top: 0,
           zIndex: 10,
         }}>
+          {/* Centered Agency Name (like a header) */}
+          {agencyName && (
+            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
+              <Text style={{ fontWeight: 800, fontSize: '20px', color: '#10b981', letterSpacing: '-0.02em' }}>
+                {agencyName}
+              </Text>
+            </div>
+          )}
+
           <Space size="middle">
+
             {/* Theme Toggle */}
             <Button 
               type="text" 
