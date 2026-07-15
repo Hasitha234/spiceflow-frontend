@@ -2,11 +2,12 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
 import dayjs from 'dayjs';
 import { VehicleLoadingSheetsTab } from '../features/inventory/components/VehicleLoadingSheetsTab';
+import { WarehouseTypeBadge } from '../components/common/WarehouseTypeBadge';
 
 export function InventoryPage() {
   const { t } = useTranslation();
@@ -30,12 +31,33 @@ export function InventoryPage() {
 function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFunction }) {
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [loading, setLoading] = useState(true);
+  const [summaryMap, setSummaryMap] = useState<Record<string, { products: number; units: number; value: number }>>({});
 
   useEffect(() => {
     async function fetchWarehouses() {
       try {
         const res = await warehouseApi.list({ size: 100 });
-        setWarehouses(res?.content || []);
+        const whList = res?.content || [];
+        setWarehouses(whList);
+        
+        // Fetch summaries in a second pass
+        const newSummaryMap: Record<string, { products: number; units: number; value: number }> = {};
+        await Promise.all(
+          whList.map(async (wh) => {
+            try {
+              const itemsRes = await inventoryItemApi.list({ warehouseId: wh.id, size: 500 });
+              const data = itemsRes?.content || [];
+              newSummaryMap[wh.id] = {
+                products: data.length,
+                units: data.reduce((s, i) => s + i.quantityAvailable, 0),
+                value: data.reduce((s, i) => s + (i.quantityAvailable * (i.productBasePrice || 0)), 0),
+              };
+            } catch (err) {
+              console.error(`Failed to fetch items for warehouse ${wh.id}`, err);
+            }
+          })
+        );
+        setSummaryMap(newSummaryMap);
       } catch (error) {
         console.error('Failed to load warehouses', error);
       } finally {
@@ -45,17 +67,20 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
     fetchWarehouses();
   }, []);
 
-
-
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold m-0 text-slate-900">
+      <div className="mb-10">
+        <h2 style={{
+          fontSize: '28px',
+          fontWeight: 700,
+          letterSpacing: '-0.025em',
+          lineHeight: 1.2,
+          color: 'var(--color-text-primary)',
+          margin: 0,
+          marginBottom: '32px',
+        }}>
           {t('inventory.title', 'Inventory')}
         </h2>
-        <span className="text-slate-500 text-sm mt-2 block">
-          {t('inventory.warehouseGrid', 'Select a warehouse to view inventory.')}
-        </span>
       </div>
 
       {loading ? (
@@ -64,47 +89,105 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
         </div>
       ) : (
         <Row gutter={[24, 24]}>
-          {warehouses.map((wh) => (
-            <Col xs={24} sm={12} lg={8} key={wh.id}>
-              <Card
-                hoverable
-                onClick={() => onSelect(wh.id)}
-                styles={{ body: { padding: '24px' } }}
-                className="rounded-lg shadow-sm border border-slate-200 h-full cursor-pointer transition-all hover:border-emerald-600 hover:shadow-md group"
-              >
-                <div className="flex justify-between items-center h-full">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="m-0 text-lg font-semibold text-slate-900 leading-none">
-                        {wh.name}
-                      </h3>
-                      {wh.storeType === 'MAIN' && (
-                        <span className="px-2 py-0.5 text-[12px] font-semibold text-emerald-800 bg-emerald-100 rounded leading-none flex items-center">
-                          MAIN
+          {warehouses.map((wh) => {
+            const summary = summaryMap[wh.id];
+            return (
+              <Col xs={24} md={12} key={wh.id}>
+                <button
+                  type="button"
+                  onClick={() => onSelect(wh.id)}
+                  aria-label={`View inventory for ${wh.name}`}
+                  className="sf-focus-ring"
+                  style={{
+                    width: '100%',
+                    textAlign: 'left',
+                    background: 'none',
+                    padding: 0,
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div
+                    style={{
+                      background: 'var(--color-surface-default)',
+                      border: '1px solid var(--color-border-default)',
+                      borderLeft: `4px solid ${
+                        wh.storeType === 'MAIN' ? 'var(--color-primary)'
+                        : wh.storeType === 'VEHICLE' ? '#2563eb'
+                        : '#7c3aed'
+                      }`,
+                      borderRadius: '0 8px 8px 0',
+                      padding: '20px 24px',
+                      transition: 'box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1), border-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      boxShadow: 'var(--shadow-sm)',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-md)';
+                      (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border-strong)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLDivElement).style.boxShadow = 'var(--shadow-sm)';
+                      (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--color-border-default)';
+                    }}
+                  >
+                    {/* Header row: name + badge */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ color: 'var(--color-primary)', fontSize: '18px', lineHeight: 1 }}>
+                          {wh.storeType === 'VEHICLE' ? <CarOutlined /> : <ShopOutlined />}
                         </span>
-                      )}
-                      {wh.storeType === 'VEHICLE' && (
-                        <span className="px-2 py-0.5 text-[12px] font-semibold text-blue-800 bg-blue-100 rounded leading-none flex items-center">
-                          VEHICLE
+                        <span style={{
+                          fontSize: '16px',
+                          fontWeight: 700,
+                          color: 'var(--color-text-primary)',
+                          letterSpacing: '-0.01em',
+                          lineHeight: 1.2,
+                        }}>
+                          {wh.name}
                         </span>
-                      )}
-                      {wh.storeType === 'CUSTOM' && (
-                        <span className="px-2 py-0.5 text-[12px] font-semibold text-slate-800 bg-slate-100 rounded leading-none flex items-center">
-                          CUSTOM
-                        </span>
-                      )}
+                        <WarehouseTypeBadge storeType={wh.storeType} />
+                      </div>
+                      <ArrowRightOutlined aria-hidden="true" style={{ color: 'var(--color-text-tertiary)', fontSize: '13px' }} />
                     </div>
+
+                    {/* Summary stats row */}
+                    {summary ? (
+                      <div style={{ display: 'flex', gap: '20px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                          <strong style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                            {summary.products}
+                          </strong>
+                          {' '}products
+                        </span>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                          <strong style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                            {summary.units.toLocaleString()}
+                          </strong>
+                          {' '}units
+                        </span>
+                        <span style={{ fontSize: '13px', color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+                          Rs.{' '}
+                          <strong style={{ color: 'var(--color-text-primary)', fontWeight: 600 }}>
+                            {(summary.value / 1_000_000).toFixed(1)}M
+                          </strong>
+                          {' '}est. value
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ height: '18px', marginBottom: '12px' }}></div>
+                    )}
+
+                    {/* Location if present */}
                     {wh.location && (
-                      <span className="text-slate-500 text-sm block">
+                      <p style={{ fontSize: '12px', color: 'var(--color-text-tertiary)', margin: 0, lineHeight: 1.4 }}>
                         {wh.location}
-                      </span>
+                      </p>
                     )}
                   </div>
-                  <RightOutlined className="text-slate-400 transition-colors group-hover:text-emerald-600" />
-                </div>
-              </Card>
-            </Col>
-          ))}
+                </button>
+              </Col>
+            );
+          })}
         </Row>
       )}
     </div>
@@ -373,16 +456,36 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       key: 'quantityAvailable',
       align: 'right' as const,
       width: 110,
-      render: (qty: number) => <span className="font-mono text-xs font-semibold text-slate-900 tabular-nums bg-slate-50 px-2 py-1 rounded border border-slate-200/60">{qty ?? 0}</span>,
+      render: (qty: number) => (
+        <span style={{
+          fontFamily: 'var(--font-mono)',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 'var(--font-weight-semibold)',
+          color: 'var(--color-text-primary)',
+          fontVariantNumeric: 'tabular-nums',
+        }}>
+          {qty ?? 0}
+        </span>
+      ),
     },
     {
-      title: t('inventory.totalValue', 'Total Value (LKR)'),
+      title: t('inventory.totalValue', 'Est. Value (LKR)'),
       key: 'totalValue',
       align: 'right' as const,
-      width: 180,
+      width: 160,
       render: (_: unknown, record: InventoryItem) => {
         const val = record.quantityAvailable * (record.productBasePrice || 0);
-        return <span className="font-mono text-xs font-medium text-slate-700 tabular-nums">Rs. {Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+        return (
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontSize: 'var(--text-sm)',
+            fontWeight: 'var(--font-weight-semibold)',
+            color: 'var(--color-text-primary)',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            Rs. {Number(val || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        );
       }
     },
     {
@@ -393,7 +496,13 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       render: (_: unknown, record: InventoryItem) => (
         <Space>
           <Tooltip title={t('common.edit', 'Edit')}>
-            <Button type="text" icon={<EditOutlined className="text-emerald-600" />} onClick={() => handleOpenEditItem(record)} />
+            <Button
+              type="text"
+              icon={<EditOutlined style={{ color: 'var(--color-primary)' }} />}
+              onClick={() => handleOpenEditItem(record)}
+              aria-label={`Edit ${record.productName}`}
+              style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+            />
           </Tooltip>
           <Tooltip title={t('common.delete', 'Delete')}>
             <Popconfirm
@@ -402,7 +511,13 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
               okText="Yes"
               cancelText="No"
             >
-              <Button type="text" danger icon={<DeleteOutlined />} />
+              <Button
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+                aria-label={`Delete ${record.productName}`}
+                style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              />
             </Popconfirm>
           </Tooltip>
         </Space>
@@ -414,28 +529,55 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   return (
     <div className="p-6">
       {/* ─── TIER 1: PAGE CONTEXT & PRIMARY ACTION BAR ─────────────────────── */}
-      <div className="mb-6">
-        <div className="mb-2">
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ marginBottom: '16px' }}>
           <button 
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 h-8 px-2 -ml-2 rounded-md text-xs font-medium text-slate-500 hover:text-emerald-700 hover:bg-slate-100/80 transition-all focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none cursor-pointer"
+            className="sf-focus-ring"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 'var(--space-1)',
+              height: '32px',
+              padding: '0 var(--space-2)',
+              marginLeft: '-8px',
+              borderRadius: 'var(--radius-md)',
+              fontSize: 'var(--text-sm)',
+              fontWeight: 'var(--font-weight-medium)',
+              color: 'var(--color-text-secondary)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'color var(--transition-fast), background var(--transition-fast)',
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-primary)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'var(--color-surface-subtle)';
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLButtonElement).style.color = 'var(--color-text-secondary)';
+              (e.currentTarget as HTMLButtonElement).style.background = 'none';
+            }}
           >
-            <ArrowLeftOutlined className="text-[10px]" />
+            <ArrowLeftOutlined style={{ fontSize: '10px' }} />
             {t('inventory.backToWarehouses', 'Back to Warehouses')}
           </button>
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold tracking-tight text-slate-900 m-0">
+            <h1 style={{
+              fontSize: '28px',
+              fontWeight: 700,
+              letterSpacing: '-0.025em',
+              lineHeight: 1.2,
+              color: 'var(--color-text-primary)',
+              margin: 0,
+            }}>
               {warehouse?.name || '...'}
             </h1>
-            {warehouse && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200/80 uppercase">
-                {warehouse.storeType}
-              </span>
-            )}
+            {warehouse && <WarehouseTypeBadge storeType={warehouse.storeType} />}
           </div>
 
           <div className="flex items-center gap-2.5 self-start sm:self-auto ml-auto">
@@ -462,57 +604,67 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       </div>
 
       {/* ─── TIER 2: KPI SUMMARY CARDS ────────────────────────────────────── */}
-      <Row gutter={[16, 16]} className="w-full mb-6 mx-0">
+      <Row gutter={[24, 16]} className="w-full mx-0" style={{ marginBottom: '32px' }}>
         <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+          <Card styles={{ body: { padding: 'var(--space-5)' } }} style={{ border: '1px solid var(--color-primary-border)' }}>
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
-                  <AppstoreOutlined className="text-emerald-600" /> <span>{t('inventory.totalProducts', 'Total Products')}</span>
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <AppstoreOutlined style={{ color: 'var(--color-primary)' }} /> <span>{t('inventory.totalProducts', 'Total Products')}</span>
                 </div>
               }
               value={totalProducts}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
+              styles={{ content: { fontWeight: 600, fontSize: 'var(--text-2xl)', color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+          <Card styles={{ body: { padding: 'var(--space-5)' } }} style={{ border: '1px solid var(--color-primary-border)' }}>
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
-                  <ShoppingOutlined className="text-emerald-600" /> <span>{t('inventory.totalUnits', 'Total Units')}</span>
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <ShoppingOutlined style={{ color: 'var(--color-primary)' }} /> <span>{t('inventory.totalUnits', 'Total Units')}</span>
                 </div>
               }
               value={totalUnits}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
+              styles={{ content: { fontWeight: 600, fontSize: 'var(--text-2xl)', color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card styles={{ body: { padding: '24px' } }} className="rounded-lg shadow-sm border border-slate-200">
+          <Card styles={{ body: { padding: 'var(--space-5)' } }} style={{ border: '1px solid var(--color-primary-border)' }}>
             <Statistic
               title={
-                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500 mb-2">
-                  <DollarOutlined className="text-emerald-600" /> <span>{t('inventory.totalValue', 'Estimated Value (LKR)')}</span>
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-slate-500">
+                  <DollarOutlined style={{ color: 'var(--color-primary)' }} /> <span>{t('inventory.totalValue', 'Estimated Value (LKR)')}</span>
                 </div>
               }
               value={totalValue}
               precision={2}
-              styles={{ content: { fontWeight: 600, fontSize: '1.5rem', color: '#0f172a', fontVariantNumeric: 'tabular-nums' } }}
+              styles={{ content: { fontWeight: 600, fontSize: 'var(--text-2xl)', color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
       </Row>
 
       {/* ─── TIER 3: TABLE CONTROL TOOLBAR ────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 p-3 bg-white border border-slate-200/80 rounded-lg shadow-2xs">
-        <div className="flex items-center gap-3 flex-1 min-w-[280px] max-w-md">
+      <div style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: 'var(--space-3)',
+        marginBottom: 'var(--space-4)',
+        paddingBottom: 'var(--space-4)',
+        borderBottom: '1px solid var(--color-border-default)',
+      }}>
+        <div style={{ flex: 1 }}>
           <Input.Search
-            placeholder="Search by SKU or Product Name..."
+            placeholder="Search SKU or product name"
+            aria-label="Search inventory by SKU or product name"
             allowClear
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full"
+            style={{ width: '100%', maxWidth: '448px' }}
             size="middle"
           />
         </div>
@@ -528,7 +680,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
               { label: 'Out of Stock (0)', value: 'OUT_OF_STOCK' },
             ]}
           />
-          <Button icon={<ReloadOutlined />} onClick={fetchData} size="middle" className="text-slate-600 hover:text-slate-900 border-slate-300">
+          <Button icon={<ReloadOutlined />} onClick={fetchData} size="middle">
             Refresh
           </Button>
         </div>
@@ -557,7 +709,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 </span>
               ),
               children: (
-                <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden mt-3">
+                <Card styles={{ body: { padding: 0 } }} style={{ overflow: 'hidden', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-primary-border)' }} className="mt-3">
                   <Table
                     rowKey="id"
                     loading={loading}
@@ -595,7 +747,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           ]}
         />
       ) : (
-        <Card styles={{ body: { padding: 0 } }} className="rounded-lg shadow-sm border border-slate-200 overflow-hidden">
+        <Card styles={{ body: { padding: 0 } }} style={{ overflow: 'hidden', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--color-primary-border)' }}>
           <Table
             rowKey="id"
             loading={loading}
