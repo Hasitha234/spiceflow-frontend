@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, RightOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
 import dayjs from 'dayjs';
