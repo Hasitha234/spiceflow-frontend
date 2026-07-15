@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { useAgencyStore } from '@/store/agencyStore';
 
 interface BrandLogoProps {
@@ -29,9 +28,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   lightText = false,
   forceOriginalBranding = false,
 }) => {
-  const { agencyName, agencyLogo } = useAgencyStore();
-
-  const displayAgencyName = forceOriginalBranding ? null : agencyName;
+  const { agencyLogo } = useAgencyStore();
   const displayAgencyLogo = forceOriginalBranding ? null : agencyLogo;
 
   return (
@@ -51,16 +48,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {displayAgencyLogo ? (
         <div
           style={{
-            width: size,
-            height: size,
+            width: showText ? 220 : 60, // Fill available width in sidebar
+            height: 60, // Fill available height (header is 64px)
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'flex-start',
             flexShrink: 0,
             position: 'relative',
           }}
         >
-          <img src={displayAgencyLogo} alt="Agency Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          <img src={displayAgencyLogo} alt="Agency Logo" style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'left center' }} />
         </div>
       ) : (
         /* The "Interlocking Ribbon B" — Sculpture-like architectural geometry
@@ -134,7 +131,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       )}
 
       {/* High-Taste Editorial Typography */}
-      {showText && (
+      {showText && !displayAgencyLogo && (
         <div
           style={{
             display: 'flex',
@@ -143,45 +140,30 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             gap: stacked ? 4 : 8,
           }}
         >
-          {displayAgencyName ? (
+          <div style={{ display: 'flex', alignItems: 'baseline', letterSpacing: '-0.04em' }}>
             <span
               style={{
                 fontSize: textSize,
-                fontWeight: 700,
-                color: lightText ? '#a7f3d0' : '#10b981', // green color
+                fontWeight: 800,
+                color: lightText ? '#ffffff' : 'var(--text-primary)',
                 fontFamily: 'var(--font-sans)',
                 lineHeight: 1,
-                letterSpacing: '-0.02em',
               }}
             >
-              {displayAgencyName}
+              Buss
             </span>
-          ) : (
-            <div style={{ display: 'flex', alignItems: 'baseline', letterSpacing: '-0.04em' }}>
-              <span
-                style={{
-                  fontSize: textSize,
-                  fontWeight: 800,
-                  color: lightText ? '#ffffff' : 'var(--text-primary)',
-                  fontFamily: 'var(--font-sans)',
-                  lineHeight: 1,
-                }}
-              >
-                Buss
-              </span>
-              <span
-                style={{
-                  fontSize: textSize,
-                  fontWeight: 400,
-                  color: lightText ? '#cbd5e1' : 'var(--text-secondary)',
-                  fontFamily: 'var(--font-sans)',
-                  lineHeight: 1,
-                }}
-              >
-                Manager
-              </span>
-            </div>
-          )}
+            <span
+              style={{
+                fontSize: textSize,
+                fontWeight: 400,
+                color: lightText ? '#cbd5e1' : 'var(--text-secondary)',
+                fontFamily: 'var(--font-sans)',
+                lineHeight: 1,
+              }}
+            >
+              Manager
+            </span>
+          </div>
 
           {badgeText && (
             <span
