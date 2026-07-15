@@ -183,7 +183,7 @@ export const VehicleLoadingSheetsTab: React.FC<VehicleLoadingSheetsTabProps> = (
         visible={unloadModalVisible}
         loadingSheet={selectedSheet}
         onClose={() => setUnloadModalVisible(false)}
-        onSuccess={fetchLoadingSheets}
+
       />
 
       {/* Cancel Order Modal */}

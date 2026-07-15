@@ -23,7 +23,7 @@ import type { RepOrder } from '../types/sales';
 import { PermissionGuard } from '../components/common';
 import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 
 export function RepOrdersPage() {
   const navigate = useNavigate();

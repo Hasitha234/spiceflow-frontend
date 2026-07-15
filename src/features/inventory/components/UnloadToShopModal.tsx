@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, Tag, Divider, App, Spin, Row, Col } from 'antd';
+import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col } from 'antd';
 import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
@@ -22,14 +22,12 @@ interface UnloadToShopModalProps {
   visible: boolean;
   loadingSheet: LoadingSheet | null;
   onClose: () => void;
-  onSuccess: () => void;
 }
 
 export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   visible,
   loadingSheet,
   onClose,
-  onSuccess,
 }) => {
   const { message } = App.useApp();
   const [repOrder, setRepOrder] = useState<RepOrder | null>(null);
@@ -38,7 +36,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const [recordingShopId, setRecordingShopId] = useState<string | null>(null);
   const [activeShop, setActiveShop] = useState<ShopRowData | null>(null);
   const [submittingShop, setSubmittingShop] = useState(false);
-  const [completingDelivery, setCompletingDelivery] = useState(false);
+
   const [form] = Form.useForm();
 
   const getShopId = (row?: unknown): string => {
@@ -287,37 +285,6 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     }
   };
 
-  const handleCompleteAllAndUnload = async () => {
-    if (!activeDelivery) return;
-    try {
-      setCompletingDelivery(true);
-      await deliveryApi.complete(String(activeDelivery.id));
-      message.success('Delivery marked COMPLETED and unsold vehicle inventory unloaded back to MAIN warehouse!');
-      onSuccess();
-      onClose();
-    } catch (error: unknown) {
-      console.error('Complete delivery failed:', error);
-      const err = error as {
-        response?: {
-          data?: {
-            message?: string;
-            detail?: string;
-            title?: string;
-            errors?: Array<{ field: string; message: string }>;
-          };
-        };
-      };
-      const data = err?.response?.data;
-      if (data?.errors && Array.isArray(data.errors) && data.errors.length > 0) {
-        const errMsgs = data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
-        message.error(`Validation Error (${errMsgs})`);
-      } else {
-        message.error(data?.detail || data?.message || data?.title || 'Failed to complete delivery.');
-      }
-    } finally {
-      setCompletingDelivery(false);
-    }
-  };
 
   if (!loadingSheet) return null;
 
@@ -586,7 +553,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
                   const diff = netBill - entered;
                   
-                  let statusColor = 'var(--color-text-primary)';
+                  let statusColor;
                   if (diff > 0) statusColor = 'var(--color-danger-text)';
                   else if (diff < 0) statusColor = 'var(--color-warning-text)';
                   else statusColor = 'var(--color-success-text)';

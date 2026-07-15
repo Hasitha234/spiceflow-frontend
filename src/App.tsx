@@ -11,7 +11,6 @@ import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Route-level code splitting via lazyWithRetry (auto-recovers from stale chunks after deploy)
 const LoginPage = lazyWithRetry(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
-const DashboardPage = lazyWithRetry(() => import('./pages/DashboardPage').then((m) => ({ default: m.DashboardPage })));
 const DaySummaryPage = lazyWithRetry(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
 const WarehousesPage = lazyWithRetry(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
 const DriversPage = lazyWithRetry(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
@@ -24,10 +23,6 @@ const RepOrdersPage = lazyWithRetry(() => import('./pages/RepOrdersPage').then((
 const CreateRepOrderPage = lazyWithRetry(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
 const LoadingSheetsPage = lazyWithRetry(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
 const DeliveriesPage = lazyWithRetry(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
-const ReportsPage = lazyWithRetry(() => import('./pages/ReportsPage').then((m) => ({ default: m.ReportsPage })));
-const UsersPage = lazyWithRetry(() => import('./pages/UsersPage').then((m) => ({ default: m.UsersPage })));
-const RolesPage = lazyWithRetry(() => import('./pages/RolesPage').then((m) => ({ default: m.RolesPage })));
-const EndOfDaySummaryPage = lazyWithRetry(() => import('./pages/EndOfDaySummaryPage').then((m) => ({ default: m.EndOfDaySummaryPage })));
 const QrScanPage = lazyWithRetry(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
 const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, Col, DatePicker, Form, Modal, Row, Select, Table, Tag, Tooltip, Typography, App, Space, Descriptions, Dropdown, Input,
+  Button, Card, DatePicker, Form, Modal, Select, Table, Tag, Typography, App, Descriptions, Dropdown, Input,
 } from 'antd';
 import {
   PlusOutlined, CheckCircleOutlined, EyeOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined, MoreOutlined, ReloadOutlined,
@@ -445,7 +445,7 @@ export function LoadingSheetsPage() {
         visible={unloadOpen}
         loadingSheet={selectedSheet as any}
         onClose={() => setUnloadOpen(false)}
-        onSuccess={loadData}
+
       />
 
       <CancelOrderModal
