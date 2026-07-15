@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card, Typography, Skeleton, ConfigProvider } from 'antd';
+import React, { useState } from 'react';
+import { Card, Typography, Skeleton, ConfigProvider, Modal, Input, Button, Upload, message } from 'antd';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,12 +12,16 @@ import {
   CarOutlined,
   ShopOutlined,
   WarningOutlined,
+  SettingOutlined,
+  UploadOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { useGetProducts } from '@/api/generated/products/products';
 import { useGetCategories } from '@/api/generated/product-categories/product-categories';
 import { useGetSuppliers } from '@/api/generated/suppliers/suppliers';
 import { useGetAllWarehouses } from '@/api/generated/warehouses/warehouses';
 import { useGetReps, useGetDrivers, useGetShops } from '@/api/generated/sales-master-data/sales-master-data';
+import { useAgencyStore } from '@/store/agencyStore';
 
 const { Title, Text } = Typography;
 
@@ -26,19 +30,29 @@ interface CategoryCardProps {
   id: string;
   title: string;
   icon: React.ReactNode;
-  createLink: string;
+  createLink?: string;
+  onClick?: () => void;
   count?: number;
-  isLoading: boolean;
-  isError: boolean;
+  isLoading?: boolean;
+  isError?: boolean;
+  hideCount?: boolean;
 }
 
-function CategoryCard({ title, icon, createLink, count, isLoading, isError }: CategoryCardProps) {
+function CategoryCard({ title, icon, createLink, onClick, count, isLoading, isError, hideCount }: CategoryCardProps) {
   const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (createLink) {
+      navigate(createLink);
+    }
+  };
 
   return (
     <Card 
       hoverable
-      onClick={() => navigate(createLink)}
+      onClick={handleClick}
       style={{ 
         cursor: 'pointer',
         borderRadius: 'var(--radius-lg)',
@@ -57,29 +71,31 @@ function CategoryCard({ title, icon, createLink, count, isLoading, isError }: Ca
         </Text>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        <AnimatePresence mode="wait">
-          {isLoading && (
-            <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Skeleton.Button active size="small" style={{ height: '16px', width: '32px', minWidth: '32px' }} />
-            </motion.div>
-          )}
+      {!hideCount && (
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <AnimatePresence mode="wait">
+            {isLoading && (
+              <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                <Skeleton.Button active size="small" style={{ height: '16px', width: '32px', minWidth: '32px' }} />
+              </motion.div>
+            )}
 
-          {!isLoading && !isError && (
-            <motion.div key="count" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <Text style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
-                {count || 0}
-              </Text>
-            </motion.div>
-          )}
+            {!isLoading && !isError && (
+              <motion.div key="count" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                <Text style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
+                  {count || 0}
+                </Text>
+              </motion.div>
+            )}
 
-          {isError && (
-            <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-              <WarningOutlined style={{ color: 'var(--color-danger)', fontSize: '1rem' }} title="Couldn't load count" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            {isError && (
+              <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+                <WarningOutlined style={{ color: 'var(--color-danger)', fontSize: '1rem' }} title="Couldn't load count" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </Card>
   );
 }
@@ -94,9 +110,100 @@ const getCount = (data: any) => {
   return 0;
 };
 
+// --- Agency Settings Modal ---
+function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const { agencyName, agencyLogo, setAgencyName, setAgencyLogo } = useAgencyStore();
+  const [nameInput, setNameInput] = useState(agencyName || '');
+  const [logoInput, setLogoInput] = useState<string | null>(agencyLogo);
+
+  // Sync inputs when modal opens
+  React.useEffect(() => {
+    if (open) {
+      setNameInput(agencyName || '');
+      setLogoInput(agencyLogo);
+    }
+  }, [open, agencyName, agencyLogo]);
+
+  const handleSave = () => {
+    setAgencyName(nameInput.trim() || null);
+    setAgencyLogo(logoInput);
+    message.success('Agency branding updated successfully!');
+    onClose();
+  };
+
+  const handleLogoUpload = (file: File) => {
+    // Check file size (max 500KB)
+    if (file.size > 500 * 1024) {
+      message.error('Logo must be smaller than 500KB');
+      return false;
+    }
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setLogoInput(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+    return false; // Prevent default upload
+  };
+
+  return (
+    <Modal
+      title={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <SettingOutlined style={{ color: '#0F9D6C' }} />
+          <span>Agency Profile Settings</span>
+        </div>
+      }
+      open={open}
+      onCancel={onClose}
+      onOk={handleSave}
+      okText="Save Changes"
+      destroyOnClose
+    >
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
+        <div>
+          <Text strong style={{ display: 'block', marginBottom: '8px' }}>Agency Name</Text>
+          <Input 
+            placeholder="Enter agency name" 
+            value={nameInput} 
+            onChange={(e) => setNameInput(e.target.value)} 
+          />
+        </div>
+        
+        <div>
+          <Text strong style={{ display: 'block', marginBottom: '8px' }}>Agency Logo</Text>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <Upload 
+              accept="image/png, image/jpeg, image/svg+xml" 
+              showUploadList={false} 
+              beforeUpload={handleLogoUpload}
+            >
+              <Button icon={<UploadOutlined />}>Upload Logo</Button>
+            </Upload>
+            {logoInput && (
+              <Button danger type="text" icon={<DeleteOutlined />} onClick={() => setLogoInput(null)}>
+                Remove
+              </Button>
+            )}
+          </div>
+          {logoInput && (
+            <div style={{ marginTop: '12px', border: '1px solid #d9d9d9', borderRadius: '8px', padding: '16px', display: 'inline-block', background: '#f5f5f5' }}>
+              <img src={logoInput} alt="Preview" style={{ maxHeight: '64px', maxWidth: '200px', objectFit: 'contain' }} />
+            </div>
+          )}
+          <div style={{ marginTop: '8px' }}>
+            <Text type="secondary" style={{ fontSize: '12px' }}>Supported formats: PNG, JPG, SVG. Max size: 500KB.</Text>
+          </div>
+        </div>
+      </div>
+    </Modal>
+  );
+}
+
+
 // --- Main Page ---
 export function SettingsPage() {
   const { t } = useTranslation();
+  const [isAgencyModalOpen, setIsAgencyModalOpen] = useState(false);
 
   // Fetch only 1 item to minimize payload size since we just need the count
   const queryParams = { pageable: { size: 1 } };
@@ -140,6 +247,23 @@ export function SettingsPage() {
           </Text>
         </div>
 
+        <Title level={4} style={{ marginBottom: '16px' }}>Application Configuration</Title>
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
+          gap: '16px',
+          marginBottom: '32px'
+        }}>
+          <CategoryCard 
+            id="agency-profile"
+            title="Agency Profile"
+            icon={<SettingOutlined />}
+            onClick={() => setIsAgencyModalOpen(true)}
+            hideCount
+          />
+        </div>
+
+        <Title level={4} style={{ marginBottom: '16px' }}>Master Data</Title>
         <div style={{ 
           display: 'grid', 
           gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', 
@@ -159,6 +283,7 @@ export function SettingsPage() {
           ))}
         </div>
         
+        <AgencySettingsModal open={isAgencyModalOpen} onClose={() => setIsAgencyModalOpen(false)} />
       </div>
     </ConfigProvider>
   );
