@@ -8,7 +8,7 @@ const { Title, Text } = Typography;
 interface ShopQrModalProps {
   open: boolean;
   onClose: () => void;
-  shop: { id?: number; name: string; area?: string; route?: string } | null;
+  shop: { id?: number; name?: string; area?: string; route?: string } | null;
   qrPayload?: string | null;
 }
 
@@ -36,7 +36,7 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
       
       const pngFile = canvas.toDataURL('image/png');
       const downloadLink = document.createElement('a');
-      downloadLink.download = `QR_${shop.name.replace(/\\s+/g, '_')}.png`;
+      downloadLink.download = `QR_${shop.name?.replace(/\s+/g, '_') || 'Shop'}.png`;
       downloadLink.href = `${pngFile}`;
       downloadLink.click();
     };
@@ -53,7 +53,7 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
     printWindow.document.write(`
       <html>
         <head>
-          <title>Print QR Code - ${shop.name}</title>
+          <title>Print QR Code - ${shop.name || ''}</title>
           <style>
             body { 
               font-family: system-ui, -apple-system, sans-serif;
@@ -82,7 +82,7 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
         </head>
         <body>
           <div class="card">
-            <h1>${shop.name}</h1>
+            <h1>${shop.name || ''}</h1>
             <p>${shop.area || ''} ${shop.route ? `• ${shop.route}` : ''}</p>
             ${svgData}
             <p style="margin-top: 16px; font-size: 12px; color: #999;">SpiceFlow Shop ID: ${shop.id}</p>
@@ -109,7 +109,7 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
       centered
     >
       <div className="flex flex-col items-center justify-center p-4">
-        <Title level={4} className="!mb-1 text-center">{shop.name}</Title>
+        <Title level={4} className="!mb-1 text-center">{shop.name || ''}</Title>
         <Space className="text-slate-400 mb-6">
           <EnvironmentOutlined />
           <Text type="secondary">{shop.area} {shop.route ? `(${shop.route})` : ''}</Text>
