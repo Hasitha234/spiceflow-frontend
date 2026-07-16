@@ -4,6 +4,7 @@ import {
   Button,
   Card,
   Col,
+  Input,
   Row,
   Table,
   Tag,
@@ -20,7 +21,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { repOrderApi } from '../api/sales';
 import type { RepOrder } from '../types/sales';
-import { PermissionGuard } from '../components/common';
+import { PermissionGuard, PageLayout, PageHeader, DataTable } from '../components/common';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -31,6 +32,17 @@ export function RepOrdersPage() {
   const [loading, setLoading] = useState(false);
   const [orders, setOrders] = useState<RepOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<RepOrder | null>(null);
+  const [searchText, setSearchText] = useState('');
+
+  const filteredOrders = useMemo(() => {
+    if (!searchText) return orders;
+    const lower = searchText.toLowerCase();
+    return orders.filter(
+      (o) =>
+        o.orderNumber?.toLowerCase().includes(lower) ||
+        o.repName?.toLowerCase().includes(lower)
+    );
+  }, [orders, searchText]);
 
   const loadData = async () => {
     setLoading(true);
@@ -54,14 +66,14 @@ export function RepOrdersPage() {
         title: 'Order No',
         dataIndex: 'orderNumber',
         key: 'orderNumber',
-        render: (val: string) => <span className="font-mono text-emerald-500 font-semibold">{val || '—'}</span>,
+        render: (val: string) => <span className="font-mono font-semibold" style={{ color: 'var(--color-primary)' }}>{val || '—'}</span>,
       },
       {
         title: 'Rep',
         key: 'rep',
         render: (_: unknown, record: RepOrder) => (
-          <span className="font-medium text-slate-200">
-            {record.repName || '—'}
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            {record.repName || <span style={{ color: 'var(--color-text-disabled)', fontStyle: 'italic' }}>Unassigned</span>}
           </span>
         ),
       },
@@ -69,20 +81,40 @@ export function RepOrdersPage() {
         title: 'Order Date',
         dataIndex: 'orderDate',
         key: 'orderDate',
-        render: (val: string) => <span className="text-slate-300">{val ? dayjs(val).format('YYYY-MM-DD') : '—'}</span>,
+        render: (val: string) => (
+          <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+            {val ? dayjs(val).format('YYYY-MM-DD') : <span style={{ color: 'var(--color-text-disabled)' }}>—</span>}
+          </span>
+        ),
       },
       {
         title: 'Route Area',
         dataIndex: 'routeArea',
         key: 'routeArea',
+        render: (val: string) => val ? (
+          <span style={{ color: 'var(--color-text-primary)' }}>{val}</span>
+        ) : (
+          <span style={{ color: 'var(--color-text-disabled)' }}>—</span>
+        ),
       },
       {
         title: 'Status',
         dataIndex: 'status',
         key: 'status',
         render: (status: string) => {
-          const color = status === 'CONFIRMED' || status === 'COMPLETED' ? 'green' : 'orange';
-          return <Tag color={color}>{status || 'DRAFT'}</Tag>;
+          const isConfirmed = status === 'CONFIRMED' || status === 'COMPLETED';
+          return (
+            <Tag
+              className="m-0 font-medium"
+              style={{
+                background: isConfirmed ? 'var(--color-success-subtle)' : 'var(--color-warning-subtle)',
+                color: isConfirmed ? 'var(--color-success-text)' : 'var(--color-warning-text)',
+                borderColor: isConfirmed ? 'var(--color-success-border)' : 'var(--color-warning-border)',
+              }}
+            >
+              {status || 'DRAFT'}
+            </Tag>
+          );
         },
       },
       {
@@ -91,7 +123,7 @@ export function RepOrdersPage() {
         key: 'netAmount',
         align: 'right' as const,
         render: (val: number) => (
-          <span className="font-mono text-slate-100 font-semibold">
+          <span className="font-mono font-semibold" style={{ color: 'var(--color-text-primary)' }}>
             {Number(val || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         ),
@@ -107,7 +139,8 @@ export function RepOrdersPage() {
               size="small"
               icon={<EyeOutlined />}
               onClick={() => setSelectedOrder(record)}
-              className="!text-blue-400 hover:!text-blue-300"
+              style={{ color: 'var(--color-text-tertiary)' }}
+              className="hover:text-emerald-500 transition-colors"
             />
           </Tooltip>
         ),
@@ -117,38 +150,39 @@ export function RepOrdersPage() {
   );
 
   return (
-    <div className="p-6">
-      <Row justify="space-between" align="middle" style={{ marginBottom: '32px' }}>
-        <Col>
-          <div>
-            <Title level={3} className="!m-0">
-              {t('repOrder.repOrder', 'Rep Orders')}
-            </Title>
+    <PageLayout>
+      <PageHeader
+        title={t('repOrder.repOrder', 'Rep Orders')}
+        breadcrumbs={[{ title: 'Sales', href: '/sales' }, { title: 'Rep Orders' }]}
+        extra={
+          <div className="flex items-center gap-3">
+            <Input.Search
+              placeholder="Search orders..."
+              allowClear
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 280 }}
+            />
+            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_REP', 'ROLE_SALES_MANAGER']}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => navigate('/sales/new')}
+                className="font-medium"
+              >
+                New Rep Order
+              </Button>
+            </PermissionGuard>
           </div>
-        </Col>
-        <Col>
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_REP', 'ROLE_SALES_MANAGER']}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate('/sales/new')}
-              className="font-medium h-10 px-5"
-            >
-              New Rep Order
-            </Button>
-          </PermissionGuard>
-        </Col>
-      </Row>
+        }
+      />
 
-      <Card className="shadow-xl rounded-xl overflow-hidden">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={orders}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-        />
-      </Card>
+      <DataTable
+        rowKey="id"
+        isLoading={loading}
+        dataSource={filteredOrders}
+        columns={columns}
+      />
 
       <Modal
         title={
@@ -226,6 +260,6 @@ export function RepOrdersPage() {
           </div>
         )}
       </Modal>
-    </div>
+    </PageLayout>
   );
 }
