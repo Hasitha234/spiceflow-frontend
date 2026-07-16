@@ -31,7 +31,7 @@ export const adminApi = {
   // Users
   createUser: (data: CreateUserPayload): Promise<AdminUser> => 
     customInstance({ url: '/api/v1/admin/tenants/users', method: 'POST', data }),
-  getUsers: (params?: any): Promise<{ content: AdminUser[], totalElements: number }> => 
+  getUsers: (params?: Record<string, unknown>): Promise<{ content: AdminUser[], totalElements: number }> => 
     customInstance({ url: '/api/v1/admin/tenants/users', method: 'GET', params }),
   getUser: (id: number): Promise<AdminUser> => 
     customInstance({ url: `/api/v1/admin/tenants/users/${id}`, method: 'GET' }),
@@ -45,13 +45,13 @@ export const adminApi = {
     customInstance({ url: `/api/v1/admin/tenants/users/${userId}/tenants/${tenantId}`, method: 'DELETE' }),
 
   // Tenants
-  createTenant: (data: any): Promise<AdminTenant> => 
+  createTenant: (data: Record<string, unknown>): Promise<AdminTenant> => 
     customInstance({ url: '/api/v1/admin/tenants', method: 'POST', data }),
-  getTenants: (params?: any): Promise<{ content: AdminTenant[], totalElements: number }> => 
+  getTenants: (params?: Record<string, unknown>): Promise<{ content: AdminTenant[], totalElements: number }> => 
     customInstance({ url: '/api/v1/admin/tenants', method: 'GET', params }),
   getTenant: (id: number): Promise<AdminTenant> => 
     customInstance({ url: `/api/v1/admin/tenants/${id}`, method: 'GET' }),
-  updateTenant: (id: number, data: any): Promise<AdminTenant> => 
+  updateTenant: (id: number, data: Record<string, unknown>): Promise<AdminTenant> => 
     customInstance({ url: `/api/v1/admin/tenants/${id}`, method: 'PUT', data }),
   deleteTenant: (id: number): Promise<void> => 
     customInstance({ url: `/api/v1/admin/tenants/${id}`, method: 'DELETE' }),
@@ -59,6 +59,6 @@ export const adminApi = {
     customInstance({ url: `/api/v1/admin/tenants/${id}/status`, method: 'PATCH', data }),
 
   // Business Types
-  getBusinessTypes: (): Promise<any[]> =>
+  getBusinessTypes: (): Promise<Record<string, unknown>[]> =>
     customInstance({ url: '/api/v1/admin/business-types', method: 'GET' }),
 };

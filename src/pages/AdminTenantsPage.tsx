@@ -11,7 +11,7 @@ const { Option } = Select;
 export function AdminTenantsPage() {
   const { message, modal } = App.useApp();
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
-  const [businessTypes, setBusinessTypes] = useState<any[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [editingTenant, setEditingTenant] = useState<AdminTenant | null>(null);
@@ -27,7 +27,8 @@ export function AdminTenantsPage() {
       ]);
       setTenants(tenantsRes.content);
       setBusinessTypes(typesRes);
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       message.error('Failed to load agencies');
     } finally {
       setLoading(false);
@@ -36,7 +37,7 @@ export function AdminTenantsPage() {
 
   useEffect(() => {
     fetchTenants();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openCreate = () => {
     setEditingTenant(null);
@@ -52,9 +53,9 @@ export function AdminTenantsPage() {
     adminApi.getTenant(tenant.id).then(details => {
       form.setFieldsValue({
         businessName: details.businessName,
-        businessTypeId: (details as any).businessTypeId,
+        businessTypeId: (details as Record<string, unknown>).businessTypeId,
         status: details.status,
-        plan: (details as any).plan || 'BASIC',
+        plan: (details as Record<string, unknown>).plan || 'BASIC',
       });
       setDrawerVisible(true);
     }).catch(() => {
@@ -62,7 +63,7 @@ export function AdminTenantsPage() {
     });
   };
 
-  const handleCreateOrUpdate = async (values: any) => {
+  const handleCreateOrUpdate = async (values: Record<string, unknown>) => {
     try {
       if (editingTenant) {
         await adminApi.updateTenant(editingTenant.id, values);
@@ -73,8 +74,9 @@ export function AdminTenantsPage() {
       }
       setDrawerVisible(false);
       fetchTenants();
-    } catch (e: any) {
-      message.error(e.response?.data?.detail || 'Operation failed');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      message.error(err.response?.data?.detail || 'Operation failed');
     }
   };
 
@@ -90,7 +92,8 @@ export function AdminTenantsPage() {
           await adminApi.updateTenantStatus(tenant.id, { status: newStatus });
           message.success(`Agency ${action.toLowerCase()}d successfully`);
           fetchTenants();
-        } catch (e) {
+        } catch (error) {
+          console.error(error);
           message.error('Operation failed');
         }
       }
@@ -120,7 +123,7 @@ export function AdminTenantsPage() {
       key: 'contactEmail',
       // In getTenants, the email is sometimes returned directly or as contactEmail. 
       // AdminTenant interface says contactEmail, but backend might return email.
-      render: (text: string, record: any) => text || record.email,
+      render: (text: string, record: Record<string, unknown>) => text || (record.email as string),
     },
     {
       title: 'Status',
@@ -143,7 +146,7 @@ export function AdminTenantsPage() {
     {
       title: 'Action',
       key: 'action',
-      render: (_: any, record: AdminTenant) => (
+      render: (_: unknown, record: AdminTenant) => (
         <Space size="middle">
           <Button type="text" icon={<EditOutlined />} onClick={() => openEdit(record)} />
           <Button 

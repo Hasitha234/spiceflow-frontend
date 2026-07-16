@@ -30,8 +30,8 @@ export function AdminUsersPage() {
       ]);
       setUsers(userRes.content);
       setTenants(tenantRes.content);
-    } catch (e) {
-      console.error(e);
+    } catch (_e) {
+      console.error(_e);
       message.error('Failed to load data');
     } finally {
       setLoading(false);
@@ -40,7 +40,7 @@ export function AdminUsersPage() {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreateOrUpdate = async (values: CreateUserPayload) => {
     try {
@@ -53,8 +53,9 @@ export function AdminUsersPage() {
       }
       setDrawerVisible(false);
       fetchUsers();
-    } catch (e: any) {
-      message.error(e.response?.data?.detail || 'Operation failed');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      message.error(err.response?.data?.detail || 'Operation failed');
     }
   };
 
@@ -69,7 +70,7 @@ export function AdminUsersPage() {
     form.setFieldsValue({
       email: user.email,
       name: user.name,
-      userType: user.userType as any,
+      userType: user.userType as 'TENANT_OWNER' | 'DATA_ENTRY' | 'DRIVER',
       tenantId: user.tenantId,
     });
     setDrawerVisible(true);
@@ -82,8 +83,9 @@ export function AdminUsersPage() {
       message.success('Tenant assigned successfully');
       tenantForm.resetFields();
       fetchUsers();
-    } catch (e: any) {
-      message.error(e.response?.data?.detail || 'Assignment failed');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      message.error(err.response?.data?.detail || 'Assignment failed');
     }
   };
 
@@ -93,8 +95,9 @@ export function AdminUsersPage() {
       await adminApi.removeTenant(selectedBusinessOwner.id, tenantId);
       message.success('Tenant removed');
       fetchUsers();
-    } catch (e: any) {
-      message.error(e.response?.data?.detail || 'Removal failed');
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { detail?: string } } };
+      message.error(err.response?.data?.detail || 'Removal failed');
     }
   };
 
@@ -106,7 +109,7 @@ export function AdminUsersPage() {
         setSelectedBusinessOwner(updatedUser);
       }
     }
-  }, [users]);
+  }, [users]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleDelete = async (id: number) => {
     try {
@@ -147,7 +150,7 @@ export function AdminUsersPage() {
     {
       title: 'Agencies / Access',
       key: 'access',
-      render: (_: any, record: AdminUser) => {
+      render: (_: unknown, record: AdminUser) => {
         if (record.userType === 'PLATFORM_ADMIN') return <Text type="secondary">Global</Text>;
         if (record.userType === 'TENANT_OWNER') {
           return (
@@ -178,7 +181,7 @@ export function AdminUsersPage() {
     {
       title: 'Action',
       key: 'action',
-      render: (_: any, record: AdminUser) => (
+      render: (_: unknown, record: AdminUser) => (
         <Space size="middle">
           <Button type="text" icon={<EditOutlined />} onClick={() => openEdit(record)} />
           <Popconfirm
