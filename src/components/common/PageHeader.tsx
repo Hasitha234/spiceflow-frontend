@@ -30,20 +30,20 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             className="mb-2"
             items={breadcrumbs.map((item) => ({
               title: item.href ? (
-                <Link to={item.href} className="text-slate-500 hover:text-emerald-500 transition-colors">
+                <Link to={item.href} style={{ color: 'var(--color-text-tertiary)' }} className="hover:text-emerald-500 transition-colors">
                   {item.title}
                 </Link>
               ) : (
-                <span className="text-slate-500 font-medium">{item.title}</span>
+                <span className="font-medium" style={{ color: 'var(--color-text-tertiary)' }}>{item.title}</span>
               ),
             }))}
           />
         )}
-        <Title level={2} className="!mb-0 !text-slate-100 font-bold tracking-tight">
+        <Title level={2} className="!mb-0 font-bold tracking-tight" style={{ color: 'var(--color-text-primary)' }}>
           {title}
         </Title>
         {subtitle && (
-          <Text className="text-slate-400 text-sm mt-1 block">
+          <Text className="text-sm mt-1 block" style={{ color: 'var(--color-text-secondary)' }}>
             {subtitle}
           </Text>
         )}

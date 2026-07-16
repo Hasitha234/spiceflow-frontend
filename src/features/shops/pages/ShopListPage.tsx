@@ -1,14 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Button } from 'antd';
+import { Button, Input } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import {
   PageLayout,
   PageHeader,
-  FilterPanel,
   ErrorState,
   PermissionGuard,
 } from '@/components/common';
-import type { FilterDef } from '@/components/common';
 import type { ShopResponse } from '@/api/generated';
 import { useTableState } from '@/hooks/useTableState';
 import { useShopList } from '../hooks/useShopList';
@@ -45,27 +43,7 @@ export function ShopListPage() {
   // Data fetching via Orval + React Query
   const { data, isLoading, isError, error, isFetching } = useShopList(shopQueryParams);
 
-  // Filter configuration
-  const filterDefs: FilterDef[] = useMemo(
-    () => [
-      {
-        type: 'search' as const,
-        key: 'q',
-        placeholder: 'Search shops by name, route, or area...',
-      },
-    ],
-    [],
-  );
 
-  const filterValues: Record<string, string> = {
-    q: tableState.search,
-  };
-
-  const handleFilterChange = (key: string, value: string | null) => {
-    if (key === 'q') {
-      setSearch(value ?? '');
-    }
-  };
 
   const handleEdit = (shop: ShopResponse) => {
     setEditingShop(shop);
@@ -82,10 +60,6 @@ export function ShopListPage() {
       <PageLayout>
         <PageHeader
           title="Shops & Customers"
-          breadcrumbs={[
-            { title: 'Distribution', href: '/shops' },
-            { title: 'Shops' },
-          ]}
         />
         <ErrorState
           title="Failed to load shops"
@@ -101,36 +75,36 @@ export function ShopListPage() {
     <PageLayout>
       <PageHeader
         title="Shops & Customers"
-        subtitle={`${data?.totalElements ?? 0} registered customer location${(data?.totalElements ?? 0) === 1 ? '' : 's'}`}
-        breadcrumbs={[
-          { title: 'Distribution', href: '/shops' },
-          { title: 'Shops' },
-        ]}
+        subtitle={`${data?.totalElements ?? 0} registered shop${(data?.totalElements ?? 0) === 1 ? '' : 's'}`}
         extra={
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setEditingShop(null);
-                setDrawerOpen(true);
-              }}
-              className="bg-emerald-600 hover:bg-emerald-500 border-none shadow-lg shadow-emerald-900/30 font-medium"
-            >
-              Register Shop
-            </Button>
-          </PermissionGuard>
+          <div className="flex items-center gap-3">
+            {(data?.totalElements ?? 0) > 0 && (
+              <Input.Search
+                placeholder="Search shops..."
+                value={tableState.search}
+                onChange={(e) => setSearch(e.target.value)}
+                allowClear
+                style={{ width: 280 }}
+              />
+            )}
+            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setEditingShop(null);
+                  setDrawerOpen(true);
+                }}
+                className="font-medium"
+              >
+                Register Shop
+              </Button>
+            </PermissionGuard>
+          </div>
         }
       />
 
-      {(data?.totalElements ?? 0) > 0 && (
-        <FilterPanel
-          filters={filterDefs}
-          values={filterValues}
-          onChange={handleFilterChange}
-          onReset={resetFilters}
-        />
-      )}
+
 
       <ShopTable
         data={data?.content ?? []}
