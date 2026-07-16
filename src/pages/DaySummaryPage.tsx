@@ -126,9 +126,6 @@ export function DaySummaryPage() {
     return repOrders.filter(o => o.status !== 'DRAFT').length;
   }, [repOrders]);
 
-  const deliveryTotalSales = useMemo(() => {
-    return deliveries.reduce((sum, d) => sum + Number((d as unknown as { totalSalesValue?: number }).totalSalesValue || 0), 0);
-  }, [deliveries]);
 
   const deliveryTotalCollected = useMemo(() => {
     return deliveries.reduce((sum, d) => sum + Number((d as unknown as { totalCollectedAmount?: number }).totalCollectedAmount || 0), 0);
