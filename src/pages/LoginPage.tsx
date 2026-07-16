@@ -11,7 +11,7 @@
  * and impossible to enter invalid states.
  */
 
-import React, { useReducer, useRef } from 'react';
+import React, { useReducer, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EyeOutlined, EyeInvisibleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { BrandLogo } from '@/components/common/BrandLogo';
@@ -100,6 +100,7 @@ export function LoginPage() {
   
   const navigate = useNavigate();
   const setCredentials = useAuthStore((s) => s.setCredentials);
+  const [isLockedOut, setIsLockedOut] = useState(false);
 
   // Client-side validation
   const validateEmail = (value: string) => {
@@ -162,6 +163,12 @@ export function LoginPage() {
         assignedTenants: decoded.assignedTenants,
       };
       
+      if (user.tenantStatus === 'EXPIRED' || user.tenantStatus === 'DISABLED') {
+        setIsLockedOut(true);
+        dispatch({ type: 'SUBMIT_ERROR', error: '' });
+        return;
+      }
+      
       setCredentials(response, user);
       dispatch({ type: 'SUBMIT_SUCCESS' });
       
@@ -191,6 +198,55 @@ export function LoginPage() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100%', fontFamily: 'sans-serif', userSelect: 'none' }}>
+      
+      {/* Lockout Overlay */}
+      {isLockedOut && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            padding: '40px',
+            borderRadius: '16px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            maxWidth: '480px',
+            width: '90%',
+            textAlign: 'center',
+            border: '1px solid #E5E7EB'
+          }}>
+            <h3 style={{ fontSize: '24px', fontWeight: 700, color: '#111827', marginBottom: '16px', marginTop: 0 }}>
+              සැලසුම කල් ඉකුත් වී ඇත
+            </h3>
+            <p style={{ fontSize: '18px', color: '#4B5563', lineHeight: 1.6, marginBottom: '32px' }}>
+              ඔබගේ මාසික සැලසුම අවසන් වී ඇත, කරුණාකර ඉදිරියට යාමට ගෙවීමක් කරන්න.
+            </p>
+            <button
+              onClick={() => setIsLockedOut(false)}
+              style={{
+                backgroundColor: '#0F9D6C',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* LEFT PANEL */}
       <div 
         className="login-hero-panel"
