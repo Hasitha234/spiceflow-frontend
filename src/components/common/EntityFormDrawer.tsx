@@ -23,12 +23,11 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
 }) => {
   return (
     <Drawer
-      title={<span className="text-slate-100 font-semibold text-lg">{title}</span>}
+      title={<span className="font-semibold text-lg" style={{ color: 'var(--color-text-primary)' }}>{title}</span>}
       size="large"
       onClose={onClose}
       open={open}
       destroyOnHidden
-      className="!bg-slate-900 !text-slate-200"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '8px 0' }}>
           <Button onClick={onClose} disabled={loading} style={{ borderRadius: 'var(--radius-md)' }}>
