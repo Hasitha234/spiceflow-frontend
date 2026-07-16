@@ -153,7 +153,6 @@ export function RepOrdersPage() {
     <PageLayout>
       <PageHeader
         title={t('repOrder.repOrder', 'Rep Orders')}
-        breadcrumbs={[{ title: 'Sales', href: '/sales' }, { title: 'Rep Orders' }]}
         extra={
           <div className="flex items-center gap-3">
             <Input.Search
