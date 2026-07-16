@@ -83,7 +83,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
       size="large"
       open={open}
       onClose={onClose}
-      destroyOnClose
+      destroyOnHidden
       maskClosable={!isSubmitting}
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', padding: '4px 0' }}>

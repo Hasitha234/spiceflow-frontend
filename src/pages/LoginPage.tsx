@@ -18,6 +18,7 @@ import { BrandLogo } from '@/components/common/BrandLogo';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '@/api/auth';
 import { useAuthStore } from '@/store/authStore';
+import { useTenantStore } from '@/store/tenantStore';
 import { jwtDecode } from 'jwt-decode';
 import type { AuthUser } from '@/types/auth';
 
@@ -141,23 +142,40 @@ export function LoginPage() {
         password: state.values.password 
       });
       
-      const decoded = jwtDecode<{
-        sub: string;
-        roles: string[];
-        permissions: string[];
+      const decoded = jwtDecode<{ 
+        sub: string; 
+        roles: string[]; 
+        permissions: string[]; 
+        userType?: string;
         tenantId?: number;
+        tenantStatus?: string;
+        assignedTenants?: { id: number; businessName: string; status?: string }[];
       }>(response.accessToken);
       
       const user: AuthUser = {
         email: decoded.sub,
         roles: decoded.roles || [],
         permissions: decoded.permissions || [],
+        userType: decoded.userType,
         tenantId: decoded.tenantId,
+        tenantStatus: decoded.tenantStatus,
+        assignedTenants: decoded.assignedTenants,
       };
       
       setCredentials(response, user);
       dispatch({ type: 'SUBMIT_SUCCESS' });
-      navigate('/');
+      
+      if (user.tenantId) {
+        useTenantStore.getState().setTenantId(user.tenantId);
+      }
+      
+      if (user.userType === 'PLATFORM_ADMIN') {
+        navigate('/admin/dashboard');
+      } else if (user.userType === 'TENANT_OWNER') {
+        navigate('/select-agency');
+      } else {
+        navigate('/');
+      }
     } catch (error: unknown) {
       console.error('Login failed:', error);
       let msg = 'Incorrect email or password';

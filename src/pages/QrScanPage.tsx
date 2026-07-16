@@ -132,7 +132,7 @@ export function QrScanPage() {
 
   return (
     <div style={{ padding: '24px', maxWidth: '600px', margin: '0 auto' }}>
-      <Space direction="vertical" style={{ width: '100%' }} size="large">
+      <Space orientation="vertical" style={{ width: '100%' }} size="large">
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
           <QrcodeOutlined style={{ fontSize: '48px', color: '#10b981', marginBottom: '12px' }} />
           <Title level={3} style={{ margin: 0 }}>Shop QR Verification</Title>
@@ -141,7 +141,7 @@ export function QrScanPage() {
 
         {!verified ? (
           <Card style={{ borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <Space direction="vertical" style={{ width: '100%' }} size="middle">
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
               <div>
                 <Text strong>Delivery ID (Optional)</Text>
                 <InputNumber onFocus={(e) => e.target.select()}

@@ -456,7 +456,7 @@ export function CreatePurchasePage() {
               </div>
             ) : catalogStatus === 'loading' ? (
               <div style={{ padding: '24px' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                   <Skeleton.Input active block size="large" />
                   <Skeleton.Input active block size="large" />
                   <Skeleton.Input active block size="large" />

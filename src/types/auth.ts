@@ -16,7 +16,10 @@ export interface AuthUser {
   email: string;
   roles: string[];
   permissions: string[];
+  userType?: string;
   tenantId?: number;
+  tenantStatus?: string;
+  assignedTenants?: { id: number; businessName: string; status?: string }[];
 }
 
 export interface Role {

@@ -157,7 +157,7 @@ function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => 
       onCancel={onClose}
       onOk={handleSave}
       okText="Save Changes"
-      destroyOnClose
+      destroyOnHidden
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
         <div>

@@ -27,7 +27,7 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
       size="large"
       onClose={onClose}
       open={open}
-      destroyOnClose
+      destroyOnHidden
       className="!bg-slate-900 !text-slate-200"
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '8px 0' }}>
