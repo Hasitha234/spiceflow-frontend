@@ -59,13 +59,24 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       dataIndex: 'name',
       key: 'name',
       sorter: true,
-      width: 250,
       ellipsis: true,
       render: (name: string, record: ShopResponse) => (
         <div>
-          <div className="font-medium text-slate-900">{name}</div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{name}</span>
+            {!record.isActive && (
+              <Tag color="default" className="m-0" style={{ fontSize: 'var(--text-xs)' }}>Inactive</Tag>
+            )}
+            {record.latitude && record.longitude && (
+              <Tooltip title={`${record.latitude}, ${record.longitude}`}>
+                <EnvironmentOutlined style={{ color: 'var(--color-success-text)' }} className="cursor-help" />
+              </Tooltip>
+            )}
+          </div>
           {record.ownerName && (
-            <div className="text-sm text-slate-500">Owner: {record.ownerName}</div>
+            <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
+              Owner: {record.ownerName}
+            </div>
           )}
         </div>
       ),
@@ -75,8 +86,12 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       key: 'routeArea',
       render: (_: unknown, record: ShopResponse) => (
         <div>
-          <div className="font-medium text-slate-900">{record.route || 'No Route'}</div>
-          <div className="text-sm text-slate-500">{record.area || '—'}</div>
+          <div className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            {record.route || <span style={{ color: 'var(--color-text-disabled)' }}>—</span>}
+          </div>
+          <div className="text-sm" style={{ color: 'var(--color-text-tertiary)' }}>
+            {record.area || ''}
+          </div>
         </div>
       ),
     },
@@ -84,69 +99,67 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       title: 'Phone',
       dataIndex: 'phone',
       key: 'phone',
-      render: (phone?: string) => (
-        <span className="text-slate-300 font-mono text-sm">{phone || '—'}</span>
-      ),
+      width: 130,
+      render: (phone?: string) => {
+        if (!phone) return <span style={{ color: 'var(--color-text-disabled)' }}>—</span>;
+        const formatted = phone.replace(/^(\d{3})(\d{3})(\d{4})$/, '$1 $2 $3');
+        return (
+          <span
+            className="text-sm"
+            style={{ fontFamily: 'var(--font-mono)', color: 'var(--color-text-secondary)' }}
+          >
+            {formatted}
+          </span>
+        );
+      },
     },
     {
       title: 'Assigned Rep',
       dataIndex: 'assignedRepName',
       key: 'assignedRepName',
-      width: 160,
-      render: (repName?: string) => (
-        <Tag className="bg-slate-800 border-slate-700 text-slate-300 m-0">
-          {repName || 'Unassigned'}
-        </Tag>
-      ),
+      width: 150,
+      render: (repName?: string) => {
+        if (!repName) {
+          return <span style={{ color: 'var(--color-text-disabled)', fontStyle: 'italic' }}>Unassigned</span>;
+        }
+        return (
+          <Tag className="m-0" style={{
+            background: 'var(--color-primary-subtle)',
+            borderColor: 'var(--color-primary-border)',
+            color: 'var(--color-primary-text)',
+          }}>
+            {repName}
+          </Tag>
+        );
+      },
     },
     {
       title: 'Outstanding Loan',
       dataIndex: 'outstandingLoan',
       key: 'outstandingLoan',
-      width: 160,
+      width: 140,
       align: 'right',
-      render: (loan?: number) => (
-        <span className={`font-mono font-medium ${loan && loan > 0 ? 'text-amber-400' : 'text-slate-400'}`}>
-          LKR {(loan ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-        </span>
-      ),
-    },
-    {
-      title: 'GPS',
-      key: 'gps',
-      width: 110,
-      align: 'center',
-      render: (_: unknown, record: ShopResponse) => {
-        if (record.latitude && record.longitude) {
-          return (
-            <Tooltip title={`${record.latitude}, ${record.longitude}`}>
-              <Tag color="success" className="m-0 cursor-help">
-                <EnvironmentOutlined className="mr-1" />
-                Set
-              </Tag>
-            </Tooltip>
-          );
+      render: (loan?: number) => {
+        if (!loan || loan === 0) {
+          return <span style={{ color: 'var(--color-text-disabled)' }}>—</span>;
         }
-        return <span className="text-slate-500 text-xs">Unset</span>;
+        return (
+          <span style={{
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 'var(--font-weight-medium)' as string,
+            fontVariantNumeric: 'tabular-nums',
+            color: 'var(--color-warning-text)',
+          }}>
+            LKR {loan.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          </span>
+        );
       },
     },
-    {
-      title: 'Status',
-      dataIndex: 'isActive',
-      key: 'isActive',
-      width: 110,
-      align: 'center',
-      render: (active?: boolean) => (
-        <Tag color={active ? 'emerald' : 'default'} className="m-0">
-          {active ? 'Active' : 'Inactive'}
-        </Tag>
-      ),
-    },
+
     {
       title: 'Actions',
       key: 'actions',
-      width: 140,
-      fixed: 'right' as const,
+      width: 120,
       render: (_: unknown, record: ShopResponse) => (
         <Space size="small">
           <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
@@ -156,7 +169,8 @@ export const ShopTable: React.FC<ShopTableProps> = ({
                 size="small"
                 icon={<QrcodeOutlined />}
                 onClick={() => handleShowQr(record)}
-                className="text-slate-400 hover:text-emerald-500 transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                className="hover:text-emerald-500 transition-colors"
               />
             </Tooltip>
             <Tooltip title="Edit">
@@ -165,7 +179,8 @@ export const ShopTable: React.FC<ShopTableProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(record)}
-                className="text-slate-400 hover:text-emerald-500 transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                className="hover:text-emerald-500 transition-colors"
               />
             </Tooltip>
             <Tooltip title="Delete">
@@ -174,7 +189,8 @@ export const ShopTable: React.FC<ShopTableProps> = ({
                 size="small"
                 icon={<DeleteOutlined />}
                 onClick={() => setDeleteTarget(record)}
-                className="text-slate-400 hover:text-red-500 transition-colors"
+                style={{ color: 'var(--color-text-tertiary)' }}
+                className="hover:text-red-500 transition-colors"
               />
             </Tooltip>
           </PermissionGuard>
@@ -221,7 +237,6 @@ export const ShopTable: React.FC<ShopTableProps> = ({
           showTotal: (t, range) => `${range[0]}–${range[1]} of ${t} shop${t === 1 ? '' : 's'}`,
         }}
         onChange={handleTableChange as never}
-        scroll={{ x: 'max-content' }}
       />
 
       <ConfirmDeleteDialog
