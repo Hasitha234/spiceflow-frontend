@@ -57,8 +57,9 @@ export function QrScanPage() {
       } else {
         message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
       }
-    } catch (err: any) {
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to verify QR code');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to verify QR code');
     } finally {
       setIsLoading(false);
     }
@@ -92,8 +93,9 @@ export function QrScanPage() {
       });
       message.success('Order cancelled successfully');
       setCompletedSheets(prev => ({ ...prev, [sheet.deliveryId]: true }));
-    } catch (err: any) {
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to cancel order');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to cancel order');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +108,7 @@ export function QrScanPage() {
       const values = await form.validateFields();
       setSubmitting(true);
 
-      const items = (values.items || []).map((item: any) => ({
+      const items = (values.items || []).map((item: { productId: string | number; quantityDelivered: string | number; unitType: string; rate: string | number; discountAmount: string | number; }) => ({
         productId: Number(item.productId),
         quantityDelivered: Number(item.quantityDelivered || 0),
         unitType: item.unitType || 'EACH',
@@ -137,9 +139,10 @@ export function QrScanPage() {
       message.success(`Delivery recorded for ${shop.shopName}`);
       setDrawerOpen(false);
       setCompletedSheets(prev => ({ ...prev, [selectedSheet.deliveryId]: true }));
-    } catch (err: any) {
-      if (err.errorFields) return;
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to record delivery');
+    } catch (err: unknown) {
+      const e = err as { errorFields?: unknown; response?: { data?: { detail?: string; message?: string } } };
+      if (e.errorFields) return;
+      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to record delivery');
     } finally {
       setSubmitting(false);
     }

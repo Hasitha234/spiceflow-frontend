@@ -57,9 +57,9 @@ export const QrCameraScanner: React.FC<QrCameraScannerProps> = ({
       );
       setHasCameraPermission(true);
       setIsScanning(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setHasCameraPermission(false);
-      message.error(err?.message || 'Failed to start camera');
+      message.error((err as Error)?.message || 'Failed to start camera');
       setIsScanning(false);
     }
   };

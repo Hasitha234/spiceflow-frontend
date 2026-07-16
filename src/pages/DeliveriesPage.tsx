@@ -94,7 +94,7 @@ export function DeliveriesPage() {
           if (v.qrScannedAt) visitMap[String(v.shopId)] = v.qrScannedAt;
         });
         setQrVisits(visitMap);
-      } catch (err) {
+      } catch {
         console.warn('Could not load QR visits for delivery');
       }
 

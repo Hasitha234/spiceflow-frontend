@@ -44,7 +44,7 @@ export const ShopTable: React.FC<ShopTableProps> = ({
         setSelectedShop(shop);
         setQrModalOpen(true);
       }
-    } catch (err) {
+    } catch {
       message.error('Failed to load QR code for this shop');
     }
   };

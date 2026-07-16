@@ -69,7 +69,7 @@ export const ShopFormDrawer: React.FC<ShopFormDrawerProps> = ({
           setNewlyCreatedShop(createdShop);
           setQrModalOpen(true);
         }
-      } catch (err) {
+      } catch {
         message.error('Failed to load QR code for the new shop');
       }
     } 

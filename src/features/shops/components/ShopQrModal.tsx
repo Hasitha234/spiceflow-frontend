@@ -8,7 +8,7 @@ const { Title, Text } = Typography;
 interface ShopQrModalProps {
   open: boolean;
   onClose: () => void;
-  shop: any | null;
+  shop: { id?: number; name: string; area?: string; route?: string } | null;
   qrPayload?: string | null;
 }
 

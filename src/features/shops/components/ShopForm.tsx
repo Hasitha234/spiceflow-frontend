@@ -23,20 +23,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
   const [tempLat, setTempLat] = useState<number | null>(null);
   const [tempLng, setTempLng] = useState<number | null>(null);
 
-  // Auto-trigger GPS capture when creating a new shop
-  React.useEffect(() => {
-    if (!isEditing && !getValues('latitude') && !getValues('longitude')) {
-      handleGetGpsLocation(true);
-    }
-  }, [isEditing, getValues]);
-
-  const handleOpenMapModal = () => {
-    setTempLat(getValues('latitude') ?? 6.927079);
-    setTempLng(getValues('longitude') ?? 79.861244);
-    setMapModalOpen(true);
-  };
-
-  const handleGetGpsLocation = (silent = false) => {
+  const handleGetGpsLocation = React.useCallback((silent = false) => {
     if (!navigator.geolocation) {
       if (!silent) message.error('Geolocation is not supported by your browser');
       return;
@@ -57,7 +44,22 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
         if (!silent) message.error(`Unable to retrieve location: ${error.message}`);
       }
     );
+  }, [setValue]);
+
+  // Auto-trigger GPS capture when creating a new shop
+  React.useEffect(() => {
+    if (!isEditing && !getValues('latitude') && !getValues('longitude')) {
+      handleGetGpsLocation(true);
+    }
+  }, [isEditing, getValues, handleGetGpsLocation]);
+
+  const handleOpenMapModal = () => {
+    setTempLat(getValues('latitude') ?? 6.927079);
+    setTempLng(getValues('longitude') ?? 79.861244);
+    setMapModalOpen(true);
   };
+
+
 
   const handleConfirmCoordinates = () => {
     setValue('latitude', tempLat, { shouldValidate: true, shouldDirty: true });
