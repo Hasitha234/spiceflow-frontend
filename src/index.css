@@ -250,6 +250,55 @@ body {
   background: linear-gradient(135deg, var(--color-primary) 0%, var(--brand-400) 100%);
 }
 
+/* --------------------------------------------------------------------------
+   Day Summary Components
+   -------------------------------------------------------------------------- */
+
+/* KPI stat cards */
+.sf-stat-card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.sf-stat-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.sf-stat-card .ant-statistic-title {
+  color: var(--color-text-secondary) !important;
+  font-size: var(--text-sm) !important;
+  font-weight: var(--font-weight-medium) !important;
+  line-height: var(--line-height-snug) !important;
+}
+
+.sf-stat-card .ant-statistic-content {
+  font-family: var(--font-sans) !important;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-2xl) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  line-height: var(--line-height-tight) !important;
+}
+
+/* Summary page collapsible sections */
+.sf-summary-sections .ant-collapse-item {
+  border-radius: var(--radius-lg) !important;
+  border: 1px solid var(--color-border-default) !important;
+  margin-bottom: var(--space-4) !important;
+  overflow: hidden;
+  background: var(--color-surface-default) !important;
+}
+
+.sf-summary-sections .ant-collapse-header {
+  padding: var(--space-4) var(--space-5) !important;
+  align-items: center !important;
+}
+
+.sf-summary-sections .ant-collapse-content-box {
+  padding: 0 var(--space-5) var(--space-5) !important;
+}
+}
+
 .gradient-surface {
   background: linear-gradient(180deg, var(--color-surface-default) 0%, var(--color-bg-app) 100%);
 }

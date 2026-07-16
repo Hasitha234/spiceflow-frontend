@@ -55,6 +55,7 @@ function ThemedApp() {
           // Text
           colorText:         currentTheme === 'dark' ? '#f1f5f9' : '#0f172a',
           colorTextSecondary: currentTheme === 'dark' ? '#94a3b8' : '#475569',
+          colorTextDescription: currentTheme === 'dark' ? '#94a3b8' : '#475569',
           colorTextDisabled:  currentTheme === 'dark' ? '#475569' : '#94a3b8',
       
           // Semantic

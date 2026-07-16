@@ -1,12 +1,66 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, App, Space, Button, Tooltip, Modal, Descriptions, Empty } from 'antd';
-import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined, CreditCardOutlined, ShopOutlined } from '@ant-design/icons';
+import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, App, Space, Button, Tooltip, Modal, Descriptions, Collapse } from 'antd';
+import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined, CreditCardOutlined, ShopOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi, repOrderApi, deliveryApi, reportApi } from '../api/sales';
 import type { Purchase, RepOrder, RepOrderShop, Delivery, DeliveryShop, EndOfDaySummary } from '../types/sales';
 
 const { Title, Text } = Typography;
+
+function CompactEmpty({ message }: { message: string }) {
+  return (
+    <div
+      className="flex items-center justify-center gap-2 py-6 text-sm"
+      style={{ color: 'var(--color-text-tertiary)' }}
+    >
+      <FileTextOutlined style={{ fontSize: 14, opacity: 0.5 }} />
+      <span>{message}</span>
+    </div>
+  );
+}
+
+function SectionHeader({ icon, title, count, summaryStats }: {
+  icon: React.ReactNode;
+  title: string;
+  count: number;
+  summaryStats?: { label: string; value: string; color?: string }[];
+}) {
+  return (
+    <div className="flex items-center justify-between w-full">
+      <div className="flex items-center gap-2">
+        <span style={{ color: 'var(--color-text-tertiary)' }}>{icon}</span>
+        <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{title}</span>
+        <span className={`
+          inline-flex items-center justify-center
+          min-w-[20px] h-5 px-1.5 rounded-full text-xs font-medium
+          ${count > 0
+            ? 'bg-[var(--color-success-bg)] text-[var(--color-success-text)]'
+            : 'bg-[var(--color-neutral-100)] text-[var(--color-text-tertiary)]'
+          }
+        `}>
+          {count}
+        </span>
+      </div>
+      {summaryStats && count > 0 && (
+        <div className="flex gap-6 text-sm">
+          {summaryStats.map((stat) => (
+            <div key={stat.label} className="flex gap-1.5">
+              <span style={{ color: 'var(--color-text-tertiary)' }}>{stat.label}:</span>
+              <span
+                className="font-semibold tabular-nums"
+                style={{ color: stat.color || 'var(--color-text-primary)' }}
+              >
+                {stat.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 export function DaySummaryPage() {
   const { message } = App.useApp();
@@ -281,71 +335,115 @@ export function DaySummaryPage() {
     [t]
   );
 
+  const hasData = {
+    cheques: (summaryData?.chequeDetails || []).length > 0,
+    cancelled: (summaryData?.cancelledOrders || []).length > 0,
+    purchases: purchases.length > 0,
+    repOrders: repOrders.length > 0,
+    deliveries: deliveries.length > 0,
+  };
+
+  const defaultActiveKeys = [
+    hasData.cheques && 'cheques',
+    hasData.cancelled && 'cancelled',
+    hasData.purchases && 'purchases',
+    hasData.repOrders && 'repOrders',
+    hasData.deliveries && 'deliveries',
+  ].filter(Boolean) as string[];
+
   return (
     <div style={{ padding: '24px' }}>
       {/* Header */}
       <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
         <Col>
           <Space>
-            <div style={{ padding: '12px', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '12px' }}>
-              <FileTextOutlined style={{ fontSize: '24px', color: '#10b981' }} />
+            <div style={{ padding: '12px', backgroundColor: 'var(--color-primary-subtle)', borderRadius: '12px' }}>
+              <FileTextOutlined style={{ fontSize: '24px', color: 'var(--color-primary)' }} />
             </div>
             <div>
-              <Title level={3} style={{ margin: 0 }}>{t('daySummary.pageTitle', 'Day Summary & Financial Audit')}</Title>
-              <Text type="secondary">{t('daySummary.pageSubtitle', 'Comprehensive daily breakdown of cash, cheques, purchases, rep orders, and deliveries')}</Text>
+              <Title level={3} style={{ margin: 0 }}>{t('daySummary.pageTitle', 'Daily Overview')}</Title>
             </div>
           </Space>
         </Col>
         <Col>
-          <DatePicker
-            size="large"
-            value={selectedDate}
-            onChange={(date) => date && setSelectedDate(date)}
-            allowClear={false}
-            style={{ width: '200px' }}
-          />
+          <Space>
+            <Button
+              type="text"
+              icon={<LeftOutlined />}
+              onClick={() => setSelectedDate(prev => prev.subtract(1, 'day'))}
+              aria-label="Previous day"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            />
+            <DatePicker
+              size="large"
+              value={selectedDate}
+              onChange={(date) => date && setSelectedDate(date)}
+              allowClear={false}
+              style={{ width: '180px' }}
+            />
+            <Button
+              type="text"
+              icon={<RightOutlined />}
+              onClick={() => setSelectedDate(prev => prev.add(1, 'day'))}
+              aria-label="Next day"
+              style={{ color: 'var(--color-text-tertiary)' }}
+            />
+            <Button
+              size="small"
+              onClick={() => setSelectedDate(dayjs())}
+              className="text-xs"
+            >
+              Today
+            </Button>
+          </Space>
         </Col>
       </Row>
 
       {/* Summary Cards Row 1: Primary Income & Collections */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={12} lg={6}>
-          <Card style={{ borderRadius: '12px', borderTop: '4px solid #10b981' }}>
+          <Card className="sf-stat-card" style={{ borderTop: '3px solid var(--color-success)' }}>
             <Statistic
-              title={t('daySummary.totalCashCollected', 'Total Cash Collected')}
+              title={t('daySummary.totalCashCollected', 'Cash Collected')}
               value={fmt(summaryData?.totalCashCollected || 0)}
               prefix={<DollarOutlined />}
-              styles={{ content: { color: '#10b981', fontFamily: 'monospace' } }}
+              styles={{ content: { color: 'var(--color-success)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card style={{ borderRadius: '12px', borderTop: '4px solid #1677ff' }}>
+          <Card className="sf-stat-card" style={{ borderTop: '3px solid var(--color-success)' }}>
             <Statistic
               title={t('daySummary.chequesReceived', 'Cheques Received')}
               value={fmt(summaryData?.totalChequeAmount || 0)}
               prefix={<BankOutlined />}
-              styles={{ content: { color: '#1677ff', fontFamily: 'monospace' } }}
+              styles={{ content: { color: 'var(--color-success)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card style={{ borderRadius: '12px', borderTop: '4px solid #fa8c16' }}>
+          <Card className="sf-stat-card" style={{ borderTop: '3px solid var(--color-warning)' }}>
             <Statistic
-              title={t('daySummary.loanGiven', 'Loan / Credit Given')}
+              title={t('daySummary.loanGiven', 'Loan / Credit')}
               value={fmt(summaryData?.totalLoanGiven || 0)}
               prefix={<CreditCardOutlined />}
-              styles={{ content: { color: '#fa8c16', fontFamily: 'monospace' } }}
+              styles={{ content: { color: 'var(--color-warning-text)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card style={{ borderRadius: '12px', borderTop: '4px solid #722ed1' }}>
+          <Card 
+            className="sf-stat-card" 
+            style={{ 
+              borderTop: '3px solid var(--color-primary)',
+              background: 'var(--color-primary-subtle)',
+            }}
+          >
             <Statistic
-              title={t('daySummary.fullIncome', 'Full Income (Cash + Cheque)')}
+              title={t('daySummary.fullIncome', 'Total Income')}
               value={fmt((summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0))}
               prefix={<DollarOutlined />}
-              styles={{ content: { color: '#722ed1', fontFamily: 'monospace', fontWeight: 700 } }}
+              styles={{ content: { color: 'var(--color-primary-text)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
@@ -354,45 +452,58 @@ export function DaySummaryPage() {
       {/* Summary Cards Row 2: Operational Statistics */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
+          <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
-              title={t('daySummary.grossDeliverySales', 'Gross Delivery Sales Value')}
+              title={t('daySummary.grossDeliverySales', 'Gross Sales')}
               value={fmt(summaryData?.totalSalesValue || 0)}
               prefix={<TruckOutlined />}
-              styles={{ content: { fontFamily: 'monospace' } }}
+              styles={{ content: { fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
+          <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
-              title={t('daySummary.routesShopsVisited', 'Routes / Shops Visited')}
+              title={t('daySummary.routesShopsVisited', 'Routes / Shops')}
               value={summaryData?.deliveryCount || 0}
               suffix={`Routes (${summaryData?.shopsVisited || 0} Shops)`}
               prefix={<ShopOutlined />}
-              styles={{ content: { color: '#1677ff' } }}
+              styles={{ content: { color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' } }}
             />
           </Card>
         </Col>
         <Col xs={24} sm={8}>
-          <Card size="small" style={{ borderRadius: '12px', textAlign: 'center' }}>
-            <Statistic
-              title={t('daySummary.returnsDiscounts', 'Returns & Discounts')}
-              value={`- ${fmt((summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0))}`}
-              styles={{ content: { color: '#f5222d', fontFamily: 'monospace' } }}
-            />
+          <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
+            {(() => {
+              const returnsTotal = (summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0);
+              return (
+                <Statistic
+                  title={t('daySummary.returnsDiscounts', 'Returns & Discounts')}
+                  value={returnsTotal > 0 ? `- ${fmt(returnsTotal)}` : fmt(0)}
+                  styles={{ content: { color: returnsTotal > 0 ? 'var(--color-danger)' : 'var(--color-text-tertiary)', fontVariantNumeric: 'tabular-nums' } }}
+                />
+              );
+            })()}
           </Card>
         </Col>
       </Row>
 
-      {/* Cheque & Cancelled Orders Tables */}
-      <Row gutter={[24, 24]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} lg={14}>
-          <Card
-            title={<Space><BankOutlined style={{ color: '#1677ff' }} /><span>{t('daySummary.todaysCheques', "Today's Cheques Received")} ({summaryData?.chequeDetails?.length || 0})</span></Space>}
-            style={{ borderRadius: '12px' }}
-          >
-            {(summaryData?.chequeDetails || []).length > 0 ? (
+      {/* Details Sections */}
+      <Collapse
+        defaultActiveKey={defaultActiveKeys}
+        expandIconPlacement="end"
+        className="sf-summary-sections"
+        items={[
+          {
+            key: 'cheques',
+            label: (
+              <SectionHeader
+                icon={<BankOutlined />}
+                title={t('daySummary.todaysCheques', "Today's Cheques Received")}
+                count={summaryData?.chequeDetails?.length || 0}
+              />
+            ),
+            children: (summaryData?.chequeDetails || []).length > 0 ? (
               <Table
                 dataSource={summaryData?.chequeDetails || []}
                 rowKey="chequeNo"
@@ -403,20 +514,23 @@ export function DaySummaryPage() {
                   { title: t('purchase.chequeBank', 'Bank Name'), dataIndex: 'bankName', key: 'bankName', render: (val) => val || '—' },
                   { title: t('shop.title', 'Shop / Customer'), dataIndex: 'shopName', key: 'shopName', render: (val) => <Text strong>{val || '—'}</Text> },
                   { title: t('purchase.chequeDate', 'Cheque Date'), dataIndex: 'chequeDate', key: 'chequeDate', render: (val) => val || '—' },
-                  { title: t('purchase.chequeAmount', 'Amount (LKR)'), dataIndex: 'amount', key: 'amount', align: 'right', render: (val) => <Text style={{ fontFamily: 'monospace', fontWeight: 600 }}>{fmt(Number(val || 0))}</Text> },
+                  { title: t('purchase.chequeAmount', 'Amount (LKR)'), dataIndex: 'amount', key: 'amount', align: 'right', render: (val) => <Text style={{ fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmt(Number(val || 0))}</Text> },
                 ]}
               />
             ) : (
-              <Empty description={t('daySummary.noCheques', 'No cheques received on this date')} />
-            )}
-          </Card>
-        </Col>
-        <Col xs={24} lg={10}>
-          <Card
-            title={<Space><ExclamationCircleOutlined style={{ color: '#f5222d' }} /><span>{t('daySummary.cancelledOrders', 'Cancelled Loading Sheets / Orders')} ({summaryData?.cancelledOrders?.length || 0})</span></Space>}
-            style={{ borderRadius: '12px' }}
-          >
-            {(summaryData?.cancelledOrders || []).length > 0 ? (
+              <CompactEmpty message={t('daySummary.noCheques', 'No cheques received')} />
+            )
+          },
+          {
+            key: 'cancelled',
+            label: (
+              <SectionHeader
+                icon={<ExclamationCircleOutlined />}
+                title={t('daySummary.cancelledOrders', 'Cancelled Loading Sheets / Orders')}
+                count={summaryData?.cancelledOrders?.length || 0}
+              />
+            ),
+            children: (summaryData?.cancelledOrders || []).length > 0 ? (
               <Table
                 dataSource={summaryData?.cancelledOrders || []}
                 rowKey="loadingSheetId"
@@ -430,101 +544,89 @@ export function DaySummaryPage() {
                 ]}
               />
             ) : (
-              <Empty description={t('daySummary.noCancelled', 'No cancelled loading sheets on this date')} />
-            )}
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Today's Purchases Breakdown */}
-      <Card
-        title={<Space><ShoppingOutlined style={{ color: '#10b981' }} /><span>{t('daySummary.todaysPurchases', "Today's Purchases")} ({purchases.length})</span></Space>}
-        style={{ borderRadius: '12px', borderTop: '4px solid #10b981', marginBottom: '24px' }}
-      >
-        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalPurchaseOrders', 'Total Purchase Orders')} value={purchases.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalValue', 'Total Value (LKR)')} value={fmt(totalValue)} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#10b981' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.draftConfirmed', 'Draft / Confirmed')} value={draftCount} suffix={`/ ${confirmedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-        </Row>
-        {purchases.length > 0 ? (
-          <Table
-            rowKey="id"
-            loading={loading}
-            dataSource={purchases}
-            columns={columns}
-            pagination={{ pageSize: 10 }}
-            size="small"
-          />
-        ) : (
-          <Empty description={t('daySummary.noPurchasesDate', 'No purchases recorded for this date')} />
-        )}
-      </Card>
-
-      {/* Today's Rep Orders Breakdown */}
-      <Card
-        title={<Space><FileTextOutlined style={{ color: '#1677ff' }} /><span>{t('daySummary.todaysRepOrders', "Today's Rep Orders")} ({repOrders.length})</span></Space>}
-        style={{ borderRadius: '12px', borderTop: '4px solid #1677ff', marginBottom: '24px' }}
-      >
-        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalRepOrders', 'Total Rep Orders')} value={repOrders.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalValue', 'Total Value (LKR)')} value={fmt(repTotalValue)} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#1677ff' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.draftConfirmed', 'Draft / Confirmed')} value={repDraftCount} suffix={`/ ${repConfirmedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-        </Row>
-        {repOrders.length > 0 ? (
-          <Table
-            rowKey="id"
-            loading={loading}
-            dataSource={repOrders}
-            columns={repColumns}
-            pagination={{ pageSize: 10 }}
-            size="small"
-          />
-        ) : (
-          <Empty description={t('daySummary.noRepOrders', 'No rep orders recorded for this date')} />
-        )}
-      </Card>
-
-      {/* Today's Deliveries Breakdown */}
-      <Card
-        title={<Space><TruckOutlined style={{ color: '#fa8c16' }} /><span>{t('daySummary.todaysDeliveries', "Today's Deliveries")} ({deliveries.length})</span></Space>}
-        style={{ borderRadius: '12px', borderTop: '4px solid #fa8c16', marginBottom: '24px' }}
-      >
-        <Row gutter={[16, 16]} style={{ marginBottom: '16px' }}>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalDeliveries', 'Total Deliveries')} value={deliveries.length} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.totalCollected', 'Total Collected (LKR)')} value={fmt(deliveryTotalCollected)} suffix={`/ ${fmt(deliveryTotalSales)}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px', color: '#fa8c16' } }} />
-          </Col>
-          <Col xs={24} sm={8}>
-            <Statistic title={t('daySummary.completedInProgress', 'Completed / In Progress')} value={deliveryCompletedCount} suffix={`/ ${deliveries.length - deliveryCompletedCount}`} styles={{ content: { fontFamily: 'monospace', fontSize: '18px' } }} />
-          </Col>
-        </Row>
-        {deliveries.length > 0 ? (
-          <Table
-            rowKey="id"
-            loading={loading}
-            dataSource={deliveries}
-            columns={deliveryColumns}
-            pagination={{ pageSize: 10 }}
-            size="small"
-          />
-        ) : (
-          <Empty description={t('daySummary.noDeliveries', 'No deliveries recorded for this date')} />
-        )}
-      </Card>
+              <CompactEmpty message={t('daySummary.noCancelled', 'No cancelled orders')} />
+            )
+          },
+          {
+            key: 'purchases',
+            label: (
+              <SectionHeader
+                icon={<ShoppingOutlined />}
+                title={t('daySummary.todaysPurchases', "Today's Purchases")}
+                count={purchases.length}
+                summaryStats={[
+                  { label: t('daySummary.totalValue', 'Total Value (LKR)'), value: fmt(totalValue), color: 'var(--color-success)' },
+                  { label: t('daySummary.draftConfirmed', 'Draft / Confirmed'), value: `${draftCount} / ${confirmedCount}` },
+                ]}
+              />
+            ),
+            children: purchases.length > 0 ? (
+              <Table
+                rowKey="id"
+                loading={loading}
+                dataSource={purchases}
+                columns={columns}
+                pagination={{ pageSize: 10 }}
+                size="small"
+              />
+            ) : (
+              <CompactEmpty message={t('daySummary.noPurchases', 'No purchases recorded')} />
+            )
+          },
+          {
+            key: 'repOrders',
+            label: (
+              <SectionHeader
+                icon={<FileTextOutlined />}
+                title={t('daySummary.todaysRepOrders', "Today's Rep Orders")}
+                count={repOrders.length}
+                summaryStats={[
+                  { label: t('daySummary.totalValue', 'Total Value (LKR)'), value: fmt(repTotalValue), color: 'var(--color-primary-text)' },
+                  { label: t('daySummary.draftConfirmed', 'Draft / Confirmed'), value: `${repDraftCount} / ${repConfirmedCount}` },
+                ]}
+              />
+            ),
+            children: repOrders.length > 0 ? (
+              <Table
+                rowKey="id"
+                loading={loading}
+                dataSource={repOrders}
+                columns={repColumns}
+                pagination={{ pageSize: 10 }}
+                size="small"
+              />
+            ) : (
+              <CompactEmpty message={t('daySummary.noRepOrders', 'No rep orders recorded')} />
+            )
+          },
+          {
+            key: 'deliveries',
+            label: (
+              <SectionHeader
+                icon={<TruckOutlined />}
+                title={t('daySummary.todaysDeliveries', "Today's Deliveries")}
+                count={deliveries.length}
+                summaryStats={[
+                  { label: t('daySummary.totalCollected', 'Total Collected (LKR)'), value: fmt(deliveryTotalCollected), color: 'var(--color-warning-text)' },
+                  { label: t('daySummary.completedInProgress', 'Completed / In Progress'), value: `${deliveryCompletedCount} / ${deliveries.length - deliveryCompletedCount}` },
+                ]}
+              />
+            ),
+            children: deliveries.length > 0 ? (
+              <Table
+                rowKey="id"
+                loading={loading}
+                dataSource={deliveries}
+                columns={deliveryColumns}
+                pagination={{ pageSize: 10 }}
+                size="small"
+              />
+            ) : (
+              <CompactEmpty message={t('daySummary.noDeliveries', 'No deliveries recorded')} />
+            )
+          }
+        ]}
+      />
 
       <Modal
         title={

@@ -183,12 +183,18 @@ export function AppLayout() {
           top: 0,
           zIndex: 10,
         }}>
-          {/* Centered Agency Name (like a header) */}
+          {/* Left-aligned Agency Name */}
           {agencyName && (
-            <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', display: 'flex', alignItems: 'center' }}>
-              <Text style={{ fontWeight: 800, fontSize: '20px', color: '#10b981', letterSpacing: '-0.02em' }}>
+            <div className="mr-auto flex items-center gap-2">
+              <span
+                className="text-sm font-medium tabular-nums"
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  letterSpacing: 'var(--tracking-normal)',
+                }}
+              >
                 {agencyName}
-              </Text>
+              </span>
             </div>
           )}
 
