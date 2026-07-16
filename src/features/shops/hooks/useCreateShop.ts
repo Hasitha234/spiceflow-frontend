@@ -9,15 +9,15 @@ import { getErrorMessage } from '@/utils/getProblemDetails';
  * - Automatic cache invalidation of the shop list on success.
  * - Toast notifications for success/error.
  */
-export function useCreateShop(options?: { onSuccess?: () => void }) {
+export function useCreateShop(options?: { onSuccess?: (data: any) => void }) {
   const queryClient = useQueryClient();
 
   return useOrvalCreateShop({
     mutation: {
-      onSuccess: () => {
+      onSuccess: (res) => {
         queryClient.invalidateQueries({ queryKey: shopKeys.all() });
         message.success('Shop created successfully');
-        options?.onSuccess?.();
+        options?.onSuccess?.(res);
       },
       onError: (error) => {
         message.error(getErrorMessage(error));

@@ -16,12 +16,19 @@ const PRESET_LOCATIONS = [
  * Standalone shop form. Uses React Hook Form context (useFormContext)
  * so it can be embedded in a Drawer, Modal, or full-page layout.
  */
-export const ShopForm: React.FC = () => {
+export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
   const { control, setValue, getValues, formState: { errors } } = useFormContext<ShopFormValues>();
   const { reps, isLoading: isLoadingReps } = useShopLookups();
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [tempLat, setTempLat] = useState<number | null>(null);
   const [tempLng, setTempLng] = useState<number | null>(null);
+
+  // Auto-trigger GPS capture when creating a new shop
+  React.useEffect(() => {
+    if (!isEditing && !getValues('latitude') && !getValues('longitude')) {
+      handleGetGpsLocation(true);
+    }
+  }, [isEditing, getValues]);
 
   const handleOpenMapModal = () => {
     setTempLat(getValues('latitude') ?? 6.927079);
@@ -29,9 +36,9 @@ export const ShopForm: React.FC = () => {
     setMapModalOpen(true);
   };
 
-  const handleGetGpsLocation = () => {
+  const handleGetGpsLocation = (silent = false) => {
     if (!navigator.geolocation) {
-      message.error('Geolocation is not supported by your browser');
+      if (!silent) message.error('Geolocation is not supported by your browser');
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -39,10 +46,15 @@ export const ShopForm: React.FC = () => {
         const { latitude, longitude } = position.coords;
         setTempLat(Number(latitude.toFixed(6)));
         setTempLng(Number(longitude.toFixed(6)));
-        message.success('Fetched GPS coordinates successfully');
+        // If triggered automatically, directly set the form values
+        if (silent) {
+          setValue('latitude', Number(latitude.toFixed(6)), { shouldValidate: true, shouldDirty: true });
+          setValue('longitude', Number(longitude.toFixed(6)), { shouldValidate: true, shouldDirty: true });
+        }
+        if (!silent) message.success('Fetched GPS coordinates successfully');
       },
       (error) => {
-        message.error(`Unable to retrieve location: ${error.message}`);
+        if (!silent) message.error(`Unable to retrieve location: ${error.message}`);
       }
     );
   };
@@ -299,7 +311,7 @@ export const ShopForm: React.FC = () => {
           <Button
             type="primary"
             icon={<AimOutlined />}
-            onClick={handleGetGpsLocation}
+            onClick={() => handleGetGpsLocation(false)}
             className="w-full bg-emerald-600 hover:bg-emerald-500"
           >
             Get Device GPS Location

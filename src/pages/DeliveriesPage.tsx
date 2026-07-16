@@ -7,7 +7,7 @@ import {
   PlusOutlined, EyeOutlined, CheckCircleOutlined, TruckOutlined, CloseCircleOutlined, ShopOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
-import { deliveryApi, loadingSheetApi } from '../api/sales';
+import { deliveryApi, loadingSheetApi, qrApi } from '../api/sales';
 import apiClient from '../api/client';
 
 const { Title, Text } = Typography;
@@ -20,6 +20,7 @@ export function DeliveriesPage() {
   const [recordShopOpen, setRecordShopOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
   const [selectedShop, setSelectedShop] = useState<any>(null);
+  const [qrVisits, setQrVisits] = useState<Record<string, string>>({});
 
   // Create form
   const [confirmedSheets, setConfirmedSheets] = useState<any[]>([]);
@@ -85,6 +86,18 @@ export function DeliveriesPage() {
           setRepOrderShops(orderRes.data?.shops || []);
         }
       }
+      
+      try {
+        const visits = await qrApi.getDeliveryVisits(record.id);
+        const visitMap: Record<string, string> = {};
+        visits.forEach((v: any) => {
+          if (v.qrScannedAt) visitMap[String(v.shopId)] = v.qrScannedAt;
+        });
+        setQrVisits(visitMap);
+      } catch (err) {
+        console.warn('Could not load QR visits for delivery');
+      }
+
       setDetailOpen(true);
     } catch {
       message.error('Failed to load delivery details');
@@ -300,6 +313,11 @@ export function DeliveriesPage() {
                       <ShopOutlined />
                       <span>{shop.shopName || shop.shop?.name || `Shop #${shopId}`}</span>
                       {isDelivered ? <Tag color="green">Delivered</Tag> : <Tag color="orange">Pending</Tag>}
+                      {qrVisits[shopId] ? (
+                        <Tag color="cyan">Scanned: {new Date(qrVisits[shopId]).toLocaleTimeString()}</Tag>
+                      ) : (
+                        <Tag className="text-slate-400">— Not Scanned</Tag>
+                      )}
                     </Space>
                   }
                   extra={
