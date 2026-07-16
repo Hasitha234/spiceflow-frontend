@@ -89,7 +89,8 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
           <InputNumber
             style={{ width: '100%' }}
             formatter={(value) => `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => parseFloat(value!.replace(/Rs\.\s?|(,*)/g, '')) as unknown as number}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parser={(value) => parseFloat(value!.replace(/Rs\.\s?|(,*)/g, '')) as any}
             min={0}
           />
         </Form.Item>

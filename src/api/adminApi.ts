@@ -23,8 +23,16 @@ export interface AdminTenant {
   id: number;
   businessName: string;
   contactEmail: string;
-  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED';
+  email?: string;
+  status: 'ACTIVE' | 'SUSPENDED' | 'DELETED' | 'TRIAL';
   createdAt: string;
+  businessTypeId?: number;
+  plan?: string;
+}
+
+export interface BusinessType {
+  id: number;
+  name: string;
 }
 
 export const adminApi = {
@@ -59,6 +67,6 @@ export const adminApi = {
     customInstance({ url: `/api/v1/admin/tenants/${id}/status`, method: 'PATCH', data }),
 
   // Business Types
-  getBusinessTypes: (): Promise<Record<string, unknown>[]> =>
+  getBusinessTypes: (): Promise<BusinessType[]> =>
     customInstance({ url: '/api/v1/admin/business-types', method: 'GET' }),
 };

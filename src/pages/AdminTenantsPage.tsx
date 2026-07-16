@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Table, Button, Space, Typography, Tag, Drawer, Form, Input, Select, App, Popconfirm } from 'antd';
 import { PlusOutlined, EditOutlined, StopOutlined, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { adminApi } from '@/api/adminApi';
-import type { AdminTenant } from '@/api/adminApi';
+import type { AdminTenant, BusinessType } from '@/api/adminApi';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -11,7 +11,7 @@ const { Option } = Select;
 export function AdminTenantsPage() {
   const { message, modal } = App.useApp();
   const [tenants, setTenants] = useState<AdminTenant[]>([]);
-  const [businessTypes, setBusinessTypes] = useState<Record<string, unknown>[]>([]);
+  const [businessTypes, setBusinessTypes] = useState<BusinessType[]>([]);
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [editingTenant, setEditingTenant] = useState<AdminTenant | null>(null);
@@ -53,9 +53,9 @@ export function AdminTenantsPage() {
     adminApi.getTenant(tenant.id).then(details => {
       form.setFieldsValue({
         businessName: details.businessName,
-        businessTypeId: (details as Record<string, unknown>).businessTypeId,
+        businessTypeId: details.businessTypeId,
         status: details.status,
-        plan: (details as Record<string, unknown>).plan || 'BASIC',
+        plan: details.plan || 'BASIC',
       });
       setDrawerVisible(true);
     }).catch(() => {
@@ -123,7 +123,7 @@ export function AdminTenantsPage() {
       key: 'contactEmail',
       // In getTenants, the email is sometimes returned directly or as contactEmail. 
       // AdminTenant interface says contactEmail, but backend might return email.
-      render: (text: string, record: Record<string, unknown>) => text || (record.email as string),
+      render: (text: string, record: AdminTenant) => text || record.email,
     },
     {
       title: 'Status',
