@@ -26,7 +26,6 @@ export function ShopListPage() {
     setSize,
     setSort,
     setSearch,
-    resetFilters,
   } = useTableState({
     defaultSort: 'name',
     defaultDir: 'asc',
