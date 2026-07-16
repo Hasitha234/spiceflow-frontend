@@ -1,4 +1,5 @@
 export * from './PageHeader';
+export * from './QrCameraScanner';
 export * from './PageLayout';
 export * from './DataTable';
 export * from './SearchToolbar';

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Button, Space, Tooltip, Tag } from 'antd';
-import { EditOutlined, DeleteOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { Button, Space, Tooltip, Tag, message } from 'antd';
+import { EditOutlined, DeleteOutlined, EnvironmentOutlined, QrcodeOutlined } from '@ant-design/icons';
 import type { ColumnsType, TablePaginationConfig } from 'antd/es/table';
 import type { SorterResult } from 'antd/es/table/interface';
 import { DataTable, ConfirmDeleteDialog, PermissionGuard } from '@/components/common';
+import { qrApi } from '@/api/sales';
 import type { ShopResponse } from '@/api/generated';
 import { useDeleteShop } from '../hooks/useDeleteShop';
 import type { TableState } from '@/hooks/useTableState';
+import { ShopQrModal } from './ShopQrModal';
 
 export interface ShopTableProps {
   data: ShopResponse[];
@@ -29,7 +31,24 @@ export const ShopTable: React.FC<ShopTableProps> = ({
   onSortChange,
   onEdit,
 }) => {
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [selectedShop, setSelectedShop] = useState<ShopResponse | null>(null);
+  const [qrPayload, setQrPayload] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ShopResponse | null>(null);
+
+  const handleShowQr = async (shop: ShopResponse) => {
+    try {
+      if (shop.id) {
+        const res = await qrApi.getShopQr(shop.id);
+        setQrPayload(res.qrPayload);
+        setSelectedShop(shop);
+        setQrModalOpen(true);
+      }
+    } catch {
+      message.error('Failed to load QR code for this shop');
+    }
+  };
+
   const deleteMutation = useDeleteShop({
     onSuccess: () => setDeleteTarget(null),
   });
@@ -126,11 +145,20 @@ export const ShopTable: React.FC<ShopTableProps> = ({
     {
       title: 'Actions',
       key: 'actions',
-      width: 110,
+      width: 140,
       fixed: 'right' as const,
       render: (_: unknown, record: ShopResponse) => (
         <Space size="small">
           <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
+            <Tooltip title="View QR">
+              <Button
+                type="text"
+                size="small"
+                icon={<QrcodeOutlined />}
+                onClick={() => handleShowQr(record)}
+                className="text-slate-400 hover:text-emerald-500 transition-colors"
+              />
+            </Tooltip>
             <Tooltip title="Edit">
               <Button
                 type="text"
@@ -206,6 +234,13 @@ export const ShopTable: React.FC<ShopTableProps> = ({
           }
         }}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      <ShopQrModal 
+        open={qrModalOpen} 
+        onClose={() => setQrModalOpen(false)} 
+        shop={selectedShop} 
+        qrPayload={qrPayload} 
       />
     </>
   );

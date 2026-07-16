@@ -88,6 +88,7 @@ function App() {
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
               <Route path="qr-scan" element={<QrScanPage />} />
+              <Route path="driver/scan" element={<QrScanPage />} />
               {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
               ))}

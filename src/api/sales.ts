@@ -104,10 +104,15 @@ export const reportApi = {
 
 // ─── QR Verification ──────────────────────────────────────────────────────
 export const qrApi = {
-  getShopQr: (shopId: string) =>
+  getShopQr: (shopId: string | number) =>
     apiClient.get(`/api/v1/sales/qr/shop/${shopId}`).then((r) => r.data),
+  resolveToken: (token: string) =>
+    apiClient.get(`/api/v1/sales/qr/shop/by-token/${token}`).then((r) => r.data),
+  getTodaySheets: (shopId: string | number) =>
+    apiClient.get(`/api/v1/sales/qr/shop/${shopId}/today-sheets`).then((r) => r.data),
   verify: (data: { shopId: number; deliveryId?: number; latitude?: number; longitude?: number; notes?: string }) =>
     apiClient.post('/api/v1/sales/qr/verify', data).then((r) => r.data),
-  getDeliveryVisits: (deliveryId: string) =>
+  getDeliveryVisits: (deliveryId: string | number) =>
     apiClient.get(`/api/v1/sales/qr/delivery/${deliveryId}/visits`).then((r) => r.data),
 };
+
