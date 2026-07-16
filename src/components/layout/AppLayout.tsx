@@ -14,41 +14,28 @@ import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { useAgencyStore } from '@/store/agencyStore';
+import { useTenantStore } from '@/store/tenantStore';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
 
-const menuItems = [
+const allMenuItems = [
   {
     type: 'group',
     label: 'Core Workflows',
     children: [
-      { key: '/day-summary', translateKey: 'nav.daySummary' },
-      { key: '/month-summary', translateKey: 'nav.monthSummary' },
-      { key: '/inventory', translateKey: 'nav.inventory' },
-      { key: '/purchases', translateKey: 'nav.purchases' },
-      { key: '/sales', translateKey: 'nav.orders' },
-    ]
-  },
-  {
-    type: 'group',
-    label: 'Operations',
-    children: [
-      { key: '/loading', translateKey: 'nav.loading' },
-      { key: '/deliveries', translateKey: 'nav.deliveries' },
-      { key: '/qr-scan', translateKey: 'nav.qrScan' },
-    ]
-  },
-  {
-    type: 'group',
-    label: 'System',
-    children: [
-      { key: '/settings', translateKey: 'nav.settings' },
+      { key: '/day-summary', translateKey: 'nav.daySummary', roles: ['TENANT_OWNER'] },
+      { key: '/month-summary', translateKey: 'nav.monthSummary', roles: ['TENANT_OWNER'] },
+      { key: '/inventory', translateKey: 'nav.inventory', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
+      { key: '/purchases', translateKey: 'nav.purchases', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
+      { key: '/sales', translateKey: 'nav.orders', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
+      { key: '/loading', translateKey: 'nav.loading', roles: ['TENANT_OWNER', 'DATA_ENTRY', 'DRIVER'] },
+      { key: '/deliveries', translateKey: 'nav.deliveries', roles: ['TENANT_OWNER', 'DATA_ENTRY', 'DRIVER'] },
+      { key: '/qr-scan', translateKey: 'nav.qrScan', roles: ['TENANT_OWNER', 'DRIVER'] },
+      { key: '/settings', translateKey: 'nav.settings', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
     ]
   }
 ];
-
-const flatMenuItems = menuItems.flatMap(group => group.children || []);
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -59,8 +46,23 @@ export function AppLayout() {
   const user = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.clearAuth);
   const { agencyName } = useAgencyStore();
+  const { tenantId, setTenantId } = useTenantStore();
   
   const { theme, toggleTheme } = useThemeStore();
+
+  const userType = user?.userType || 'TENANT_OWNER';
+
+  const isSuspended = userType === 'TENANT_OWNER'
+    ? user?.assignedTenants?.find(t => t.id === tenantId)?.status === 'SUSPENDED'
+    : user?.tenantStatus === 'SUSPENDED';
+
+  // Filter menu items based on user role
+  const menuItems = allMenuItems.map(group => ({
+    ...group,
+    children: group.children.filter(item => item.roles.includes(userType))
+  })).filter(group => group.children.length > 0);
+
+  const flatMenuItems = menuItems.flatMap(group => group.children || []);
 
   const currentKey = flatMenuItems.reduce((best, item) => {
     return location.pathname.startsWith(item.key) && item.key.length > best.length ? item.key : best;
@@ -68,7 +70,6 @@ export function AppLayout() {
 
   const handleLogout = async () => {
     try {
-      // Import dynamically to avoid circular dependencies if authApi imports client which imports authStore
       const { authApi } = await import('@/api/auth');
       await authApi.logout();
     } catch {
@@ -89,6 +90,28 @@ export function AppLayout() {
       localStorage.setItem('sf_lang', info.key);
     },
   };
+
+  const switchAgencyItems = user?.userType === 'TENANT_OWNER' && user.assignedTenants && user.assignedTenants.length > 1
+    ? [
+        { type: 'divider' as const },
+        {
+          key: 'switch-agency',
+          label: 'Switch Agency',
+          children: user.assignedTenants.map(t => ({
+            key: `tenant-${t.id}`,
+            label: (
+              <span style={{ fontWeight: t.id === tenantId ? 'bold' : 'normal', color: t.id === tenantId ? '#10b981' : 'inherit' }}>
+                {t.businessName}
+              </span>
+            ),
+            onClick: () => {
+              setTenantId(t.id);
+              window.location.href = '/'; // Full reload to clear cache
+            }
+          }))
+        }
+      ]
+    : [];
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -195,6 +218,7 @@ export function AppLayout() {
                     label: <Text type="secondary" className="tabular-nums">{user?.email}</Text>,
                     disabled: true
                   },
+                  ...switchAgencyItems,
                   { type: 'divider' },
                   { 
                     key: 'logout', 
@@ -215,7 +239,35 @@ export function AppLayout() {
         </Header>
         
         <Content className="animate-fade-in" style={{ margin: '24px', position: 'relative' }}>
-          <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          {isSuspended && (
+            <div style={{
+              position: 'absolute',
+              top: 0, left: 0, right: 0, bottom: 0,
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.9)',
+                padding: '40px',
+                borderRadius: '16px',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                textAlign: 'center',
+                maxWidth: '600px',
+                border: '1px solid rgba(239, 68, 68, 0.3)'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+                <Typography.Title level={3} style={{ color: '#dc2626', marginBottom: '16px' }}>
+                  ගිණුම අත්හිටුවා ඇත
+                </Typography.Title>
+                <Typography.Text style={{ fontSize: '18px', color: '#334155', display: 'block' }}>
+                  ඔබගේ මාසික සැලසුම අවසන් වී ඇත. කරුණාකර මුදල් ගෙවා ඉදිරියට යන්න.
+                </Typography.Text>
+              </div>
+            </div>
+          )}
+          <div style={{ maxWidth: 1400, margin: '0 auto', filter: isSuspended ? 'blur(8px)' : 'none', pointerEvents: isSuspended ? 'none' : 'auto' }}>
             <Outlet />
           </div>
         </Content>

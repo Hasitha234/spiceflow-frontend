@@ -867,7 +867,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         okText={editingItem ? t('common.update', 'Update') : t('common.add', 'Add Product')}
         okButtonProps={{ className: 'bg-emerald-600 hover:bg-emerald-500' }}
         width={500}
-        destroyOnClose
+        destroyOnHidden
       >
         <Form
           form={form}

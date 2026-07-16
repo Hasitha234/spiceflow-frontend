@@ -6,11 +6,18 @@ import './App.css';
 import './i18n';
 import { AppLayout } from './components/layout/AppLayout';
 import { PrivateRoute } from './components/layout/PrivateRoute';
+
+import { TenantIndexRedirect } from './components/routing/TenantIndexRedirect';
 import { featureRoutes } from './routes/featureRoutes';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
 // Route-level code splitting via lazyWithRetry (auto-recovers from stale chunks after deploy)
 const LoginPage = lazyWithRetry(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
+const SelectAgencyPage = lazyWithRetry(() => import('./pages/SelectAgencyPage').then((m) => ({ default: m.SelectAgencyPage })));
+const AdminLayout = lazyWithRetry(() => import('./components/layout/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const AdminDashboardPage = lazyWithRetry(() => import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })));
+const AdminUsersPage = lazyWithRetry(() => import('./pages/AdminUsersPage').then((m) => ({ default: m.AdminUsersPage })));
+const AdminTenantsPage = lazyWithRetry(() => import('./pages/AdminTenantsPage').then((m) => ({ default: m.AdminTenantsPage })));
 const DaySummaryPage = lazyWithRetry(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
 const MonthSummaryPage = lazyWithRetry(() => import('./pages/MonthSummaryPage').then((m) => ({ default: m.MonthSummaryPage })));
 const WarehousesPage = lazyWithRetry(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
@@ -45,15 +52,31 @@ function App() {
           <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/select-agency" element={<SelectAgencyPage />} />
+            
+            <Route
+              path="/admin/*"
+              element={
+                <PrivateRoute requireRole="PLATFORM_ADMIN">
+                  <AdminLayout />
+                </PrivateRoute>
+              }
+            >
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboardPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="tenants" element={<AdminTenantsPage />} />
+            </Route>
+
             <Route
               path="/*"
               element={
-                <PrivateRoute>
+                <PrivateRoute requireTenant={true}>
                   <AppLayout />
                 </PrivateRoute>
               }
             >
-              <Route index element={<Navigate to="day-summary" replace />} />
+              <Route index element={<TenantIndexRedirect />} />
               <Route path="day-summary" element={<DaySummaryPage />} />
               <Route path="month-summary" element={<MonthSummaryPage />} />
               <Route path="purchases" element={<PurchasesPage />} />

@@ -104,7 +104,7 @@ export function MonthSummaryPage() {
   ];
 
   return (
-    <Space direction="vertical" size="large" className="w-full pb-8">
+    <Space orientation="vertical" size="large" className="w-full pb-8">
       {/* Header Area */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700">
         <div>
@@ -139,12 +139,12 @@ export function MonthSummaryPage() {
       {/* KPI Cards */}
       <Row gutter={[16, 16]}>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} className="shadow-sm hover:shadow-md transition-shadow">
+          <Card variant="borderless" className="shadow-sm hover:shadow-md transition-shadow">
             <Statistic
               title="Total Sales"
               value={summaryData?.totalSalesValue || 0}
               precision={2}
-              valueStyle={{ color: '#10b981' }}
+              styles={{ content: { color: '#1677ff' } }}
               prefix={<RiseOutlined />}
               suffix="Rs"
             />
@@ -152,12 +152,12 @@ export function MonthSummaryPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} className="shadow-sm hover:shadow-md transition-shadow">
+          <Card variant="borderless" className="shadow-sm hover:shadow-md transition-shadow">
             <Statistic
               title="Total Purchases"
               value={summaryData?.totalPurchasesValue || 0}
               precision={2}
-              valueStyle={{ color: '#f59e0b' }}
+              styles={{ content: { color: '#3f8600' } }}
               prefix={<FallOutlined />}
               suffix="Rs"
             />
@@ -165,12 +165,12 @@ export function MonthSummaryPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} className="shadow-sm hover:shadow-md transition-shadow">
+          <Card variant="borderless" className="shadow-sm hover:shadow-md transition-shadow">
             <Statistic
               title="Total Expenses"
               value={summaryData?.totalExpensesValue || 0}
               precision={2}
-              valueStyle={{ color: '#ef4444' }}
+              styles={{ content: { color: '#cf1322' } }}
               prefix={<FallOutlined />}
               suffix="Rs"
             />
@@ -178,12 +178,12 @@ export function MonthSummaryPage() {
           </Card>
         </Col>
         <Col xs={24} sm={12} lg={6}>
-          <Card bordered={false} className="shadow-sm hover:shadow-md transition-shadow bg-slate-50 dark:bg-slate-700/50">
+          <Card variant="borderless" className="shadow-sm hover:shadow-md transition-shadow bg-slate-50 dark:bg-slate-700/50">
             <Statistic
               title="Net Profit"
               value={summaryData?.netProfit || 0}
               precision={2}
-              valueStyle={{ color: (summaryData?.netProfit || 0) >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 }}
+              styles={{ content: { color: (summaryData?.netProfit || 0) >= 0 ? '#10b981' : '#ef4444', fontWeight: 600 } }}
               prefix={<DollarOutlined />}
               suffix="Rs"
             />
@@ -196,7 +196,7 @@ export function MonthSummaryPage() {
         <Col xs={24} lg={16}>
           <Card 
             title="Expenses Detail" 
-            bordered={false} 
+            variant="borderless" 
             className="shadow-sm"
           >
             <Table
@@ -212,7 +212,7 @@ export function MonthSummaryPage() {
         <Col xs={24} lg={8}>
           <Card 
             title="Expense Breakdown" 
-            bordered={false} 
+            variant="borderless" 
             className="shadow-sm"
           >
             <Table

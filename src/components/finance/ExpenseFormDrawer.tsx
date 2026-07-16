@@ -45,7 +45,7 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
   return (
     <Drawer
       title="Add New Expense"
-      width={400}
+      size="default"
       onClose={onClose}
       open={open}
       extra={
@@ -89,8 +89,9 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
           <InputNumber
             style={{ width: '100%' }}
             formatter={(value) => `Rs. ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-            parser={(value) => value!.replace(/Rs\.\s?|(,*)/g, '') as unknown as number}
-            min={0 as number}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            parser={(value) => parseFloat(value!.replace(/Rs\.\s?|(,*)/g, '')) as any}
+            min={0}
           />
         </Form.Item>
 

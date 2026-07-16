@@ -308,7 +308,7 @@ export function WarehousesPage() {
           width={480}
           open={visible} 
           onClose={() => setVisible(false)}
-          destroyOnClose
+          destroyOnHidden
           closeIcon={null}
           extra={<Button type="text" icon={<CloseOutlined />} onClick={() => setVisible(false)} style={{ color: '#64748b' }} />}
           footer={
