@@ -82,7 +82,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
           name="name"
           control={control}
           render={({ field }) => (
-            <Input {...field} id="name" placeholder="e.g. Perera Stores" />
+            <Input {...field} id="name" placeholder="Perera Stores" />
           )}
         />
       </Form.Item>
@@ -93,7 +93,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             name="ownerName"
             control={control}
             render={({ field }) => (
-              <Input {...field} id="ownerName" placeholder="e.g. Sunil Perera" />
+              <Input {...field} id="ownerName" placeholder="Sunil Perera" />
             )}
           />
         </Form.Item>
@@ -109,7 +109,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             name="phone"
             control={control}
             render={({ field }) => (
-              <Input {...field} id="phone" placeholder="e.g. 077 123 4567" />
+              <Input {...field} id="phone" placeholder="077 123 4567" />
             )}
           />
         </Form.Item>
@@ -128,7 +128,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             name="route"
             control={control}
             render={({ field }) => (
-              <Input {...field} id="route" placeholder="e.g. RT-01 Colombo North" />
+              <Input {...field} id="route" placeholder="RT-01 Colombo North" />
             )}
           />
         </Form.Item>
@@ -144,7 +144,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             name="area"
             control={control}
             render={({ field }) => (
-              <Input {...field} id="area" placeholder="e.g. Kotahena" />
+              <Input {...field} id="area" placeholder="Kotahena" />
             )}
           />
         </Form.Item>
@@ -167,7 +167,11 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
       </Form.Item>
 
       {/* ── Sales Rep Assignment & Financials ─────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+      <div className="sf-form-section">
+        <div className="sf-form-section-header">
+          <span>Assignment & Billing</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
         <Form.Item label="Assigned Sales Rep" htmlFor="assignedRepId">
           <Controller
             name="assignedRepId"
@@ -176,7 +180,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
               <Select
                 {...field}
                 id="assignedRepId"
-                placeholder="Select assigned sales representative"
+                placeholder="Select sales rep"
                 allowClear
                 loading={isLoadingReps}
                 options={reps.map((rep) => ({
@@ -189,7 +193,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
         </Form.Item>
 
         <Form.Item
-          label="Initial / Outstanding Loan (LKR)"
+          label="Outstanding Loan (LKR)"
           htmlFor="outstandingLoan"
           validateStatus={errors.outstandingLoan ? 'error' : ''}
           help={errors.outstandingLoan?.message}
@@ -202,6 +206,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
                 {...field}
                 id="outstandingLoan"
                 className="w-full"
+                style={{ width: '100%' }}
                 min={0}
                 precision={2}
                 placeholder="0.00"
@@ -210,20 +215,27 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
           />
         </Form.Item>
       </div>
+      </div>
 
       {/* ── Geospatial Coordinates ────────────────────────── */}
-      <div className="p-3 mb-4 rounded-lg bg-slate-800/60 border border-slate-700/50 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <EnvironmentOutlined className="text-emerald-400" />
-            <span className="font-medium text-slate-200">Shop Location Coordinates</span>
+      <div className="sf-form-section">
+        <div className="sf-form-section-header">
+          <span>Location & Status</span>
+        </div>
+
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2" style={{ color: 'var(--color-text-tertiary)' }}>
+            <EnvironmentOutlined style={{ fontSize: 14 }} />
+            <span className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+              Shop GPS Coordinates
+            </span>
           </div>
           <Button
             size="small"
-            type="dashed"
+            type="text"
             icon={<AimOutlined />}
             onClick={handleOpenMapModal}
-            className="!text-emerald-400 !border-emerald-500/50 hover:!border-emerald-400"
+            style={{ color: 'var(--color-primary)' }}
           >
             Pick on Map / GPS
           </Button>
@@ -245,8 +257,15 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
                   {...field}
                   id="latitude"
                   className="w-full"
-                  placeholder="e.g. 6.927079"
+                  readOnly
+                  placeholder="Auto-detected"
                   step={0.000001}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontVariantNumeric: 'tabular-nums',
+                    color: 'var(--color-text-secondary)',
+                    backgroundColor: 'var(--color-surface-subtle)',
+                  }}
                 />
               )}
             />
@@ -267,36 +286,56 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
                   {...field}
                   id="longitude"
                   className="w-full"
-                  placeholder="e.g. 79.861244"
+                  readOnly
+                  placeholder="Auto-detected"
                   step={0.000001}
+                  style={{
+                    fontFamily: 'var(--font-mono)',
+                    fontVariantNumeric: 'tabular-nums',
+                    color: 'var(--color-text-secondary)',
+                    backgroundColor: 'var(--color-surface-subtle)',
+                  }}
                 />
               )}
             />
           </Form.Item>
         </div>
-      </div>
 
       {/* ── Status ────────────────────────────────────────── */}
-      <Form.Item label="Active Status" htmlFor="isActive">
+      <div style={{ paddingTop: 'var(--space-4)' }}>
         <Controller
           name="isActive"
           control={control}
           render={({ field: { value, onChange } }) => (
-            <Space>
+            <div className="flex items-center gap-3">
               <Switch checked={value} onChange={onChange} />
-              <span className="text-slate-300">
-                {value ? 'Active (Eligible for orders & deliveries)' : 'Inactive'}
-              </span>
-            </Space>
+              <div>
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  {value ? 'Active' : 'Inactive'}
+                </span>
+                <div
+                  className="text-xs"
+                  style={{ color: 'var(--color-text-tertiary)', marginTop: 2 }}
+                >
+                  {value
+                    ? 'Eligible for orders & deliveries'
+                    : 'Not visible in order or delivery workflows'}
+                </div>
+              </div>
+            </div>
           )}
         />
-      </Form.Item>
+      </div>
+      </div>
 
       {/* ── Coordinate Picker Modal ───────────────────────── */}
       <Modal
         title={
-          <div className="flex items-center gap-2 text-slate-100">
-            <EnvironmentOutlined className="text-emerald-400" />
+          <div className="flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+            <EnvironmentOutlined className="text-emerald-500" />
             <span>Select Shop Location</span>
           </div>
         }
@@ -306,7 +345,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
         okText="Confirm Coordinates"
       >
         <div className="space-y-4 py-2">
-          <p className="text-slate-300 text-sm">
+          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>
             Use your device GPS or select a quick preset location below to automatically populate the latitude and longitude for this shop.
           </p>
 
@@ -319,15 +358,16 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             Get Device GPS Location
           </Button>
 
-          <div className="space-y-2 pt-2 border-t border-slate-700/50">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="space-y-2 pt-2" style={{ borderTop: '1px solid var(--color-border-default)' }}>
+            <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--color-text-tertiary)' }}>
               Quick Presets
             </span>
             <div className="flex flex-wrap gap-2">
               {PRESET_LOCATIONS.map((loc) => (
                 <Tag
                   key={loc.label}
-                  className="cursor-pointer border-slate-700 bg-slate-800 text-slate-200 hover:border-emerald-500 py-1 px-2"
+                  className="cursor-pointer py-1 px-2"
+                  style={{ borderColor: 'var(--color-border-default)', background: 'var(--color-surface-subtle)', color: 'var(--color-text-primary)' }}
                   onClick={() => {
                     setTempLat(loc.lat);
                     setTempLng(loc.lng);
@@ -342,7 +382,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
 
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Latitude</label>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Latitude</label>
               <InputNumber onFocus={(e) => e.target.select()}
                 value={tempLat}
                 onChange={(v) => setTempLat(v)}
@@ -351,7 +391,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-slate-400 mb-1">Longitude</label>
+              <label className="block text-xs font-medium mb-1" style={{ color: 'var(--color-text-tertiary)' }}>Longitude</label>
               <InputNumber onFocus={(e) => e.target.select()}
                 value={tempLng}
                 onChange={(v) => setTempLng(v)}

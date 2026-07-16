@@ -29,7 +29,7 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
       open={open}
       destroyOnHidden
       footer={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '8px 0' }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', padding: '12px 0', borderTop: '1px solid var(--color-border-default)' }}>
           <Button onClick={onClose} disabled={loading} style={{ borderRadius: 'var(--radius-md)' }}>
             Cancel
           </Button>
@@ -38,7 +38,7 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
             loading={loading}
             onClick={onSubmit}
             style={{ borderRadius: 'var(--radius-md)' }}
-            className="bg-emerald-600 hover:bg-emerald-500 border-none shadow-lg shadow-emerald-900/30 font-medium"
+            className="font-medium"
           >
             {submitText}
           </Button>
