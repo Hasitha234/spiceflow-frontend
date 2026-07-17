@@ -15,6 +15,8 @@ import { useDriverLookups } from '../hooks/useDriverLookups';
 import { useCreateDriver } from '../hooks/useCreateDriver';
 import { useUpdateDriver } from '../hooks/useUpdateDriver';
 
+import { useTenantDriverUsers } from '../hooks/useTenantDriverUsers';
+
 export interface DriverFormDrawerProps {
   open: boolean;
   onClose: () => void;
@@ -32,6 +34,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
 }) => {
   const [form] = Form.useForm();
   const { warehouseOptions, isLoading: lookupsLoading } = useDriverLookups();
+  const { data: driverUsers, isLoading: usersLoading } = useTenantDriverUsers();
 
   const createMutation = useCreateDriver({ onSuccess: onClose });
   const updateMutation = useUpdateDriver({ onSuccess: onClose });
@@ -56,6 +59,13 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
       }
     }
   }, [open, initialValues, form]);
+
+  const handleUserSelect = (userId: number, option: any) => {
+    form.setFieldsValue({
+      name: option.label,
+      email: option.email,
+    });
+  };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSubmit = (values: any) => {
@@ -125,13 +135,33 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <Form.Item
-              name="name"
-              label="Driver Name"
-              rules={[{ required: true, message: 'Driver name is required' }]}
-            >
-              <Input placeholder="e.g. Nimal Perera" disabled={isSubmitting} />
-            </Form.Item>
+            {mode === 'create' ? (
+              <Form.Item
+                name="name"
+                label="Driver User"
+                rules={[{ required: true, message: 'Please select a driver user' }]}
+              >
+                <Select
+                  placeholder="Select a driver"
+                  loading={usersLoading}
+                  disabled={isSubmitting || usersLoading}
+                  onChange={handleUserSelect}
+                  options={(driverUsers || []).map(u => ({
+                    label: u.name,
+                    value: u.name,
+                    email: u.email
+                  }))}
+                />
+              </Form.Item>
+            ) : (
+              <Form.Item
+                name="name"
+                label="Driver Name"
+                rules={[{ required: true, message: 'Driver name is required' }]}
+              >
+                <Input placeholder="e.g. Nimal Perera" disabled={true} />
+              </Form.Item>
+            )}
 
             <Form.Item
               name="employeeId"
@@ -150,7 +180,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
                 { type: 'email', message: 'Please enter a valid email address' }
               ]}
             >
-              <Input placeholder="e.g. nimal@spiceflow.com" disabled={isSubmitting} />
+              <Input placeholder="e.g. nimal@spiceflow.com" disabled={true} />
             </Form.Item>
 
             <Form.Item
