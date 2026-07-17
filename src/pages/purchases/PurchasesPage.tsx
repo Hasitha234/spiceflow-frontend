@@ -5,7 +5,6 @@ import {
   Button,
   Card,
   Col,
-  Modal,
   Row,
   Select,
   Space,
@@ -30,6 +29,7 @@ import { warehouseApi } from '../../api/inventory';
 import type { Warehouse } from '../../types/inventory';
 import type { Purchase } from '../../types/sales';
 import { PermissionGuard } from '../../components/common';
+import { ResponsiveModal } from '@/components/common/ResponsiveModal';
 
 const { Title, Text } = Typography;
 
@@ -238,10 +238,10 @@ export function PurchasesPage() {
           dataSource={purchases}
           columns={columns}
           pagination={{ pageSize: 10 }}
-        />
+         />
       </Card>
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg">
             <ShoppingOutlined className="text-emerald-500" />
@@ -256,27 +256,27 @@ export function PurchasesPage() {
         {selectedPurchase && (
           <div className="space-y-6">
             <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Invoice No</div>
                 <div className="font-mono font-bold text-emerald-500 text-base">{selectedPurchase.invoiceNo}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Supplier</div>
                 <div className="font-semibold text-base">{selectedPurchase.supplierName || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Invoice Date</div>
                 <div className="text-base">{selectedPurchase.invoiceDate || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Status</div>
                 <div className="mt-1"><Tag color={selectedPurchase.status === 'CONFIRMED' ? 'green' : 'orange'}>{selectedPurchase.status}</Tag></div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Payment Method</div>
                 <div>{selectedPurchase.paymentMethod || 'CASH'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Total Order Value</div>
                 <div className="font-mono font-bold text-base">
                   LKR {Number(selectedPurchase.netAmount ?? selectedPurchase.totalOrderValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -286,20 +286,20 @@ export function PurchasesPage() {
 
             {selectedPurchase.paymentMethod === 'CHEQUE' && (
               <Row gutter={[16, 16]} className="p-4 mt-4 rounded-lg bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30">
-                <Col span={24}>
+                <Col xs={24} md={24}>
                   <div className="font-semibold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-2">
                     <span className="text-xl">💳</span> Cheque Details
                   </div>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <div className="text-xs opacity-70">Cheque Number</div>
                   <div className="font-mono font-medium">{selectedPurchase.chequeNo || '—'}</div>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <div className="text-xs opacity-70">Bank Name</div>
                   <div className="font-medium">{selectedPurchase.chequeBankName || '—'}</div>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <div className="text-xs opacity-70">Cheque Amount</div>
                   <div className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
                     LKR {Number(selectedPurchase.chequeAmount ?? selectedPurchase.netAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -333,9 +333,9 @@ export function PurchasesPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
 
-      <Modal
+      <ResponsiveModal
         title="Confirm Purchase Order"
         open={confirmModalVisible}
         onOk={submitConfirm}
@@ -354,7 +354,7 @@ export function PurchasesPage() {
             value: w.id
           }))}
         />
-      </Modal>
+      </ResponsiveModal>
 
     </div>
   );

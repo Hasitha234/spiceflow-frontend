@@ -90,7 +90,7 @@ export const VehicleLoadingSheetsTab: React.FC<VehicleLoadingSheetsTabProps> = (
           dataSource={sheets}
           rowKey="id"
           pagination={{ pageSize: 10 }}
-          locale={{ emptyText: <Empty description="No active or past loading sheets found for this vehicle." /> }}
+          locale={{ emptyText: <Empty description="No active or past loading sheets found for this vehicle."  /> }}
           columns={[
             {
               title: 'Sheet #',

@@ -241,7 +241,7 @@ export function DriverListPage() {
             
             {isLoading && (
               <motion.div key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
-                <Table columns={columns} dataSource={[]} loading={true} pagination={false} />
+                <Table columns={columns} dataSource={[]} loading={true} pagination={false}  />
               </motion.div>
             )}
 
@@ -278,7 +278,7 @@ export function DriverListPage() {
                   dataSource={rawData} 
                   rowKey="id"
                   pagination={false} 
-                />
+                 />
                 
                 <ListPageFooter 
                   totalCount={totalCount}

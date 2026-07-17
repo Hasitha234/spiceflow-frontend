@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, Form, Input, InputNumber, Button, DatePicker, Select, Space, message } from 'antd';
 import dayjs from 'dayjs';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useIsMobile } from '@/hooks/useResponsive';
 import { financeApi } from '../../api/financeApi';
 import type { ExpenseRequest } from '../../types/finance';
 
@@ -16,6 +17,7 @@ interface ExpenseFormDrawerProps {
 export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onClose, onSuccess }) => {
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
+  const isMobile = useIsMobile();
 
   const createExpenseMutation = useMutation({
     mutationFn: financeApi.createExpense,
@@ -45,7 +47,8 @@ export const ExpenseFormDrawer: React.FC<ExpenseFormDrawerProps> = ({ open, onCl
   return (
     <Drawer
       title="Add New Expense"
-      size="default"
+      size={isMobile ? 'default' : 'default'}
+      placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
       onClose={onClose}
       open={open}
       extra={

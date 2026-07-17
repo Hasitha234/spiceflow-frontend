@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Form, Input, InputNumber, Switch, Select, Button, Modal, Tag, message } from 'antd';
+import { Form, Input, InputNumber, Switch, Select, Button, Tag, message } from 'antd';
 import { AimOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { Controller, useFormContext } from 'react-hook-form';
 import type { ShopFormValues } from '../schemas/shopSchema';
 import { useShopLookups } from '../hooks/useShopLookups';
+import { ResponsiveModal } from '@/components/common';
 
 const PRESET_LOCATIONS = [
   { label: 'Colombo HQ', lat: 6.927079, lng: 79.861244 },
@@ -332,7 +333,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
       </div>
 
       {/* ── Coordinate Picker Modal ───────────────────────── */}
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
             <EnvironmentOutlined className="text-emerald-500" />
@@ -401,8 +402,7 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
             </div>
           </div>
         </div>
-      </Modal>
+      </ResponsiveModal>
     </div>
   );
 };
-

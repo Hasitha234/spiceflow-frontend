@@ -3,6 +3,7 @@ import { Button, Drawer, Table, Tag } from 'antd';
 import { PlusOutlined, ShoppingOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import type { SupplierResponse, ProductResponse } from '@/api/generated';
+import { useIsMobile } from '@/hooks/useResponsive';
 import { useProductList } from '@/features/products/hooks/useProductList';
 import { ProductFormDrawer } from '@/features/products/components/ProductFormDrawer';
 import { PermissionGuard } from '@/components/common';
@@ -20,6 +21,7 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
 }) => {
   const [productDrawerOpen, setProductDrawerOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductResponse | null>(null);
+  const isMobile = useIsMobile();
 
   const { data, isLoading, refetch } = useProductList({
     pageable: { page: 0, size: 100 },
@@ -109,7 +111,8 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
         }
         open={open}
         onClose={onClose}
-        size="large"
+        size={isMobile ? 'default' : 'large'}
+        placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
         styles={{
           header: { background: '#1e293b', borderBottom: '1px solid #334155', color: '#f8fafc' },
           body: { background: '#0f172a', padding: '20px' },
@@ -141,7 +144,7 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
           loading={isLoading}
           pagination={false}
           className="custom-dark-table"
-        />
+         />
       </Drawer>
 
       <ProductFormDrawer

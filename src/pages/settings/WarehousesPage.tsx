@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { warehouseApi } from '../../api/inventory';
 import type { Warehouse } from '../../types/inventory';
 import { motion } from 'framer-motion';
+import { useIsMobile } from '@/hooks/useResponsive';
 
 const { Title, Text } = Typography;
 
@@ -21,6 +22,7 @@ type FormValues = z.infer<typeof schema>;
 
 export function WarehousesPage() {
   const { t } = useTranslation();
+  const isMobile = useIsMobile();
   const [loading, setLoading] = useState(false);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [visible, setVisible] = useState(false);
@@ -305,7 +307,8 @@ export function WarehousesPage() {
               </span>
             </div>
           } 
-          width={480}
+          width={isMobile ? '100vw' : 480}
+          placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
           open={visible} 
           onClose={() => setVisible(false)}
           destroyOnHidden

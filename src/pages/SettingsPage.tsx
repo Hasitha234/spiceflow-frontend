@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { Card, Typography, Skeleton, ConfigProvider, Modal, Input, Button, Upload, message } from 'antd';
+import { Card, Typography, Skeleton, ConfigProvider, Input, Button, Upload, message } from 'antd';
+import { ResponsiveModal } from '@/components/common';
+
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -146,7 +148,7 @@ function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => 
   };
 
   return (
-    <Modal
+    <ResponsiveModal
       title={
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <SettingOutlined style={{ color: '#0F9D6C' }} />
@@ -195,7 +197,7 @@ function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => 
           </div>
         </div>
       </div>
-    </Modal>
+    </ResponsiveModal>
   );
 }
 

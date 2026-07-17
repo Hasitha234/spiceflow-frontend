@@ -1,7 +1,8 @@
 import React, { useRef } from 'react';
-import { Modal, Button, Typography, Space, Divider } from 'antd';
+import { Button, Typography, Space, Divider } from 'antd';
 import { PrinterOutlined, DownloadOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { QRCodeSVG } from 'qrcode.react';
+import { ResponsiveModal } from '@/components/common';
 
 const { Title, Text } = Typography;
 
@@ -100,7 +101,7 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
   };
 
   return (
-    <Modal
+    <ResponsiveModal
       open={open}
       onCancel={onClose}
       footer={null}
@@ -151,6 +152,6 @@ export const ShopQrModal: React.FC<ShopQrModalProps> = ({ open, onClose, shop, q
           </Button>
         </div>
       </div>
-    </Modal>
+    </ResponsiveModal>
   );
 };

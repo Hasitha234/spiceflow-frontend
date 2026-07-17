@@ -278,6 +278,16 @@ body {
   font-size: var(--text-2xl) !important;
   font-weight: var(--font-weight-semibold) !important;
   line-height: var(--line-height-tight) !important;
+  /* Responsive Tables */
+  @media (max-width: 640px) {
+    .ant-table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+    .ant-table {
+      min-width: 600px;
+    }
+  }
 }
 
 /* Summary page collapsible sections */
@@ -528,3 +538,47 @@ body {
   border-left: 3px solid var(--color-primary) !important;
   border-radius: 0 8px 8px 0 !important;
 }
+
+/* --- Responsive Utilities --- */
+:root {
+  --bp-mobile: 640px;
+  --bp-tablet: 1024px;
+}
+
+@media (min-width: 640px) {
+  .mobile-only { display: none !important; }
+}
+@media (max-width: 639px) {
+  .desktop-only { display: none !important; }
+  .tablet-up { display: none !important; }
+}
+@media (min-width: 1024px) {
+  .tablet-only { display: none !important; }
+}
+
+/* --- Mobile Modal & Drawer Overrides --- */
+@media (max-width: 639px) {
+  /* Modals become full width */
+  .ant-modal { 
+    max-width: 100vw !important; 
+    margin: 0 !important; 
+    top: 0 !important;
+    padding: 0 !important;
+  }
+  .ant-modal .ant-modal-content { 
+    border-radius: 0 !important; 
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .ant-modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+  }
+  
+  /* Right Drawers become full width */
+  .ant-drawer-right .ant-drawer-content-wrapper { 
+    width: 100vw !important; 
+  }
+}
+.sf-full-height-drawer .ant-drawer-content-wrapper { height: 100vh !important; }

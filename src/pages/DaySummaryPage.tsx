@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, App, Space, Button, Tooltip, Modal, Descriptions, Collapse } from 'antd';
+import { Card, Col, DatePicker, Row, Statistic, Table, Tag, Typography, App, Space, Button, Tooltip, Descriptions, Collapse } from 'antd';
 import { ShoppingOutlined, DollarOutlined, FileTextOutlined, EyeOutlined, TruckOutlined, BankOutlined, ExclamationCircleOutlined, CreditCardOutlined, ShopOutlined, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { ResponsiveModal } from '@/components/common';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { purchaseApi, repOrderApi, deliveryApi, reportApi } from '../api/sales';
@@ -565,7 +566,7 @@ export function DaySummaryPage() {
                 columns={columns}
                 pagination={{ pageSize: 10 }}
                 size="small"
-              />
+               />
             ) : (
               <CompactEmpty message={t('daySummary.noPurchases', 'No purchases recorded')} />
             )
@@ -591,7 +592,7 @@ export function DaySummaryPage() {
                 columns={repColumns}
                 pagination={{ pageSize: 10 }}
                 size="small"
-              />
+               />
             ) : (
               <CompactEmpty message={t('daySummary.noRepOrders', 'No rep orders recorded')} />
             )
@@ -617,7 +618,7 @@ export function DaySummaryPage() {
                 columns={deliveryColumns}
                 pagination={{ pageSize: 10 }}
                 size="small"
-              />
+               />
             ) : (
               <CompactEmpty message={t('daySummary.noDeliveries', 'No deliveries recorded')} />
             )
@@ -625,7 +626,7 @@ export function DaySummaryPage() {
         ]}
       />
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
             <TruckOutlined className="text-emerald-500" />
@@ -672,9 +673,9 @@ export function DaySummaryPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
             <ShoppingOutlined className="text-emerald-500" />
@@ -689,23 +690,23 @@ export function DaySummaryPage() {
         {selectedPurchase && (
           <div className="space-y-6">
             <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">{t('purchase.invoiceNo', 'Invoice No')}</div>
                 <div className="font-mono font-bold text-emerald-500 text-base">{selectedPurchase.invoiceNo}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">{t('purchase.supplier', 'Supplier')}</div>
                 <div className="font-semibold text-base">{selectedPurchase.supplierName || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">{t('daySummary.invoiceDate', 'Invoice Date')}</div>
                 <div className="text-base">{selectedPurchase.invoiceDate || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">{t('purchase.status', 'Status')}</div>
                 <div className="mt-1"><Tag color={selectedPurchase.status === 'CONFIRMED' || selectedPurchase.status === 'COMPLETED' ? 'green' : 'orange'}>{selectedPurchase.status}</Tag></div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">{t('purchase.totalAmount', 'Total Order Value')}</div>
                 <div className="font-mono font-bold text-base">
                   LKR {Number(selectedPurchase.netAmount ?? selectedPurchase.totalOrderValue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -738,9 +739,9 @@ export function DaySummaryPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
             <ShoppingOutlined className="text-emerald-500" />
@@ -755,19 +756,19 @@ export function DaySummaryPage() {
         {selectedRepOrder && (
           <div className="space-y-6">
             <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-              <Col span={6}>
+              <Col xs={24} md={6}>
                 <div className="text-xs opacity-70">{t('purchase.invoiceNo', 'Order No')}</div>
                 <div className="font-mono font-bold text-emerald-500 text-base">{selectedRepOrder.orderNumber}</div>
               </Col>
-              <Col span={6}>
+              <Col xs={24} md={6}>
                 <div className="text-xs opacity-70">{t('repOrder.rep', 'Rep')}</div>
                 <div className="font-semibold text-base">{selectedRepOrder.repName || '—'}</div>
               </Col>
-              <Col span={6}>
+              <Col xs={24} md={6}>
                 <div className="text-xs opacity-70">{t('repOrder.orderDate', 'Order Date')}</div>
                 <div className="text-base">{selectedRepOrder.orderDate || '—'}</div>
               </Col>
-              <Col span={6}>
+              <Col xs={24} md={6}>
                 <div className="text-xs opacity-70">{t('repOrder.status', 'Status')}</div>
                 <div className="mt-1"><Tag color={selectedRepOrder.status === 'CONFIRMED' || selectedRepOrder.status === 'COMPLETED' ? 'green' : 'orange'}>{selectedRepOrder.status}</Tag></div>
               </Col>
@@ -815,7 +816,7 @@ export function DaySummaryPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
     </div>
   );
 }

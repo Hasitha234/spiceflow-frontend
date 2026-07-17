@@ -233,7 +233,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
         pagination={false}
         size="small"
         tableLayout="fixed"
-      />
+       />
       
       <div style={{ padding: '16px', borderTop: '1px solid #f0f0f0', backgroundColor: '#fafafa' }}>
         <Button

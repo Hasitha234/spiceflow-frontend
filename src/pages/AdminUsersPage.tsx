@@ -4,6 +4,7 @@ import { PlusOutlined, EditOutlined, SafetyCertificateOutlined, DeleteOutlined }
 import { adminApi } from '@/api/adminApi';
 import type { AdminUser, CreateUserPayload, AdminTenant } from '@/api/adminApi';
 import dayjs from 'dayjs';
+import { useIsMobile } from '@/hooks/useResponsive';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -19,6 +20,7 @@ export function AdminUsersPage() {
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [selectedBusinessOwner, setSelectedBusinessOwner] = useState<AdminUser | null>(null);
   
+  const isMobile = useIsMobile();
   const [tenantForm] = Form.useForm();
 
   const fetchUsers = async () => {
@@ -213,14 +215,14 @@ export function AdminUsersPage() {
         rowKey="id" 
         loading={loading}
         pagination={{ pageSize: 20 }}
-      />
+       />
 
       <Drawer
         title={editingUser ? 'Edit User' : 'Create New User'}
-        placement="right"
+        placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        size="default"
+        size={isMobile ? 'default' : 'default'}
       >
         <Form form={form} layout="vertical" onFinish={handleCreateOrUpdate}>
           <Form.Item name="name" label="Full Name" rules={[{ required: true }]}>
@@ -271,10 +273,10 @@ export function AdminUsersPage() {
 
       <Drawer
         title={`Agencies for ${selectedBusinessOwner?.name}`}
-        placement="right"
+        placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
         onClose={() => setTenantDrawerVisible(false)}
         open={tenantDrawerVisible}
-        size="default"
+        size={isMobile ? 'default' : 'default'}
       >
         <div style={{ marginBottom: 24 }}>
           <Text strong>Currently Assigned Agencies</Text>

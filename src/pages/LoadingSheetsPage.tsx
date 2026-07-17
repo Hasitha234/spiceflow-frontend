@@ -11,6 +11,7 @@ import { loadingSheetApi, repOrderApi, driverApi } from '../api/sales';
 import apiClient from '../api/client';
 import { UnloadToShopModal } from '../features/inventory/components/UnloadToShopModal';
 import { CancelOrderModal } from '../features/inventory/components/CancelOrderModal';
+import { ResponsiveModal } from '@/components/common/ResponsiveModal';
 
 const { Title, Text } = Typography;
 
@@ -375,11 +376,11 @@ export function LoadingSheetsPage() {
         }}
         styles={{ body: { padding: 0 } }}
       >
-        <Table rowKey="id" loading={loading} dataSource={filteredSheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table" />
+        <Table rowKey="id" loading={loading} dataSource={filteredSheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table"  />
       </Card>
 
       {/* Create Modal */}
-      <Modal title="Create Loading Sheet" open={createOpen} onCancel={() => setCreateOpen(false)}
+      <ResponsiveModal title="Create Loading Sheet" open={createOpen} onCancel={() => setCreateOpen(false)}
         onOk={handleCreate} confirmLoading={submitting} okText="Create Loading Sheet" width={600}>
         <Form form={form} layout="vertical" style={{ marginTop: '16px' }}>
           <Form.Item name="repOrderId" label="Rep Order (DRAFT only)" rules={[{ required: true, message: 'Select a rep order' }]}>
@@ -401,10 +402,10 @@ export function LoadingSheetsPage() {
             <DatePicker size="large" style={{ width: '100%' }} />
           </Form.Item>
         </Form>
-      </Modal>
+      </ResponsiveModal>
 
       {/* Detail Modal */}
-      <Modal title="Loading Sheet Details" open={detailOpen} onCancel={() => setDetailOpen(false)}
+      <ResponsiveModal title="Loading Sheet Details" open={detailOpen} onCancel={() => setDetailOpen(false)}
         footer={<Button onClick={() => setDetailOpen(false)}>Close</Button>} width={800}>
         {selectedSheet && (
           <div>
@@ -434,12 +435,12 @@ export function LoadingSheetsPage() {
                     { title: 'Product', dataIndex: 'productName', key: 'productName' },
                     { title: 'Qty', dataIndex: 'quantityReturned', key: 'quantityReturned', align: 'right' },
                     { title: 'Type', dataIndex: 'returnType', key: 'returnType' },
-                  ]} />
+                  ]}  />
               </>
             )}
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
 
       <UnloadToShopModal
         visible={unloadOpen}

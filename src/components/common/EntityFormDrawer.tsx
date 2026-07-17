@@ -1,5 +1,6 @@
 import React from 'react';
 import { Drawer, Button } from 'antd';
+import { useIsMobile } from '@/hooks/useResponsive';
 
 export interface EntityFormDrawerProps {
   open: boolean;
@@ -21,10 +22,13 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
   submitText = 'Save Changes',
   children,
 }) => {
+  const isMobile = useIsMobile();
+
   return (
     <Drawer
       title={<span className="font-semibold text-lg" style={{ color: 'var(--color-text-primary)' }}>{title}</span>}
-      size="large"
+      size={isMobile ? 'default' : 'large'}
+      placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
       onClose={onClose}
       open={open}
       destroyOnHidden

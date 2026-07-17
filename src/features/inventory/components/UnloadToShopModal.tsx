@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col } from 'antd';
+import { Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col } from 'antd';
 import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
+import { ResponsiveModal } from '@/components/common';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
 import dayjs from 'dayjs';
@@ -303,7 +304,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   };
 
   return (
-    <Modal
+    <ResponsiveModal
       title={
         <div style={{
           display: 'flex',
@@ -330,7 +331,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         )
       }
       mask={{ closable: false }}
-      destroyOnHidden
+      destroyOnClose
       styles={{
         body: { paddingBottom: '8px' },
       }}
@@ -474,17 +475,17 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
             </div>
             <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
               <Row gutter={16}>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <Form.Item name="cashAmount" label="Cash Amount (Rs)">
                     <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <Form.Item name="chequeAmount" label="Cheque Amount (Rs)">
                     <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
-                <Col span={8}>
+                <Col xs={24} md={8}>
                   <Form.Item name="loanAmount" label="Loan / Credit (Rs)">
                     <InputNumber min={0} className="w-full" size="large" placeholder="Auto / Explicit credit" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
@@ -508,17 +509,17 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                     Cheque Details
                   </div>
                   <Row gutter={16}>
-                    <Col span={8}>
+                    <Col xs={24} md={8}>
                       <Form.Item name="chequeNo" label="Cheque No" rules={[{ required: true, message: 'Required' }]}>
                         <Input placeholder="e.g. CHQ-982341" />
                       </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} md={8}>
                       <Form.Item name="chequeBankName" label="Bank Name" rules={[{ required: true, message: 'Required' }]}>
                         <Input placeholder="e.g. BOC / Commercial Bank" />
                       </Form.Item>
                     </Col>
-                    <Col span={8}>
+                    <Col xs={24} md={8}>
                       <Form.Item name="chequeDate" label="Cheque Date" rules={[{ required: true, message: 'Required' }]}>
                         <DatePicker className="w-full" />
                       </Form.Item>
@@ -754,6 +755,6 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
           </div>
         )}
       </Form>
-    </Modal>
+    </ResponsiveModal>
   );
 };

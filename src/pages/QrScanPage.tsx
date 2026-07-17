@@ -70,9 +70,6 @@ export function QrScanPage() {
         message.info(`No active deliveries found for ${shopData.shopName} today`);
       } else {
         message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
-        if (sheets.length === 1) {
-          openUnloadForm(sheets[0]);
-        }
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string; message?: string } } };
@@ -282,8 +279,7 @@ export function QrScanPage() {
             <span>Unload to Shop & Payment Collection — Sheet #{selectedSheet?.sheetNumber}</span>
           </div>
         }
-        placement="bottom"
-        height="100vh"
+        placement="bottom" rootClassName="sf-full-height-drawer"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         footer={null}
