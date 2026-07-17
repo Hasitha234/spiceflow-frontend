@@ -581,5 +581,4 @@ body {
     width: 100vw !important; 
   }
 }
-. s f - f u l l - h e i g h t - d r a w e r   . a n t - d r a w e r - c o n t e n t - w r a p p e r   {   h e i g h t :   1 0 0 v h   ! i m p o r t a n t ;   }  
- 
+.sf-full-height-drawer .ant-drawer-content-wrapper { height: 100vh !important; }
