@@ -60,7 +60,7 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
     }
   }, [open, initialValues, form]);
 
-  const handleUserSelect = (userId: number, option: any) => {
+  const handleUserSelect = (userId: number, option: { label?: string; email?: string }) => {
     form.setFieldsValue({
       name: option.label,
       email: option.email,
