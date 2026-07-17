@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { 
   Button, Card, Typography, message, Result, List as AntList, 
-  Drawer, Form, InputNumber, Input, Tag, Divider, Spin
+  Drawer, Form, InputNumber, Input, Tag, Spin, Table, Row, Col, DatePicker, Space
 } from 'antd';
 import { CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { QrCameraScanner } from '../components/common';
@@ -43,6 +43,20 @@ export function QrScanPage() {
   const [submitting, setSubmitting] = useState(false);
   const [completedSheets, setCompletedSheets] = useState<Record<number, boolean>>({});
 
+  const cashVal = Form.useWatch('cashAmount', form) || 0;
+  const chequeVal = Form.useWatch('chequeAmount', form) || 0;
+  const loanVal = Form.useWatch('loanAmount', form) || 0;
+
+  const calculateNetBill = () => {
+    const items = form.getFieldValue('items') || [];
+    return items.reduce((sum: number, i: Record<string, unknown>) => {
+      const q = Number(i?.quantityDelivered || 0);
+      const r = Number(i?.rate || 0);
+      const d = Number(i?.discountAmount || 0);
+      return sum + (q * r - d);
+    }, 0);
+  };
+
   const handleScanSuccess = async (decodedText: string) => {
     setIsLoading(true);
     try {
@@ -56,6 +70,9 @@ export function QrScanPage() {
         message.info(`No active deliveries found for ${shopData.shopName} today`);
       } else {
         message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
+        if (sheets.length === 1) {
+          openUnloadForm(sheets[0]);
+        }
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string; message?: string } } };
@@ -260,78 +277,233 @@ export function QrScanPage() {
       )}
 
       <Drawer
-        title={`Unload Order - ${selectedSheet?.sheetNumber}`}
-        placement="bottom"
-        height="85vh"
-        onClose={() => setDrawerOpen(false)}
-        open={drawerOpen}
-        footer={
-          <div className="flex gap-3 p-2">
-            <Button onClick={() => setDrawerOpen(false)} className="flex-1">Cancel</Button>
-            <Button 
-              type="primary" 
-              loading={submitting} 
-              onClick={handleRecordDelivery}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-500"
-            >
-              Confirm Delivery
-            </Button>
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontWeight: 600, fontSize: '18px' }}>
+            <span>Unload to Shop & Payment Collection — Sheet #{selectedSheet?.sheetNumber}</span>
           </div>
         }
+        placement="bottom"
+        height="100vh"
+        onClose={() => setDrawerOpen(false)}
+        open={drawerOpen}
+        footer={null}
+        destroyOnHidden
       >
-        <Form form={form} layout="vertical">
-          <Title level={5} className="!mb-4 text-emerald-600">Delivered Items</Title>
-          <Form.List name="items">
-            {(fields) => (
-              <div className="space-y-4 mb-8">
-                {fields.map(({ key, name, ...restField }) => {
-                  const item = selectedSheet?.items[name];
-                  return (
-                    <Card size="small" key={key} className="bg-slate-50 dark:bg-slate-800/50">
-                      <div className="font-medium mb-2">{item?.productName}</div>
-                      <div className="flex gap-4">
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'quantityDelivered']}
-                          label="Qty"
-                          className="!mb-0 flex-1"
-                          rules={[{ required: true, message: 'Required' }]}
-                        >
-                          <InputNumber min={0} className="w-full" />
-                        </Form.Item>
-                        <Form.Item
-                          {...restField}
-                          name={[name, 'discountAmount']}
-                          label="Discount"
-                          className="!mb-0 flex-1"
-                        >
-                          <InputNumber min={0} className="w-full" />
-                        </Form.Item>
-                      </div>
-                    </Card>
-                  );
-                })}
+        <Form form={form} layout="vertical" component={false}>
+          <div className="py-2 max-w-4xl mx-auto">
+            <div className="flex justify-between items-center mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+              <div>
+                <Title level={5} className="m-0 text-slate-800">
+                  <ShopOutlined className="mr-2 text-emerald-600" />
+                  Unloading at: <Text strong>{shop?.shopName}</Text>
+                </Title>
               </div>
-            )}
-          </Form.List>
+            </div>
 
-          <Divider />
-          <Title level={5} className="!mb-4 text-emerald-600">Payment Collection</Title>
+            <div className="space-y-4">
+              <div style={{
+                fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)',
+                marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border-default)'
+              }}>
+                1. Delivered Items
+              </div>
+            <Form.List name="items">
+              {(fields) => (
+                <Table
+                  dataSource={fields}
+                  pagination={false}
+                  size="small"
+                  className="mb-6 overflow-x-auto"
+                  columns={[
+                    {
+                      title: 'Product',
+                      key: 'productName',
+                      render: (_, field) => {
+                        const item = selectedSheet?.items[field.name];
+                        return (
+                          <>
+                            <Form.Item name={[field.name, 'productId']} hidden noStyle><Input /></Form.Item>
+                            <Form.Item name={[field.name, 'unitType']} hidden noStyle><Input /></Form.Item>
+                            <span style={{ fontWeight: 500, color: 'var(--color-text-primary)', textTransform: 'capitalize' }}>
+                              {item?.productName}
+                            </span>
+                          </>
+                        );
+                      },
+                    },
+                    {
+                      title: 'Quantity',
+                      key: 'quantityDelivered',
+                      width: 140,
+                      render: (_, field) => (
+                        <Form.Item name={[field.name, 'quantityDelivered']} noStyle rules={[{ required: true, message: 'Required' }]}>
+                          <InputNumber min={0} className="w-full" />
+                        </Form.Item>
+                      ),
+                    },
+                    {
+                      title: 'Rate (Rs)',
+                      key: 'rate',
+                      width: 130,
+                      render: (_, field) => (
+                        <Form.Item name={[field.name, 'rate']} noStyle>
+                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
+                        </Form.Item>
+                      ),
+                    },
+                    {
+                      title: 'Discount (Rs)',
+                      key: 'discountAmount',
+                      width: 130,
+                      render: (_, field) => (
+                        <Form.Item name={[field.name, 'discountAmount']} noStyle>
+                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
+                        </Form.Item>
+                      ),
+                    },
+                    {
+                      title: 'Total (Rs)',
+                      key: 'lineTotal',
+                      width: 140,
+                      align: 'right' as const,
+                      render: (_, field) => {
+                        const items = form.getFieldValue('items');
+                        const item = items?.[field.name] || {};
+                        const q = Number(item.quantityDelivered || 0);
+                        const r = Number(item.rate || 0);
+                        const d = Number(item.discountAmount || 0);
+                        const total = (q * r) - d;
+                        return (
+                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
+                            {total.toLocaleString()}
+                          </span>
+                        );
+                      },
+                    },
+                  ]}
+                />
+              )}
+            </Form.List>
 
-          <Form.Item name="cashAmount" label="Cash Amount (LKR)">
-            <InputNumber className="w-full" size="large" min={0} precision={2} />
-          </Form.Item>
+            <div style={{
+              fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)',
+              marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border-default)'
+            }}>
+              2. Payment Collection Breakdown (Cash / Cheque / Loan)
+            </div>
+            <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
+              <Row gutter={[16, 16]}>
+                <Col xs={24} md={8}>
+                  <Form.Item name="cashAmount" label="Cash Amount (Rs)" className="!mb-0">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="chequeAmount" label="Cheque Amount (Rs)" className="!mb-0">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="loanAmount" label="Loan / Credit (Rs)" className="!mb-0">
+                    <InputNumber min={0} className="w-full" size="large" placeholder="Auto / Explicit credit" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-lg space-y-4">
-            <Form.Item name="chequeAmount" label="Cheque Amount (LKR)" className="!mb-0">
-              <InputNumber className="w-full" min={0} precision={2} />
-            </Form.Item>
-            <Form.Item name="chequeNo" label="Cheque Number" className="!mb-0">
-              <Input placeholder="Enter cheque number" />
-            </Form.Item>
-            <Form.Item name="chequeBankName" label="Bank Name" className="!mb-0">
-              <Input placeholder="Enter bank name" />
-            </Form.Item>
+              {Number(chequeVal) > 0 && (
+                <div style={{
+                  background: 'var(--color-surface-subtle)', border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-md)', padding: '16px', marginTop: '16px'
+                }}>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
+                    Cheque Details
+                  </div>
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} md={8}>
+                      <Form.Item name="chequeNo" label="Cheque No" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
+                        <Input placeholder="e.g. CHQ-982341" />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={8}>
+                      <Form.Item name="chequeBankName" label="Bank Name" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
+                        <Input placeholder="e.g. BOC / Commercial Bank" />
+                      </Form.Item>
+                    </Col>
+                    <Col xs={24} md={8}>
+                      <Form.Item name="chequeDate" label="Cheque Date" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
+                        <DatePicker className="w-full" />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </div>
+              )}
+            </Card>
+
+            <div style={{
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              background: 'var(--color-surface-subtle)', border: '1px solid var(--color-border-default)',
+              borderRadius: 'var(--radius-md)', padding: '16px', marginTop: '24px', flexWrap: 'wrap', gap: '16px'
+            }}>
+              <div aria-live="polite" role="status" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
+                <div>
+                  <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Net Bill:</span>
+                  <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
+                    Rs. {calculateNetBill().toLocaleString()}
+                  </span>
+                </div>
+                
+                <div style={{ width: '1px', height: '24px', background: 'var(--color-border-default)' }} className="hidden sm:block" />
+                
+                {(() => {
+                  const netBill = calculateNetBill();
+                  const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
+                  const diff = netBill - entered;
+                  
+                  let statusColor;
+                  if (diff > 0) statusColor = 'var(--color-danger-text)';
+                  else if (diff < 0) statusColor = 'var(--color-warning-text)';
+                  else statusColor = 'var(--color-success-text)';
+                  
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <div>
+                        <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Entered:</span>
+                        <span style={{ fontSize: '18px', fontWeight: 600, color: statusColor }}>
+                          Rs. {entered.toLocaleString()}
+                        </span>
+                      </div>
+                      {diff !== 0 && (
+                        <span style={{ 
+                          fontSize: '13px', fontWeight: 600, color: statusColor,
+                          background: diff > 0 ? 'var(--color-danger-bg)' : 'var(--color-warning-bg)',
+                          padding: '4px 8px', borderRadius: '4px'
+                        }}>
+                          {diff > 0 ? `Short by Rs. ${diff.toLocaleString()}` : `Over by Rs. ${Math.abs(diff).toLocaleString()}`}
+                        </span>
+                      )}
+                      {diff === 0 && netBill > 0 && (
+                        <CheckCircleOutlined style={{ color: 'var(--color-success-text)', fontSize: '18px' }} />
+                      )}
+                    </div>
+                  );
+                })()}
+              </div>
+              <Space size={12} className="w-full sm:w-auto justify-end">
+                <Button onClick={() => setDrawerOpen(false)}>
+                  Cancel
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<CheckCircleOutlined />}
+                  onClick={handleRecordDelivery}
+                  loading={submitting}
+                  className="bg-emerald-600 hover:bg-emerald-500"
+                >
+                  Save Shop Delivery
+                </Button>
+              </Space>
+            </div>
+            </div>
           </div>
         </Form>
       </Drawer>
