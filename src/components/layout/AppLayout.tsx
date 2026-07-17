@@ -124,20 +124,17 @@ export function AppLayout() {
   const renderMobileBottomNav = () => {
     if (!isMobile) return null;
 
-    let navItems = [];
-    if (userType === 'DRIVER') {
-      navItems = [
-        { key: '/loading', icon: <CarOutlined />, label: 'Load' },
-        { key: '/deliveries', icon: <AppstoreOutlined />, label: 'Deliveries' },
-        { key: '/qr-scan', icon: <QrcodeOutlined />, label: 'Scan' },
-      ];
-    } else {
-      navItems = [
-        { key: '/day-summary', icon: <AppstoreOutlined />, label: 'Dash' },
-        { key: '/inventory', icon: <DatabaseOutlined />, label: 'Inv' },
-        { key: '/sales', icon: <CarOutlined />, label: 'Sales' },
-      ];
-    }
+    const navItems = userType === 'DRIVER'
+      ? [
+          { key: '/loading', icon: <CarOutlined />, label: 'Load' },
+          { key: '/deliveries', icon: <AppstoreOutlined />, label: 'Deliveries' },
+          { key: '/qr-scan', icon: <QrcodeOutlined />, label: 'Scan' },
+        ]
+      : [
+          { key: '/day-summary', icon: <AppstoreOutlined />, label: 'Dash' },
+          { key: '/inventory', icon: <DatabaseOutlined />, label: 'Inv' },
+          { key: '/sales', icon: <CarOutlined />, label: 'Sales' },
+        ];
 
     return (
       <div style={{

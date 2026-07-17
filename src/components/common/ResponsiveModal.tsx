@@ -19,10 +19,10 @@ export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
       <Drawer
         title={mobileTitle || props.title}
         placement="bottom" rootClassName="sf-full-height-drawer"
-        onClose={props.onCancel as any}
+        onClose={props.onCancel as unknown as (e: React.MouseEvent | React.KeyboardEvent) => void}
         open={props.open}
         destroyOnHidden
-        footer={props.footer !== null && props.footer !== undefined ? (props.footer as any) : undefined}
+        footer={props.footer !== null && props.footer !== undefined ? (props.footer as unknown as React.ReactNode) : undefined}
         styles={{
           body: { padding: '16px' }
         }}
