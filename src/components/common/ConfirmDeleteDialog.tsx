@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Button } from 'antd';
+import { Button } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ResponsiveModal } from './ResponsiveModal';
 
 export interface ConfirmDeleteDialogProps {
   open: boolean;
@@ -22,7 +23,7 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
   onCancel,
 }) => {
   return (
-    <Modal
+    <ResponsiveModal
       open={open}
       title={
         <div className="flex items-center gap-2 text-red-400">
@@ -63,6 +64,6 @@ export const ConfirmDeleteDialog: React.FC<ConfirmDeleteDialogProps> = ({
           </p>
         )}
       </div>
-    </Modal>
+    </ResponsiveModal>
   );
 };

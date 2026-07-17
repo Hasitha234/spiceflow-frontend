@@ -36,7 +36,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <h3 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem', marginBottom: '16px' }}>Basic Details</h3>
       
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item
             label="Product Code"
             htmlFor="sku"
@@ -53,7 +53,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             />
           </Form.Item>
         </Col>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item
             label="Product Name"
             htmlFor="name"
@@ -76,7 +76,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <h3 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem', marginTop: '24px', marginBottom: '16px' }}>Classification</h3>
       
       <Row gutter={16}>
-        <Col span={24}>
+        <Col xs={24} md={24}>
           <Form.Item
             label="Supplier"
             validateStatus={errors.supplierId ? 'error' : ''}
@@ -106,7 +106,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <h3 style={{ color: 'var(--text-primary)', fontWeight: 600, fontSize: '1.125rem', marginTop: '24px', marginBottom: '16px' }}>Pricing & Units</h3>
       
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item
             label="Rate (LKR)"
             htmlFor="basePrice"
@@ -135,7 +135,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       {/* ── Packaging ──────────────────────────────────────── */}
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item
             label="Net Weight"
             validateStatus={errors.unitOfMeasure ? 'error' : ''}
@@ -155,7 +155,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             />
           </Form.Item>
         </Col>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item
             label="Unit Type"
             validateStatus={errors.unitType ? 'error' : ''}
@@ -174,7 +174,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       </Row>
 
       <Row gutter={16}>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item label="Items per Bundle">
             <Controller
               name="itemsPerSoldUnit"
@@ -185,7 +185,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
             />
           </Form.Item>
         </Col>
-        <Col span={12}>
+        <Col xs={24} md={12}>
           <Form.Item label="Bundles per Box">
             <Controller
               name="soldUnitsPerBox"

@@ -11,7 +11,6 @@ import {
   Tooltip,
   Typography,
   message,
-  Modal,
 } from 'antd';
 import {
   PlusOutlined,
@@ -23,6 +22,7 @@ import { repOrderApi } from '../api/sales';
 import type { RepOrder } from '../types/sales';
 import { PermissionGuard, PageLayout, PageHeader, DataTable } from '../components/common';
 import dayjs from 'dayjs';
+import { ResponsiveModal } from '@/components/common/ResponsiveModal';
 
 const { Title } = Typography;
 
@@ -154,20 +154,20 @@ export function RepOrdersPage() {
       <PageHeader
         title={t('repOrder.repOrder', 'Rep Orders')}
         extra={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0">
             <Input.Search
               placeholder="Search orders..."
               allowClear
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 280 }}
+              className="w-full sm:w-[280px]"
             />
             <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_REP', 'ROLE_SALES_MANAGER']}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
                 onClick={() => navigate('/sales/new')}
-                className="font-medium"
+                className="font-medium w-full sm:w-auto"
               >
                 New Rep Order
               </Button>
@@ -181,9 +181,10 @@ export function RepOrdersPage() {
         isLoading={loading}
         dataSource={filteredOrders}
         columns={columns}
+        scroll={{ x: 1000 }}
       />
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg">
             <ShoppingOutlined className="text-emerald-500" />
@@ -198,27 +199,27 @@ export function RepOrdersPage() {
         {selectedOrder && (
           <div className="space-y-6">
             <Row gutter={[16, 16]} className="p-4 rounded-lg bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10">
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Order Number</div>
                 <div className="font-mono font-bold text-emerald-500 text-base">{selectedOrder.orderNumber || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Sales Rep</div>
                 <div className="font-semibold text-base">{selectedOrder.repName || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Order Date</div>
                 <div className="text-base">{selectedOrder.orderDate ? dayjs(selectedOrder.orderDate).format('YYYY-MM-DD') : '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Route Area</div>
                 <div>{((selectedOrder as unknown) as Record<string, unknown>).routeArea as string || '—'}</div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Status</div>
                 <div className="mt-1"><Tag color={selectedOrder.status === 'CONFIRMED' ? 'green' : 'orange'}>{selectedOrder.status}</Tag></div>
               </Col>
-              <Col span={8}>
+              <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Net Amount</div>
                 <div className="font-mono font-bold text-base text-emerald-500">
                   LKR {Number(selectedOrder.netAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -235,6 +236,7 @@ export function RepOrdersPage() {
                     rowKey="id"
                     pagination={false}
                     size="small"
+                    scroll={{ x: 600 }}
                     columns={[
                       { title: 'Product', dataIndex: 'productName', key: 'productName' },
                       { title: 'Qty', dataIndex: 'quantity', key: 'qty', align: 'right' },
@@ -258,7 +260,7 @@ export function RepOrdersPage() {
             </div>
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
     </PageLayout>
   );
 }

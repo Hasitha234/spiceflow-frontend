@@ -16,3 +16,4 @@ export * from './AuditTimeline';
 export * from './ListPageFooter';
 export * from './TruncatedCell';
 export * from './StatusTag';
+export * from './ResponsiveModal';

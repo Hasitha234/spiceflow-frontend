@@ -1,17 +1,23 @@
-import { Layout, Menu, Dropdown, Button, Space, Avatar, Typography } from 'antd';
+import { Layout, Menu, Dropdown, Button, Space, Avatar, Typography, Drawer } from 'antd';
 import { 
   LogoutOutlined, 
   GlobalOutlined,
   BulbOutlined,
   MoonOutlined,
   UserOutlined,
-  LeftOutlined
+  LeftOutlined,
+  MenuOutlined,
+  AppstoreOutlined,
+  CarOutlined,
+  QrcodeOutlined,
+  DatabaseOutlined
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import { useThemeStore } from '@/store/themeStore';
+import { useIsMobile } from '@/hooks/useResponsive';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { useAgencyStore } from '@/store/agencyStore';
 import { useTenantStore } from '@/store/tenantStore';
@@ -49,6 +55,8 @@ export function AppLayout() {
   const { tenantId, setTenantId } = useTenantStore();
   
   const { theme, toggleTheme } = useThemeStore();
+  const isMobile = useIsMobile();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const userType = user?.userType || 'TENANT_OWNER';
 
@@ -113,65 +121,137 @@ export function AppLayout() {
       ]
     : [];
 
-  return (
-    <Layout style={{ minHeight: '100vh' }}>
-      <Sider 
-        collapsible 
-        collapsed={collapsed} 
-        onCollapse={setCollapsed}
-        trigger={null}
-        className="sf-sidebar"
-        width={260}
-        style={{ display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0, left: 0, zIndex: 20 }}
-      >
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1, overflowY: 'auto' }}>
-            <div style={{ 
-              height: 64, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? 0 : '0 20px',
-              overflow: 'hidden',
-              borderBottom: '1px solid var(--surface-border)',
-            }}>
-              <BrandLogo size={32} showText={!collapsed} textSize={18} badgeText="" />
-            </div>
-            
-            <Menu
-              theme={theme === 'dark' ? 'dark' : 'light'}
-              mode="inline"
-              selectedKeys={[currentKey]}
-              onClick={({ key }) => navigate(key)}
-              style={{ 
-                background: 'transparent',
-                borderRight: 'none',
-                padding: '16px 12px 16px 0'
-              }}
-              items={menuItems.map((group) => ({
-                type: 'group',
-                label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 16, marginBottom: 8, paddingLeft: collapsed ? 0 : 20, textAlign: collapsed ? 'center' : 'left' }}>{collapsed ? '•' : group.label}</div>,
-                children: group.children.map((item) => ({
-                  key: item.key,
-                  label: t(item.translateKey),
-                  style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
-                }))
-              }))}
-            />
-          </div>
+  const renderMobileBottomNav = () => {
+    if (!isMobile) return null;
 
-          <div className="p-3 border-t border-slate-200 mt-auto">
-            <button
-              type="button"
-              aria-label="Collapse sidebar navigation"
-              onClick={() => setCollapsed(!collapsed)}
-              className="w-full h-9 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none cursor-pointer"
+    let navItems = [];
+    if (userType === 'DRIVER') {
+      navItems = [
+        { key: '/loading', icon: <CarOutlined />, label: 'Load' },
+        { key: '/deliveries', icon: <AppstoreOutlined />, label: 'Deliveries' },
+        { key: '/qr-scan', icon: <QrcodeOutlined />, label: 'Scan' },
+      ];
+    } else {
+      navItems = [
+        { key: '/day-summary', icon: <AppstoreOutlined />, label: 'Dash' },
+        { key: '/inventory', icon: <DatabaseOutlined />, label: 'Inv' },
+        { key: '/sales', icon: <CarOutlined />, label: 'Sales' },
+      ];
+    }
+
+    return (
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'var(--color-bg-app)',
+        borderTop: '1px solid var(--color-border-default)',
+        display: 'flex',
+        justifyContent: 'space-around',
+        padding: '12px 0 calc(12px + env(safe-area-inset-bottom))',
+        zIndex: 100,
+        boxShadow: '0 -4px 12px rgba(0,0,0,0.05)'
+      }}>
+        {navItems.map(item => {
+          const isActive = location.pathname.startsWith(item.key);
+          return (
+            <div
+              key={item.key}
+              onClick={() => navigate(item.key)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                color: isActive ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+                cursor: 'pointer'
+              }}
             >
-              <LeftOutlined className={`text-xs transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
+              <div style={{ fontSize: '20px' }}>{item.icon}</div>
+              <span style={{ fontSize: '12px', fontWeight: isActive ? 600 : 400 }}>{item.label}</span>
+            </div>
+          );
+        })}
+        <div
+          onClick={() => setMobileMenuOpen(true)}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '4px',
+            color: 'var(--color-text-secondary)',
+            cursor: 'pointer'
+          }}
+        >
+          <div style={{ fontSize: '20px' }}><MenuOutlined /></div>
+          <span style={{ fontSize: '12px' }}>Menu</span>
         </div>
-      </Sider>
+      </div>
+    );
+  };
+
+  return (
+      <Layout style={{ minHeight: '100vh', paddingBottom: isMobile ? '80px' : 0 }}>
+        {!isMobile && (
+          <Sider 
+            collapsible 
+            collapsed={collapsed} 
+            onCollapse={setCollapsed}
+            trigger={null}
+            className="sf-sidebar"
+            width={260}
+            style={{ display: 'flex', flexDirection: 'column', height: '100vh', position: 'sticky', top: 0, left: 0, zIndex: 20 }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'space-between' }}>
+              <div style={{ flex: 1, overflowY: 'auto' }}>
+                <div style={{ 
+                  height: 64, 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  padding: collapsed ? 0 : '0 20px',
+                  overflow: 'hidden',
+                  borderBottom: '1px solid var(--surface-border)',
+                }}>
+                  <BrandLogo size={32} showText={!collapsed} textSize={18} badgeText="" />
+                </div>
+                
+                <Menu
+                  theme={theme === 'dark' ? 'dark' : 'light'}
+                  mode="inline"
+                  selectedKeys={[currentKey]}
+                  onClick={({ key }) => navigate(key)}
+                  style={{ 
+                    background: 'transparent',
+                    borderRight: 'none',
+                    padding: '16px 12px 16px 0'
+                  }}
+                  items={menuItems.map((group) => ({
+                    type: 'group',
+                    label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 16, marginBottom: 8, paddingLeft: collapsed ? 0 : 20, textAlign: collapsed ? 'center' : 'left' }}>{collapsed ? '•' : group.label}</div>,
+                    children: group.children.map((item) => ({
+                      key: item.key,
+                      label: t(item.translateKey),
+                      style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+                    }))
+                  }))}
+                />
+              </div>
+
+              <div className="p-3 border-t border-slate-200 mt-auto">
+                <button
+                  type="button"
+                  aria-label="Collapse sidebar navigation"
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="w-full h-9 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:outline-none cursor-pointer"
+                >
+                  <LeftOutlined className={`text-xs transition-transform duration-200 ${collapsed ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+            </div>
+          </Sider>
+        )}
       
       <Layout>
         <Header className="sf-header" style={{ 
@@ -278,6 +358,42 @@ export function AppLayout() {
           </div>
         </Content>
       </Layout>
+      {renderMobileBottomNav()}
+      <Drawer
+        title="Menu"
+        placement="left"
+        onClose={() => setMobileMenuOpen(false)}
+        open={mobileMenuOpen}
+        size="default"
+        styles={{ body: { padding: 0 } }}
+      >
+        <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--color-border-default)' }}>
+          <BrandLogo size={32} showText={true} textSize={18} badgeText="" />
+        </div>
+        <Menu
+          theme={theme === 'dark' ? 'dark' : 'light'}
+          mode="inline"
+          selectedKeys={[currentKey]}
+          onClick={({ key }) => {
+            navigate(key);
+            setMobileMenuOpen(false);
+          }}
+          style={{ 
+            background: 'transparent',
+            borderRight: 'none',
+            padding: '16px 12px 16px 0'
+          }}
+          items={menuItems.map((group) => ({
+            type: 'group',
+            label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 8, marginBottom: 8, paddingLeft: 20 }}>{group.label}</div>,
+            children: group.children.map((item) => ({
+              key: item.key,
+              label: t(item.translateKey),
+              style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+            }))
+          }))}
+        />
+      </Drawer>
     </Layout>
   );
 }

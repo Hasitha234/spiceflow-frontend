@@ -1,7 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, Modal, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
+import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
+import { ResponsiveModal } from '@/components/common';
+
 import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
@@ -782,7 +784,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
         </Card>
       )}
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
             <ReloadOutlined className="text-emerald-500" />
@@ -851,9 +853,9 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
             />
           </div>
         </div>
-      </Modal>
+      </ResponsiveModal>
 
-      <Modal
+      <ResponsiveModal
         title={
           <div className="flex items-center gap-2 text-lg text-slate-800 dark:text-slate-200">
             {editingItem ? <EditOutlined className="text-emerald-500" /> : <PlusOutlined className="text-emerald-500" />}
@@ -897,7 +899,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           </Form.Item>
 
           <Row gutter={16}>
-            <Col span={12}>
+            <Col xs={24} md={12}>
               <Form.Item
                 name="quantityAvailable"
                 label={t('inventory.quantityAvailable', 'Quantity Available')}
@@ -906,7 +908,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 <InputNumber min={0} placeholder="0" onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
               </Form.Item>
             </Col>
-            <Col span={12}>
+            <Col xs={24} md={12}>
               <Form.Item
                 name="quantityReserved"
                 label={t('inventory.quantityReserved', 'Quantity Reserved')}
@@ -930,7 +932,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
             <DatePicker style={{ width: '100%' }} />
           </Form.Item>
         </Form>
-      </Modal>
+      </ResponsiveModal>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Table, Button, Space, Typography, Tag, Drawer, Form, Input, Select, App
 import { PlusOutlined, EditOutlined, StopOutlined, CheckCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { adminApi } from '@/api/adminApi';
 import type { AdminTenant, BusinessType } from '@/api/adminApi';
+import { useIsMobile } from '@/hooks/useResponsive';
 import dayjs from 'dayjs';
 
 const { Title } = Typography;
@@ -15,6 +16,7 @@ export function AdminTenantsPage() {
   const [loading, setLoading] = useState(false);
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [editingTenant, setEditingTenant] = useState<AdminTenant | null>(null);
+  const isMobile = useIsMobile();
   
   const [form] = Form.useForm();
 
@@ -184,14 +186,14 @@ export function AdminTenantsPage() {
         rowKey="id" 
         loading={loading}
         pagination={{ pageSize: 20 }}
-      />
+       />
 
       <Drawer
         title={editingTenant ? 'Edit Agency' : 'Create New Agency'}
-        placement="right"
+        placement={isMobile ? 'bottom' : 'right'} rootClassName={isMobile ? 'sf-full-height-drawer' : ''}
         onClose={() => setDrawerVisible(false)}
         open={drawerVisible}
-        size="default"
+        size={isMobile ? 'default' : 'default'}
       >
         <Form form={form} layout="vertical" onFinish={handleCreateOrUpdate}>
           <Form.Item name="businessName" label="Business Name" rules={[{ required: true }]}>

@@ -279,8 +279,7 @@ export function QrScanPage() {
             <span>Unload to Shop & Payment Collection — Sheet #{selectedSheet?.sheetNumber}</span>
           </div>
         }
-        placement="bottom"
-        height="100vh"
+        placement="bottom" rootClassName="sf-full-height-drawer"
         onClose={() => setDrawerOpen(false)}
         open={drawerOpen}
         footer={null}

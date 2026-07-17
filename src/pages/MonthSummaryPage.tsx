@@ -115,13 +115,13 @@ export function MonthSummaryPage() {
             Overview of Sales, Purchases, and Expenses for {selectedMonth.format('MMMM YYYY')}
           </Text>
         </div>
-        <Space size="middle">
+        <Space size="middle" wrap>
           <DatePicker
             picker="month"
             value={selectedMonth}
             onChange={handleDateChange}
             allowClear={false}
-            className="w-48 shadow-sm"
+            className="w-full sm:w-48 shadow-sm"
             size="large"
           />
           <Button 
@@ -129,7 +129,7 @@ export function MonthSummaryPage() {
             size="large"
             icon={<PlusOutlined />} 
             onClick={() => setIsDrawerOpen(true)}
-            className="shadow-sm"
+            className="w-full sm:w-auto shadow-sm"
           >
             Add Expense
           </Button>
@@ -206,7 +206,8 @@ export function MonthSummaryPage() {
               loading={loading}
               pagination={{ pageSize: 10 }}
               size="middle"
-            />
+              scroll={{ x: 800 }}
+             />
           </Card>
         </Col>
         <Col xs={24} lg={8}>
@@ -222,7 +223,8 @@ export function MonthSummaryPage() {
               loading={loading}
               pagination={false}
               size="middle"
-            />
+              scroll={{ x: 400 }}
+             />
           </Card>
         </Col>
       </Row>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Modal, Select, Form, Typography, message } from 'antd';
+import { Select, Form, Typography, message } from 'antd';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { ResponsiveModal } from '@/components/common';
 import { loadingSheetApi } from '../../../api/sales';
 import { warehouseApi } from '../../../api/inventory';
 import type { LoadingSheet } from '../../../types/sales';
@@ -78,7 +79,7 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
   if (!loadingSheet) return null;
 
   return (
-    <Modal
+    <ResponsiveModal
       title={
         <div className="flex items-center gap-2 text-rose-600 font-semibold">
           <ExclamationCircleOutlined />
@@ -121,6 +122,6 @@ export const CancelOrderModal: React.FC<CancelOrderModalProps> = ({
           </Form.Item>
         </Form>
       </div>
-    </Modal>
+    </ResponsiveModal>
   );
 };

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState } from 'react';
 import {
-  Button, Card, Col, DatePicker, Descriptions, Form, Input, InputNumber, Modal, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Divider, Popconfirm,
+  Button, Card, Col, DatePicker, Descriptions, Form, Input, InputNumber, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Divider, Popconfirm,
 } from 'antd';
 import {
   PlusOutlined, EyeOutlined, CheckCircleOutlined, TruckOutlined, CloseCircleOutlined, ShopOutlined,
@@ -9,6 +9,7 @@ import {
 import dayjs from 'dayjs';
 import { deliveryApi, loadingSheetApi, qrApi } from '../api/sales';
 import apiClient from '../api/client';
+import { ResponsiveModal } from '@/components/common/ResponsiveModal';
 
 const { Title, Text } = Typography;
 
@@ -253,11 +254,11 @@ export function DeliveriesPage() {
       </Row>
 
       <Card style={{ borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-        <Table rowKey="id" loading={loading} dataSource={deliveries} columns={columns} pagination={{ pageSize: 10 }} />
+        <Table rowKey="id" loading={loading} dataSource={deliveries} columns={columns} pagination={{ pageSize: 10 }}  />
       </Card>
 
       {/* Create Delivery Modal */}
-      <Modal title="Start a New Delivery" open={createOpen} onCancel={() => setCreateOpen(false)}
+      <ResponsiveModal title="Start a New Delivery" open={createOpen} onCancel={() => setCreateOpen(false)}
         onOk={handleCreate} confirmLoading={submitting} okText="Start Delivery" width={500}>
         <Form form={createForm} layout="vertical" style={{ marginTop: '16px' }}>
           <Form.Item name="loadingSheetId" label="Confirmed Loading Sheet" rules={[{ required: true, message: 'Select a loading sheet' }]}>
@@ -271,10 +272,10 @@ export function DeliveriesPage() {
             <DatePicker size="large" style={{ width: '100%' }} />
           </Form.Item>
         </Form>
-      </Modal>
+      </ResponsiveModal>
 
       {/* Delivery Detail Modal */}
-      <Modal title={<Space><TruckOutlined style={{ color: '#10b981' }} /> Delivery #{selectedDelivery?.id} — {selectedDelivery?.status}</Space>}
+      <ResponsiveModal title={<Space><TruckOutlined style={{ color: '#10b981' }} /> Delivery #{selectedDelivery?.id} — {selectedDelivery?.status}</Space>}
         open={detailOpen} onCancel={() => setDetailOpen(false)} width={900}
         footer={
           <Space>
@@ -364,10 +365,10 @@ export function DeliveriesPage() {
             )}
           </div>
         )}
-      </Modal>
+      </ResponsiveModal>
 
       {/* Record Shop Delivery Modal */}
-      <Modal title={`Record Delivery — ${selectedShop?.shopName || selectedShop?.shop?.name || 'Shop'}`}
+      <ResponsiveModal title={`Record Delivery — ${selectedShop?.shopName || selectedShop?.shop?.name || 'Shop'}`}
         open={recordShopOpen} onCancel={() => setRecordShopOpen(false)}
         onOk={handleRecordShop} confirmLoading={submitting} okText="Save Delivery" width={700}>
         <Form form={shopForm} layout="vertical" style={{ marginTop: '16px' }}>
@@ -416,29 +417,29 @@ export function DeliveriesPage() {
           <Divider />
           <Title level={5}>Payment Collection</Title>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col xs={24} md={8}>
               <Form.Item name="cashAmount" label="Cash Amount">
                 <InputNumber onFocus={(e) => e.target.select()} size="large" min={0} step={0.01} precision={2} style={{ width: '100%' }} placeholder="0.00" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} md={8}>
               <Form.Item name="chequeAmount" label="Cheque Amount">
                 <InputNumber onFocus={(e) => e.target.select()} size="large" min={0} step={0.01} precision={2} style={{ width: '100%' }} placeholder="0.00" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} md={8}>
               <Form.Item name="chequeNo" label="Cheque No">
                 <Input size="large" placeholder="CHQ-..." />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
-            <Col span={8}>
+            <Col xs={24} md={8}>
               <Form.Item name="chequeBankName" label="Bank Name">
                 <Input size="large" placeholder="Bank name" />
               </Form.Item>
             </Col>
-            <Col span={8}>
+            <Col xs={24} md={8}>
               <Form.Item name="chequeDate" label="Cheque Date">
                 <DatePicker size="large" style={{ width: '100%' }} />
               </Form.Item>
@@ -446,7 +447,7 @@ export function DeliveriesPage() {
           </Row>
           <Text type="secondary">Any remaining balance after Cash + Cheque will be added as a Loan (credit) to the shop's outstanding balance.</Text>
         </Form>
-      </Modal>
+      </ResponsiveModal>
     </div>
   );
 }
