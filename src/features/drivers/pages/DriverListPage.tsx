@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Input, Table, Typography, Empty, Space, Popconfirm } from 'antd';
+import { Button, Input, Table, Typography, Empty, Space, Popconfirm } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SearchOutlined,
@@ -206,7 +206,6 @@ export function DriverListPage() {
         {/* HEADER AREA */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
-            <Breadcrumb items={[{ title: 'Settings' }, { title: 'Drivers' }]} style={{ marginBottom: '8px' }} />
             <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
               Drivers & Logistics
             </Title>
