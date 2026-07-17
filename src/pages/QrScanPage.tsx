@@ -70,9 +70,6 @@ export function QrScanPage() {
         message.info(`No active deliveries found for ${shopData.shopName} today`);
       } else {
         message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
-        if (sheets.length === 1) {
-          openUnloadForm(sheets[0]);
-        }
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string; message?: string } } };
