@@ -60,11 +60,13 @@ export const DriverFormDrawer: React.FC<DriverFormDrawerProps> = ({
     }
   }, [open, initialValues, form]);
 
-  const handleUserSelect = (userId: number, option: { label?: string; email?: string }) => {
-    form.setFieldsValue({
-      name: option.label,
-      email: option.email,
-    });
+  const handleUserSelect = (_value: string, option?: { label: string; value: string; email: string } | { label: string; value: string; email: string }[] | undefined) => {
+    if (option && !Array.isArray(option)) {
+      form.setFieldsValue({
+        name: option.label,
+        email: option.email,
+      });
+    }
   };
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

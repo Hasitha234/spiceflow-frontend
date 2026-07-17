@@ -100,11 +100,12 @@ export function DriverListPage() {
       width: '22%',
       render: (_, record) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-          <TruncatedCell 
-            value={record.email || '—'} 
-            maxWidth="200px"
-            style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}
-          />
+          <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>
+            <TruncatedCell 
+              value={record.email || '—'} 
+              maxWidth="200px"
+            />
+          </div>
           <Text style={{ 
             fontSize: 'var(--text-sm)',          // 13px
             color: 'var(--color-text-secondary)',
