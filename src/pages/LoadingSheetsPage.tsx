@@ -391,7 +391,7 @@ export function LoadingSheetsPage() {
           </Form.Item>
           <Form.Item name="driverId" label="Driver" rules={[{ required: true, message: 'Select a driver' }]}>
             <Select size="large" placeholder="Select driver" showSearch optionFilterProp="label"
-              options={drivers.map((d: any) => ({ label: `${d.name} — ${d.vehicleNo || ''}`, value: String(d.id) }))} />
+              options={drivers.map((d: any) => ({ label: `${d.name} ${d.assignedVehicle ? `— ${d.assignedVehicle}` : ''}`, value: String(d.id) }))} />
           </Form.Item>
           <Form.Item name="warehouseId" label="Source Warehouse (for reference)">
             <Select size="large" placeholder="Select source warehouse" allowClear

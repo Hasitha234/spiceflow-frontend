@@ -13,7 +13,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Breadcrumb, Button, Input, Table, Tag, Typography, Empty, ConfigProvider, Space, Popconfirm } from 'antd';
+import { Breadcrumb, Button, Input, Table, Typography, Empty, Space, Popconfirm } from 'antd';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   SearchOutlined,
@@ -31,7 +31,7 @@ import { useDeleteDriver } from '../hooks/useDeleteDriver';
 import type { DriverResponse } from '@/api/generated';
 import { DriverFormDrawer } from '../components/DriverFormDrawer';
 import { pluralize } from '@/utils/pluralize';
-import { ListPageFooter, TruncatedCell } from '@/components/common';
+import { ListPageFooter, TruncatedCell, StatusTag, type StatusTagVariant } from '@/components/common';
 
 const { Title, Text } = Typography;
 
@@ -70,97 +70,107 @@ export function DriverListPage() {
   // Table Columns bound to real DriverResponse schema
   const columns: ColumnsType<DriverResponse> = [
     {
-      title: 'Driver Details',
-      key: 'details',
+      title: 'Driver',
+      key: 'driver',
+      width: '28%',
       render: (_, record) => (
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <TruncatedCell value={record.name || ''} className="font-semibold" />
-          <Text type="secondary" style={{ fontSize: '12px' }}>ID: {record.employeeId}</Text>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <Text style={{ 
+            fontWeight: 600, 
+            fontSize: 'var(--text-base)',       // 14px
+            color: 'var(--color-text-primary)',
+            textTransform: 'capitalize',
+          }}>
+            {record.name}
+          </Text>
+          <Text style={{ 
+            fontSize: 'var(--text-xs)',          // 11px
+            color: 'var(--color-text-tertiary)',
+          }}>
+            {record.employeeId}
+            {record.licenseNumber && ` · ${record.licenseNumber}`}
+            {record.licenseClass && ` · ${record.licenseClass}`}
+          </Text>
         </div>
       ),
     },
     {
-      title: 'Contact Info',
+      title: 'Contact',
       key: 'contact',
+      width: '22%',
       render: (_, record) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ maxWidth: '160px' }}>
-            <Text type="secondary" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', display: 'block', lineHeight: 1 }}>EMAIL</Text>
-            <TruncatedCell value={record.email || ''} className="text-[13px]" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-primary)' }}>
+            <TruncatedCell 
+              value={record.email || '—'} 
+              maxWidth="200px"
+            />
           </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', display: 'block', lineHeight: 1 }}>PHONE</Text>
-            <Text style={{ fontSize: '13px' }}>{record.phone}</Text>
-          </div>
+          <Text style={{ 
+            fontSize: 'var(--text-sm)',          // 13px
+            color: 'var(--color-text-secondary)',
+          }}>
+            {record.phone || '—'}
+          </Text>
         </div>
       ),
     },
     {
-      title: 'Licensing',
-      key: 'licensing',
-      render: (_, record) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Text style={{ fontWeight: 500 }}>{record.licenseNumber}</Text>
-            <Tag style={{ margin: 0 }}>{record.licenseClass}</Tag>
-          </div>
-          <div>
-            <Text type="secondary" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', display: 'inline-block', marginRight: '4px' }}>EXPIRES</Text>
-            <Text style={{ fontSize: '13px' }}>{record.licenseExpiry}</Text>
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Logistics & Vehicle',
+      title: 'Vehicle & Warehouse',
       key: 'logistics',
+      width: '22%',
       render: (_, record) => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <TruncatedCell value={record.assignedVehicle || 'Unassigned'} className="font-medium" />
-          <div>
-            <Text type="secondary" style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.05em', display: 'block', lineHeight: 1 }}>WAREHOUSE</Text>
-            <TruncatedCell value={record.defaultWarehouseName || 'None'} className="text-[13px]" maxWidth="160px" />
-          </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <Text style={{ 
+            fontWeight: 500, 
+            fontSize: 'var(--text-sm)',
+            color: 'var(--color-text-primary)',
+          }}>
+            {record.assignedVehicle || '—'}
+          </Text>
+          <Text style={{ 
+            fontSize: 'var(--text-xs)',
+            color: 'var(--color-text-tertiary)',
+          }}>
+            {record.defaultWarehouseName || '—'}
+          </Text>
         </div>
       ),
     },
     {
-      title: 'Operational Status',
+      title: 'Status',
       key: 'status',
+      width: '14%',
       render: (_, record) => {
-        let color = 'default';
-        if (record.status === 'AVAILABLE') color = 'success';
-        if (record.status === 'ON_LEAVE') color = 'warning';
-        if (record.status === 'ON_LEAVE' || record.status === 'ON_ROUTE') color = 'processing';
-        return <Tag color={color} style={{ border: 'none' }}>{record.status}</Tag>;
+        if (!record.isActive) {
+          return <StatusTag variant="neutral" label="Inactive" />;
+        }
+        const statusMap: Record<string, StatusTagVariant> = {
+          'AVAILABLE': 'success',
+          'ON_LEAVE': 'warning',
+          'ON_ROUTE': 'info',
+          'UNAVAILABLE': 'neutral',
+        };
+        const variant = statusMap[record.status || ''] || 'neutral';
+        const label = (record.status || 'Unknown')
+          .replace(/_/g, ' ')
+          .replace(/\b\w/g, c => c.toUpperCase());
+        return <StatusTag variant={variant} label={label} />;
       },
     },
     {
-      title: 'Active',
-      key: 'active',
-      render: (_, record) => {
-        const color = record.isActive ? '#10b981' : '#8b949e';
-        return (
-          <Tag style={{ background: 'transparent', borderColor: color, color: color }}>
-            {record.isActive ? 'Active' : 'Inactive'}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: 'Actions',
+      title: '',           // No header text for actions column
       key: 'actions',
+      width: '14%',
       align: 'right',
       render: (_, record) => (
-        <Space size="middle">
+        <Space size="small">
           <Button 
             type="text" 
             icon={<EditOutlined />} 
-            aria-label="Edit driver" 
-            onClick={() => {
-              setEditingDriver(record);
-              setDrawerOpen(true);
-            }}
+            aria-label={`Edit driver ${record.name}`}
+            onClick={() => { setEditingDriver(record); setDrawerOpen(true); }}
+            style={{ color: 'var(--color-text-tertiary)' }}
           />
           <Popconfirm
             title="Delete Driver"
@@ -174,7 +184,13 @@ export function DriverListPage() {
             cancelText="No"
             placement="topRight"
           >
-            <Button type="text" icon={<DeleteOutlined style={{ color: '#f87171' }} />} aria-label="Delete driver" loading={deleteMutation.isPending} />
+            <Button 
+              type="text" 
+              icon={<DeleteOutlined />} 
+              aria-label={`Delete driver ${record.name}`}
+              loading={deleteMutation.isPending}
+              style={{ color: 'var(--color-text-tertiary)' }}
+            />
           </Popconfirm>
         </Space>
       ),
@@ -184,25 +200,18 @@ export function DriverListPage() {
   const isEmpty = !isLoading && !isError && rawData.length === 0;
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#0F9D6C',
-          fontFamily: 'var(--font-sans, sans-serif)',
-        },
-      }}
-    >
+    <>
       <div style={{ padding: '24px', minHeight: '100vh', boxSizing: 'border-box' }}>
         
         {/* HEADER AREA */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
             <Breadcrumb items={[{ title: 'Settings' }, { title: 'Drivers' }]} style={{ marginBottom: '8px' }} />
             <Title level={1} style={{ fontSize: '24px', fontWeight: 700, margin: 0 }}>
               Drivers & Logistics
             </Title>
             <Text type="secondary" style={{ fontSize: '15px', marginTop: '4px', display: 'block' }}>
-              {totalCount} registered delivery {pluralize(totalCount, 'driver')} and fleet personnel
+              {totalCount} registered {pluralize(totalCount, 'driver')}
             </Text>
           </div>
           <Button type="primary" icon={<PlusOutlined />} style={{ fontWeight: 600 }} onClick={() => { setEditingDriver(null); setDrawerOpen(true); }}>
@@ -222,7 +231,13 @@ export function DriverListPage() {
         </div>
 
         {/* TABLE AREA */}
-        <div style={{ borderRadius: '8px', border: '1px solid #f0f0f0', overflow: 'hidden' }}>
+        <div style={{ 
+          borderRadius: 'var(--radius-lg)',
+          border: '1px solid var(--color-border-default)',
+          background: 'var(--color-surface-default)',
+          boxShadow: 'var(--shadow-sm)',
+          overflow: 'hidden',
+        }}>
           <AnimatePresence mode="wait">
             
             {isLoading && (
@@ -286,6 +301,6 @@ export function DriverListPage() {
         mode={editingDriver ? 'edit' : 'create'}
         initialValues={editingDriver}
       />
-    </ConfigProvider>
+    </>
   );
 }

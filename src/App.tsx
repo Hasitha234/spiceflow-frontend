@@ -21,7 +21,6 @@ const AdminTenantsPage = lazyWithRetry(() => import('./pages/AdminTenantsPage').
 const DaySummaryPage = lazyWithRetry(() => import('./pages/DaySummaryPage').then((m) => ({ default: m.DaySummaryPage })));
 const MonthSummaryPage = lazyWithRetry(() => import('./pages/MonthSummaryPage').then((m) => ({ default: m.MonthSummaryPage })));
 const WarehousesPage = lazyWithRetry(() => import('./pages/settings/WarehousesPage').then((m) => ({ default: m.WarehousesPage })));
-const DriversPage = lazyWithRetry(() => import('./pages/settings/DriversPage').then((m) => ({ default: m.DriversPage })));
 const CategoriesPage = lazyWithRetry(() => import('./pages/settings/CategoriesPage').then((m) => ({ default: m.CategoriesPage })));
 const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage').then((m) => ({ default: m.SettingsPage })));
 const PurchasesPage = lazyWithRetry(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
@@ -93,7 +92,6 @@ function App() {
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
               ))}
               <Route path="settings/warehouses" element={<WarehousesPage />} />
-              <Route path="settings/drivers" element={<DriversPage />} />
               <Route path="settings/categories" element={<CategoriesPage />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<NotFoundPage />} />
