@@ -83,16 +83,24 @@ export const QrCameraScanner: React.FC<QrCameraScannerProps> = ({
       />
       
       {!isScanning && (
-        <div className="mt-6 flex flex-col items-center">
+        <div className="mt-6 flex flex-col items-center w-full px-4">
           <Button
             type="primary"
             size="large"
             icon={<CameraOutlined />}
             onClick={startScanning}
-            className="h-14 px-8 rounded-full shadow-lg shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-500"
+            className="w-full max-w-xs bg-emerald-600 hover:bg-emerald-500"
+            style={{
+              height: 52,
+              borderRadius: 'var(--radius-lg)',
+              fontSize: 'var(--text-md)',
+              fontWeight: 'var(--font-weight-medium)',
+              boxShadow: 'var(--shadow-md)',
+            }}
           >
             {hasCameraPermission === false ? 'Retry Camera Permission' : 'Tap to Scan Shop QR'}
           </Button>
+
           {hasCameraPermission === false && (
             <p className="text-red-400 mt-3 text-sm text-center px-4">
               Camera access denied. Please enable it in your browser settings.

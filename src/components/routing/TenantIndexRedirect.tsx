@@ -9,7 +9,7 @@ export function TenantIndexRedirect() {
   }
 
   if (user?.userType === 'DRIVER') {
-    return <Navigate to="deliveries" replace />;
+    return <Navigate to="qr-scan" replace />;
   }
 
   return <Navigate to="day-summary" replace />;

@@ -233,8 +233,8 @@ export function DeliveriesPage() {
   const deliveredShopIds = new Set((selectedDelivery?.shops || []).map((s: any) => String(s.shopId || s.shop?.id)));
 
   return (
-    <div style={{ padding: '24px' }}>
-      <Row justify="space-between" align="middle" style={{ marginBottom: '24px' }}>
+    <div className="p-4 md:p-6">
+      <Row justify="space-between" align="middle" gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col>
           <Space>
             <div style={{ padding: '12px', backgroundColor: 'rgba(16,185,129,0.1)', borderRadius: '12px' }}>
@@ -254,7 +254,7 @@ export function DeliveriesPage() {
       </Row>
 
       <Card style={{ borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-        <Table rowKey="id" loading={loading} dataSource={deliveries} columns={columns} pagination={{ pageSize: 10 }}  />
+        <Table rowKey="id" loading={loading} dataSource={deliveries} columns={columns} pagination={{ pageSize: 10 }} scroll={{ x: 800 }} />
       </Card>
 
       {/* Create Delivery Modal */}
@@ -290,7 +290,7 @@ export function DeliveriesPage() {
         }>
         {selectedDelivery && (
           <div>
-            <Descriptions bordered column={3} size="small" style={{ marginBottom: '24px' }}>
+            <Descriptions bordered column={{ xs: 1, sm: 2, md: 3 }} size="small" style={{ marginBottom: '24px' }}>
               <Descriptions.Item label="Delivery Date">{selectedDelivery.deliveryDate}</Descriptions.Item>
               <Descriptions.Item label="Status"><Tag color={selectedDelivery.status === 'COMPLETED' ? 'green' : 'blue'}>{selectedDelivery.status}</Tag></Descriptions.Item>
               <Descriptions.Item label="Loading Sheet">LS-{selectedDelivery.loadingSheet?.id}</Descriptions.Item>
@@ -336,7 +336,7 @@ export function DeliveriesPage() {
                     ) : null
                   }>
                   {isDelivered && deliveredData && (
-                    <Descriptions size="small" column={4}>
+                    <Descriptions size="small" column={{ xs: 2, sm: 4 }}>
                       <Descriptions.Item label="Gross">{Number(deliveredData.grossBillAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
                       <Descriptions.Item label="Discount">{Number(deliveredData.totalDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
                       <Descriptions.Item label="Paid">{Number(deliveredData.paidAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Descriptions.Item>
@@ -346,7 +346,7 @@ export function DeliveriesPage() {
                   {!isDelivered && (
                     <div>
                       <Text type="secondary">Items ordered:</Text>
-                      <Table dataSource={shop.items || []} rowKey="id" pagination={false} size="small" style={{ marginTop: '8px' }}
+                      <Table dataSource={shop.items || []} rowKey="id" pagination={false} size="small" style={{ marginTop: '8px' }} scroll={{ x: 400 }}
                         columns={[
                           { title: 'Product', dataIndex: 'productName', key: 'productName' },
                           { title: 'Qty', dataIndex: 'quantity', key: 'quantity', align: 'right' },
@@ -382,7 +382,7 @@ export function DeliveriesPage() {
             discountAmount: item.discountAmount || 0,
           }))}>
             {(fields) => (
-              <Table dataSource={fields} rowKey="key" pagination={false} size="small"
+              <Table dataSource={fields} rowKey="key" pagination={false} size="small" scroll={{ x: 500 }}
                 columns={[
                   {
                     title: 'Product', key: 'product',

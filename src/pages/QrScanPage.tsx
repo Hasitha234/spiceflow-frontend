@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
 import { 
   Button, Card, Typography, message, Result, List as AntList, Tag, Spin
 } from 'antd';
@@ -41,6 +42,27 @@ export function QrScanPage() {
   const [loadingSheets, setLoadingSheets] = useState<LoadingSheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [completedSheets, setCompletedSheets] = useState<Record<number, boolean>>({});
+  const [todayDelivery, setTodayDelivery] = useState<{
+    loadingSheet?: { id: string | number };
+    loadingSheetId?: string | number;
+    status?: string;
+    shops?: { id?: string; status?: string }[];
+  } | null>(null);
+
+  useEffect(() => {
+    const fetchToday = async () => {
+      try {
+        const res = await deliveryApi.list({ date: dayjs().format('YYYY-MM-DD'), size: 1 });
+        if (res?.content?.length > 0) {
+          const d = res.content[0];
+          setTodayDelivery(d);
+        }
+      } catch {
+        // Silently fail — route context is supplementary, not critical
+      }
+    };
+    fetchToday();
+  }, []);
 
   const handleScanSuccess = async (decodedText: string) => {
     setIsLoading(true);
@@ -107,21 +129,87 @@ export function QrScanPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full pb-20">
-      {!shop ? (
-        <Card className="shadow-lg border-0 bg-slate-900 rounded-2xl overflow-hidden">
-          <div className="text-center mb-8">
-            <ShopOutlined className="text-5xl text-emerald-500 mb-4" />
-            <Title level={3} className="!text-white !mb-2">Scan Shop QR</Title>
-            <Text className="text-slate-400">Position the shop's QR code in the frame below</Text>
-          </div>
-          
-          <QrCameraScanner 
-            onScanSuccess={handleScanSuccess} 
-          />
-        </Card>
+    <div className="w-full flex items-center justify-center min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-120px)]">
+      <div className="w-full max-w-2xl flex flex-col items-center justify-center">
+        {!shop ? (
+          <>
+            <Card 
+              className="w-full overflow-hidden"
+              style={{
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-surface-default)',
+                borderRadius: 'var(--radius-xl)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div className="text-center mb-8">
+                <div
+                style={{
+                  width: 64,
+                  height: 64,
+                  borderRadius: 'var(--radius-full)',
+                  background: 'var(--color-primary-subtle)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  margin: '0 auto var(--space-4)',
+                }}
+              >
+                <ShopOutlined style={{ fontSize: 28, color: 'var(--color-primary)' }} />
+              </div>
+              <Title level={3} style={{ marginBottom: 'var(--space-8)', color: 'var(--color-text-primary)' }}>Scan Shop QR</Title>
+            </div>
+            
+            <QrCameraScanner 
+              onScanSuccess={handleScanSuccess} 
+            />
+          </Card>
+
+          {todayDelivery && (
+            <Card
+              className="w-full mt-6"
+              style={{
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-surface-default)',
+                borderRadius: 'var(--radius-xl)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div style={{
+                fontSize: 'var(--text-sm)',
+                fontWeight: 'var(--font-weight-semibold)',
+                color: 'var(--color-text-tertiary)',
+                letterSpacing: 'var(--tracking-wide)',
+                textTransform: 'uppercase',
+                marginBottom: 'var(--space-3)',
+              }}>
+                Today's Route
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: 'var(--color-text-secondary)' }}>Loading Sheet</Text>
+                  <Text strong>LS-{todayDelivery.loadingSheetId || todayDelivery.loadingSheet?.id}</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ color: 'var(--color-text-secondary)' }}>Status</Text>
+                  <Tag color={todayDelivery.status === 'COMPLETED' ? 'green' : todayDelivery.status === 'IN_PROGRESS' ? 'blue' : 'orange'}>
+                    {todayDelivery.status?.replace('_', ' ')}
+                  </Tag>
+                </div>
+                {todayDelivery.shops && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <Text style={{ color: 'var(--color-text-secondary)' }}>Progress</Text>
+                    <Text strong>
+                      {todayDelivery.shops.filter((s: { id?: string; status?: string }) => s.status === 'DELIVERED').length} of {todayDelivery.shops.length} shops
+                    </Text>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+        </>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           <Card className="bg-emerald-900/20 border-emerald-500/30 rounded-2xl">
             <Result
               status="success"
@@ -202,6 +290,7 @@ export function QrScanPage() {
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 }
