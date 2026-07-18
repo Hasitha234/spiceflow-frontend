@@ -236,7 +236,7 @@ export function QrScanPage() {
                     className={`shadow-sm rounded-2xl transition-all ${isCompleted ? 'opacity-60 grayscale' : 'border-emerald-500/30'}`}
                     title={
                       <div className="flex justify-between items-center">
-                        <span>Sheet: {sheet.sheetNumber}</span>
+                        <span>Sheet: {sheet.sheetNumber || `LS-${sheet.loadingSheetId}`}</span>
                         {isCompleted && <Tag color="success">Completed</Tag>}
                       </div>
                     }
