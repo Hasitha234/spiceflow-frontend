@@ -124,20 +124,21 @@ export function QrScanPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto w-full pb-20 flex flex-col items-center justify-center min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-80px)]">
-      {!shop ? (
-        <>
-          <Card 
-            className="w-full overflow-hidden"
-            style={{
-              border: '1px solid var(--color-border-default)',
-              background: 'var(--color-surface-default)',
-              borderRadius: 'var(--radius-xl)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div className="text-center mb-8">
-              <div
+    <div className="w-full flex items-center justify-center min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-120px)]">
+      <div className="w-full max-w-2xl flex flex-col items-center justify-center">
+        {!shop ? (
+          <>
+            <Card 
+              className="w-full overflow-hidden"
+              style={{
+                border: '1px solid var(--color-border-default)',
+                background: 'var(--color-surface-default)',
+                borderRadius: 'var(--radius-xl)',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div className="text-center mb-8">
+                <div
                 style={{
                   width: 64,
                   height: 64,
@@ -151,7 +152,7 @@ export function QrScanPage() {
               >
                 <ShopOutlined style={{ fontSize: 28, color: 'var(--color-primary)' }} />
               </div>
-              <Title level={3} style={{ marginBottom: 'var(--space-1)', color: 'var(--color-text-primary)' }}>Scan Shop QR</Title>
+              <Title level={3} style={{ marginBottom: 'var(--space-8)', color: 'var(--color-text-primary)' }}>Scan Shop QR</Title>
             </div>
             
             <QrCameraScanner 
@@ -203,7 +204,7 @@ export function QrScanPage() {
           )}
         </>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
           <Card className="bg-emerald-900/20 border-emerald-500/30 rounded-2xl">
             <Result
               status="success"
@@ -284,6 +285,7 @@ export function QrScanPage() {
           </Button>
         </div>
       )}
+      </div>
     </div>
   );
 }

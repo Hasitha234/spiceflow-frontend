@@ -100,16 +100,7 @@ export const QrCameraScanner: React.FC<QrCameraScannerProps> = ({
           >
             {hasCameraPermission === false ? 'Retry Camera Permission' : 'Tap to Scan Shop QR'}
           </Button>
-          {hasCameraPermission === null && (
-            <p style={{
-              marginTop: 'var(--space-3)',
-              fontSize: 'var(--text-sm)',
-              color: 'var(--color-text-tertiary)',
-              textAlign: 'center',
-            }}>
-              Your camera will open to scan the shop's QR code
-            </p>
-          )}
+
           {hasCameraPermission === false && (
             <p className="text-red-400 mt-3 text-sm text-center px-4">
               Camera access denied. Please enable it in your browser settings.
