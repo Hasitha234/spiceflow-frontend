@@ -46,7 +46,7 @@ export function QrScanPage() {
     loadingSheet?: { id: string | number };
     loadingSheetId?: string | number;
     status?: string;
-    shops?: { status?: string }[];
+    shops?: { id?: string; status?: string }[];
   } | null>(null);
 
   useEffect(() => {
@@ -200,7 +200,7 @@ export function QrScanPage() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Text style={{ color: 'var(--color-text-secondary)' }}>Progress</Text>
                     <Text strong>
-                      {todayDelivery.shops.filter((s: { status?: string }) => s.status === 'DELIVERED').length} of {todayDelivery.shops.length} shops
+                      {todayDelivery.shops.filter((s: { id?: string; status?: string }) => s.status === 'DELIVERED').length} of {todayDelivery.shops.length} shops
                     </Text>
                   </div>
                 )}
