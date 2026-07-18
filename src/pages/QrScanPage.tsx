@@ -1,9 +1,11 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  Button, Card, Typography, message, Result, List as AntList, 
-  Drawer, Form, InputNumber, Input, Tag, Spin, Table, Row, Col, DatePicker, Space
+  Button, Card, Typography, message, Result, List as AntList, Tag, Spin
 } from 'antd';
-import { CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons';
+import { 
+  CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, InfoCircleOutlined, DollarOutlined 
+} from '@ant-design/icons';
 import { QrCameraScanner } from '../components/common';
 import { qrApi, deliveryApi } from '../api/sales';
 
@@ -34,42 +36,33 @@ interface LoadingSheet {
 }
 
 export function QrScanPage() {
+  const navigate = useNavigate();
   const [shop, setShop] = useState<ShopQrResponse | null>(null);
   const [loadingSheets, setLoadingSheets] = useState<LoadingSheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedSheet, setSelectedSheet] = useState<LoadingSheet | null>(null);
-  const [form] = Form.useForm();
-  const [submitting, setSubmitting] = useState(false);
   const [completedSheets, setCompletedSheets] = useState<Record<number, boolean>>({});
-
-  const cashVal = Form.useWatch('cashAmount', form) || 0;
-  const chequeVal = Form.useWatch('chequeAmount', form) || 0;
-  const loanVal = Form.useWatch('loanAmount', form) || 0;
-
-  const calculateNetBill = () => {
-    const items = form.getFieldValue('items') || [];
-    return items.reduce((sum: number, i: Record<string, unknown>) => {
-      const q = Number(i?.quantityDelivered || 0);
-      const r = Number(i?.rate || 0);
-      const d = Number(i?.discountAmount || 0);
-      return sum + (q * r - d);
-    }, 0);
-  };
 
   const handleScanSuccess = async (decodedText: string) => {
     setIsLoading(true);
     try {
       const shopData = await qrApi.resolveToken(decodedText);
-      setShop(shopData);
-      
       const sheets = await qrApi.getTodaySheets(shopData.shopId);
-      setLoadingSheets(sheets);
       
-      if (sheets.length === 0) {
-        message.info(`No active deliveries found for ${shopData.shopName} today`);
+      if (sheets.length === 1) {
+        // Automatically navigate if exactly one delivery is found
+        message.success(`Found delivery for ${shopData.shopName}`);
+        navigate(`/driver/visit/${shopData.shopId}/${sheets[0].deliveryId}`, {
+          state: { shop: shopData, sheet: sheets[0] }
+        });
       } else {
-        message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
+        setShop(shopData);
+        setLoadingSheets(sheets);
+        
+        if (sheets.length === 0) {
+          message.info(`No active deliveries found for ${shopData.shopName} today`);
+        } else {
+          message.success(`Found ${sheets.length} deliveries for ${shopData.shopName}`);
+        }
       }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { detail?: string; message?: string } } };
@@ -77,22 +70,6 @@ export function QrScanPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const openUnloadForm = (sheet: LoadingSheet) => {
-    setSelectedSheet(sheet);
-    form.setFieldsValue({
-      items: sheet.items.map(i => ({
-        productId: i.productId,
-        quantityDelivered: i.quantity,
-        unitType: i.unitType,
-        rate: i.rate,
-        discountAmount: 0,
-      })),
-      cashAmount: 0,
-      chequeAmount: 0,
-    });
-    setDrawerOpen(true);
   };
 
   const handleCancelOrder = async (sheet: LoadingSheet) => {
@@ -112,53 +89,6 @@ export function QrScanPage() {
       message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to cancel order');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleRecordDelivery = async () => {
-    if (!shop || !selectedSheet) return;
-    
-    try {
-      const values = await form.validateFields();
-      setSubmitting(true);
-
-      const items = (values.items || []).map((item: { productId: string | number; quantityDelivered: string | number; unitType: string; rate: string | number; discountAmount: string | number; }) => ({
-        productId: Number(item.productId),
-        quantityDelivered: Number(item.quantityDelivered || 0),
-        unitType: item.unitType || 'EACH',
-        rate: Number(item.rate || 0),
-        discountAmount: Number(item.discountAmount || 0),
-        isFreeItem: false,
-      }));
-
-      const payments = [];
-      if (values.cashAmount && Number(values.cashAmount) > 0) {
-        payments.push({ paymentMethod: 'CASH', amount: Number(values.cashAmount) });
-      }
-      if (values.chequeAmount && Number(values.chequeAmount) > 0) {
-        payments.push({
-          paymentMethod: 'CHEQUE',
-          amount: Number(values.chequeAmount),
-          chequeNo: values.chequeNo || '',
-          chequeBankName: values.chequeBankName || '',
-        });
-      }
-
-      await deliveryApi.recordShop(String(selectedSheet.deliveryId), String(shop.shopId), {
-        items,
-        returns: [],
-        payments,
-      });
-
-      message.success(`Delivery recorded for ${shop.shopName}`);
-      setDrawerOpen(false);
-      setCompletedSheets(prev => ({ ...prev, [selectedSheet.deliveryId]: true }));
-    } catch (err: unknown) {
-      const e = err as { errorFields?: unknown; response?: { data?: { detail?: string; message?: string } } };
-      if (e.errorFields) return;
-      message.error(e?.response?.data?.detail || e?.response?.data?.message || 'Failed to record delivery');
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -192,7 +122,7 @@ export function QrScanPage() {
         </Card>
       ) : (
         <div className="space-y-6">
-          <Card className="bg-emerald-900/20 border-emerald-500/30">
+          <Card className="bg-emerald-900/20 border-emerald-500/30 rounded-2xl">
             <Result
               status="success"
               title={<span className="text-emerald-400">Shop Identified</span>}
@@ -204,7 +134,7 @@ export function QrScanPage() {
           <Title level={4} className="!mb-4">Today's Deliveries</Title>
           
           {loadingSheets.length === 0 ? (
-            <Card className="text-center py-8">
+            <Card className="text-center py-8 rounded-2xl">
               <InfoCircleOutlined className="text-4xl text-slate-400 mb-4" />
               <p className="text-slate-500">No active deliveries scheduled for this shop today.</p>
             </Card>
@@ -215,7 +145,7 @@ export function QrScanPage() {
                 return (
                   <Card 
                     key={sheet.deliveryId} 
-                    className={`shadow-sm transition-all ${isCompleted ? 'opacity-60 grayscale' : 'border-emerald-500/30'}`}
+                    className={`shadow-sm rounded-2xl transition-all ${isCompleted ? 'opacity-60 grayscale' : 'border-emerald-500/30'}`}
                     title={
                       <div className="flex justify-between items-center">
                         <span>Sheet: {sheet.sheetNumber}</span>
@@ -229,7 +159,7 @@ export function QrScanPage() {
                       renderItem={(item) => (
                         <AntList.Item className="!px-0">
                           <AntList.Item.Meta
-                            title={item.productName}
+                            title={<span className="font-medium text-slate-700 dark:text-slate-200">{item.productName}</span>}
                             description={
                               <div className="flex gap-2 mt-1">
                                 <Tag color="blue">{item.quantity} {item.unitType}</Tag>
@@ -249,13 +179,13 @@ export function QrScanPage() {
                           onClick={() => handleCancelOrder(sheet)}
                           loading={isLoading}
                         >
-                          Cancel Order
+                          Cancel
                         </Button>
                         <Button 
                           type="primary" 
                           icon={<DollarOutlined />}
-                          onClick={() => openUnloadForm(sheet)}
-                          className="bg-emerald-600 hover:bg-emerald-500"
+                          onClick={() => navigate(`/driver/visit/${shop.shopId}/${sheet.deliveryId}`, { state: { shop, sheet } })}
+                          className="bg-emerald-600 hover:bg-emerald-500 font-medium"
                         >
                           Unload & Pay
                         </Button>
@@ -267,242 +197,11 @@ export function QrScanPage() {
             </div>
           )}
 
-          <Button block size="large" onClick={resetScanner} className="mt-8">
+          <Button block size="large" onClick={resetScanner} className="mt-8 rounded-xl font-medium h-12">
             Scan Another Shop
           </Button>
         </div>
       )}
-
-      <Drawer
-        title={
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--color-primary)', fontWeight: 600, fontSize: '18px' }}>
-            <span>Unload to Shop & Payment Collection — Sheet #{selectedSheet?.sheetNumber}</span>
-          </div>
-        }
-        placement="bottom" rootClassName="sf-full-height-drawer"
-        onClose={() => setDrawerOpen(false)}
-        open={drawerOpen}
-        footer={null}
-        destroyOnHidden
-      >
-        <Form form={form} layout="vertical" component={false}>
-          <div className="py-2 max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
-              <div>
-                <Title level={5} className="m-0 text-slate-800">
-                  <ShopOutlined className="mr-2 text-emerald-600" />
-                  Unloading at: <Text strong>{shop?.shopName}</Text>
-                </Title>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div style={{
-                fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)',
-                marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border-default)'
-              }}>
-                1. Delivered Items
-              </div>
-            <Form.List name="items">
-              {(fields) => (
-                <Table
-                  dataSource={fields}
-                  pagination={false}
-                  size="small"
-                  className="mb-6 overflow-x-auto"
-                  columns={[
-                    {
-                      title: 'Product',
-                      key: 'productName',
-                      render: (_, field) => {
-                        const item = selectedSheet?.items[field.name];
-                        return (
-                          <>
-                            <Form.Item name={[field.name, 'productId']} hidden noStyle><Input /></Form.Item>
-                            <Form.Item name={[field.name, 'unitType']} hidden noStyle><Input /></Form.Item>
-                            <span style={{ fontWeight: 500, color: 'var(--color-text-primary)', textTransform: 'capitalize' }}>
-                              {item?.productName}
-                            </span>
-                          </>
-                        );
-                      },
-                    },
-                    {
-                      title: 'Quantity',
-                      key: 'quantityDelivered',
-                      width: 140,
-                      render: (_, field) => (
-                        <Form.Item name={[field.name, 'quantityDelivered']} noStyle rules={[{ required: true, message: 'Required' }]}>
-                          <InputNumber min={0} className="w-full" />
-                        </Form.Item>
-                      ),
-                    },
-                    {
-                      title: 'Rate (Rs)',
-                      key: 'rate',
-                      width: 130,
-                      render: (_, field) => (
-                        <Form.Item name={[field.name, 'rate']} noStyle>
-                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
-                        </Form.Item>
-                      ),
-                    },
-                    {
-                      title: 'Discount (Rs)',
-                      key: 'discountAmount',
-                      width: 130,
-                      render: (_, field) => (
-                        <Form.Item name={[field.name, 'discountAmount']} noStyle>
-                          <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
-                        </Form.Item>
-                      ),
-                    },
-                    {
-                      title: 'Total (Rs)',
-                      key: 'lineTotal',
-                      width: 140,
-                      align: 'right' as const,
-                      render: (_, field) => {
-                        const items = form.getFieldValue('items');
-                        const item = items?.[field.name] || {};
-                        const q = Number(item.quantityDelivered || 0);
-                        const r = Number(item.rate || 0);
-                        const d = Number(item.discountAmount || 0);
-                        const total = (q * r) - d;
-                        return (
-                          <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-text-primary)', fontVariantNumeric: 'tabular-nums' }}>
-                            {total.toLocaleString()}
-                          </span>
-                        );
-                      },
-                    },
-                  ]}
-                />
-              )}
-            </Form.List>
-
-            <div style={{
-              fontSize: '15px', fontWeight: 600, color: 'var(--color-text-primary)',
-              marginBottom: '16px', paddingBottom: '8px', borderBottom: '1px solid var(--color-border-default)'
-            }}>
-              2. Payment Collection Breakdown (Cash / Cheque / Loan)
-            </div>
-            <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
-              <Row gutter={[16, 16]}>
-                <Col xs={24} md={8}>
-                  <Form.Item name="cashAmount" label="Cash Amount (Rs)" className="!mb-0">
-                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Form.Item name="chequeAmount" label="Cheque Amount (Rs)" className="!mb-0">
-                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
-                  </Form.Item>
-                </Col>
-                <Col xs={24} md={8}>
-                  <Form.Item name="loanAmount" label="Loan / Credit (Rs)" className="!mb-0">
-                    <InputNumber min={0} className="w-full" size="large" placeholder="Auto / Explicit credit" style={{ fontVariantNumeric: 'tabular-nums' }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              {Number(chequeVal) > 0 && (
-                <div style={{
-                  background: 'var(--color-surface-subtle)', border: '1px solid var(--color-border-default)',
-                  borderRadius: 'var(--radius-md)', padding: '16px', marginTop: '16px'
-                }}>
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '12px' }}>
-                    Cheque Details
-                  </div>
-                  <Row gutter={[16, 16]}>
-                    <Col xs={24} md={8}>
-                      <Form.Item name="chequeNo" label="Cheque No" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
-                        <Input placeholder="e.g. CHQ-982341" />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} md={8}>
-                      <Form.Item name="chequeBankName" label="Bank Name" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
-                        <Input placeholder="e.g. BOC / Commercial Bank" />
-                      </Form.Item>
-                    </Col>
-                    <Col xs={24} md={8}>
-                      <Form.Item name="chequeDate" label="Cheque Date" rules={[{ required: true, message: 'Required' }]} className="!mb-0">
-                        <DatePicker className="w-full" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </div>
-              )}
-            </Card>
-
-            <div style={{
-              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              background: 'var(--color-surface-subtle)', border: '1px solid var(--color-border-default)',
-              borderRadius: 'var(--radius-md)', padding: '16px', marginTop: '24px', flexWrap: 'wrap', gap: '16px'
-            }}>
-              <div aria-live="polite" role="status" style={{ display: 'flex', alignItems: 'center', gap: '24px', flexWrap: 'wrap' }}>
-                <div>
-                  <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Net Bill:</span>
-                  <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                    Rs. {calculateNetBill().toLocaleString()}
-                  </span>
-                </div>
-                
-                <div style={{ width: '1px', height: '24px', background: 'var(--color-border-default)' }} className="hidden sm:block" />
-                
-                {(() => {
-                  const netBill = calculateNetBill();
-                  const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
-                  const diff = netBill - entered;
-                  
-                  let statusColor;
-                  if (diff > 0) statusColor = 'var(--color-danger-text)';
-                  else if (diff < 0) statusColor = 'var(--color-warning-text)';
-                  else statusColor = 'var(--color-success-text)';
-                  
-                  return (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                      <div>
-                        <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Entered:</span>
-                        <span style={{ fontSize: '18px', fontWeight: 600, color: statusColor }}>
-                          Rs. {entered.toLocaleString()}
-                        </span>
-                      </div>
-                      {diff !== 0 && (
-                        <span style={{ 
-                          fontSize: '13px', fontWeight: 600, color: statusColor,
-                          background: diff > 0 ? 'var(--color-danger-bg)' : 'var(--color-warning-bg)',
-                          padding: '4px 8px', borderRadius: '4px'
-                        }}>
-                          {diff > 0 ? `Short by Rs. ${diff.toLocaleString()}` : `Over by Rs. ${Math.abs(diff).toLocaleString()}`}
-                        </span>
-                      )}
-                      {diff === 0 && netBill > 0 && (
-                        <CheckCircleOutlined style={{ color: 'var(--color-success-text)', fontSize: '18px' }} />
-                      )}
-                    </div>
-                  );
-                })()}
-              </div>
-              <Space size={12} className="w-full sm:w-auto justify-end">
-                <Button onClick={() => setDrawerOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  type="primary"
-                  icon={<CheckCircleOutlined />}
-                  onClick={handleRecordDelivery}
-                  loading={submitting}
-                  className="bg-emerald-600 hover:bg-emerald-500"
-                >
-                  Save Shop Delivery
-                </Button>
-              </Space>
-            </div>
-            </div>
-          </div>
-        </Form>
-      </Drawer>
     </div>
   );
 }

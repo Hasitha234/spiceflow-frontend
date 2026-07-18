@@ -31,6 +31,7 @@ const CreateRepOrderPage = lazyWithRetry(() => import('./pages/CreateRepOrderPag
 const LoadingSheetsPage = lazyWithRetry(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
 const DeliveriesPage = lazyWithRetry(() => import('./pages/DeliveriesPage').then((m) => ({ default: m.DeliveriesPage })));
 const QrScanPage = lazyWithRetry(() => import('./pages/QrScanPage').then((m) => ({ default: m.QrScanPage })));
+const ShopVisitPage = lazyWithRetry(() => import('./pages/driver/ShopVisitPage').then((m) => ({ default: m.ShopVisitPage })));
 const NotFoundPage = lazyWithRetry(() => import('./pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 const queryClient = new QueryClient();
@@ -88,6 +89,7 @@ function App() {
               <Route path="deliveries" element={<DeliveriesPage />} />
               <Route path="qr-scan" element={<QrScanPage />} />
               <Route path="driver/scan" element={<QrScanPage />} />
+              <Route path="driver/visit/:shopId/:deliveryId" element={<ShopVisitPage />} />
               {featureRoutes.map(({ metadata, element: FeatureComponent }) => (
                 <Route key={metadata.id} path={metadata.path} element={<FeatureComponent />} />
               ))}
