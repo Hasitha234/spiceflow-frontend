@@ -42,7 +42,12 @@ export function QrScanPage() {
   const [loadingSheets, setLoadingSheets] = useState<LoadingSheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [completedSheets, setCompletedSheets] = useState<Record<number, boolean>>({});
-  const [todayDelivery, setTodayDelivery] = useState<any | null>(null);
+  const [todayDelivery, setTodayDelivery] = useState<{
+    loadingSheet?: { id: string | number };
+    loadingSheetId?: string | number;
+    status?: string;
+    shops?: { status?: string }[];
+  } | null>(null);
 
   useEffect(() => {
     const fetchToday = async () => {
