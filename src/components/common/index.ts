@@ -17,3 +17,4 @@ export * from './ListPageFooter';
 export * from './TruncatedCell';
 export * from './StatusTag';
 export * from './ResponsiveModal';
+export * from './ChangePasswordModal';

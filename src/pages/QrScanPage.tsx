@@ -5,10 +5,11 @@ import {
   Button, Card, Typography, message, Result, List as AntList, Tag, Spin
 } from 'antd';
 import { 
-  CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, InfoCircleOutlined, DollarOutlined 
+  CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, InfoCircleOutlined, DollarOutlined, WarningOutlined
 } from '@ant-design/icons';
 import { QrCameraScanner } from '../components/common';
 import { qrApi, deliveryApi } from '../api/sales';
+import { useGeolocation } from '../hooks/useGeolocation';
 
 const { Title, Text } = Typography;
 
@@ -42,6 +43,7 @@ export function QrScanPage() {
   const [loadingSheets, setLoadingSheets] = useState<LoadingSheet[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [completedSheets, setCompletedSheets] = useState<Record<number, boolean>>({});
+  const { location, fetchLocation } = useGeolocation();
   const [todayDelivery, setTodayDelivery] = useState<{
     loadingSheet?: { id: string | number };
     loadingSheetId?: string | number;
@@ -62,12 +64,21 @@ export function QrScanPage() {
       }
     };
     fetchToday();
-  }, []);
+    fetchLocation();
+  }, [fetchLocation]);
 
   const handleScanSuccess = async (decodedText: string) => {
     setIsLoading(true);
     try {
       const shopData = await qrApi.resolveToken(decodedText);
+      
+      // Verify visit with location
+      await qrApi.verify({
+        shopId: shopData.shopId,
+        latitude: location.latitude ?? undefined,
+        longitude: location.longitude ?? undefined,
+      }).catch(e => console.error("Verify visit failed", e));
+
       const sheets = await qrApi.getTodaySheets(shopData.shopId);
       
       if (sheets.length === 1) {
@@ -102,7 +113,10 @@ export function QrScanPage() {
         items: [],
         returns: [],
         payments: [],
-        notes: 'Order cancelled by driver'
+        notes: 'Order cancelled by driver',
+        latitude: location.latitude ?? undefined,
+        longitude: location.longitude ?? undefined,
+        locationAccuracy: location.accuracy ?? undefined,
       });
       message.success('Order cancelled successfully');
       setCompletedSheets(prev => ({ ...prev, [sheet.deliveryId]: true }));
@@ -129,7 +143,19 @@ export function QrScanPage() {
   }
 
   return (
-    <div className="w-full flex items-center justify-center min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-120px)]">
+    <div className="w-full flex flex-col items-center justify-center min-h-[calc(100vh-160px)] md:min-h-[calc(100vh-120px)] pt-4">
+      {location.error && (
+        <div className="mb-4 text-orange-500 text-sm bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full flex items-center gap-2">
+          <WarningOutlined />
+          <span>Location unavailable - visits will be flagged</span>
+        </div>
+      )}
+      {!location.error && location.latitude && (
+        <div className="mb-4 text-emerald-600 text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full flex items-center gap-2">
+          <CheckCircleOutlined />
+          <span>Location active</span>
+        </div>
+      )}
       <div className="w-full max-w-2xl flex flex-col items-center justify-center">
         {!shop ? (
           <>

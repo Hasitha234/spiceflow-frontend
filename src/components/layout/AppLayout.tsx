@@ -10,7 +10,8 @@ import {
   AppstoreOutlined,
   CarOutlined,
   QrcodeOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  LockOutlined
 } from '@ant-design/icons';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +22,7 @@ import { useIsMobile } from '@/hooks/useResponsive';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { useAgencyStore } from '@/store/agencyStore';
 import { useTenantStore } from '@/store/tenantStore';
+import { ChangePasswordModal } from '@/components/common';
 
 const { Header, Sider, Content } = Layout;
 const { Text } = Typography;
@@ -45,6 +47,7 @@ const allMenuItems = [
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -304,13 +307,22 @@ export function AppLayout() {
                   ...switchAgencyItems,
                   { type: 'divider' },
                   { 
+                    key: 'change-password', 
+                    label: t('settings.changePassword', 'Change Password'),
+                    icon: <LockOutlined />,
+                  },
+                  { type: 'divider' },
+                  { 
                     key: 'logout', 
                     label: t('nav.logout'), 
                     icon: <LogoutOutlined />, 
                     danger: true 
                   }
                 ],
-                onClick: (info) => info.key === 'logout' && handleLogout()
+                onClick: (info) => {
+                  if (info.key === 'logout') handleLogout();
+                  if (info.key === 'change-password') setChangePasswordOpen(true);
+                }
               }} 
               placement="bottomRight"
             >
@@ -391,6 +403,10 @@ export function AppLayout() {
           }))}
         />
       </Drawer>
+      <ChangePasswordModal 
+        open={changePasswordOpen} 
+        onClose={() => setChangePasswordOpen(false)} 
+      />
     </Layout>
   );
 }

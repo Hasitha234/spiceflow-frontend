@@ -319,6 +319,15 @@ export function DeliveriesPage() {
                       ) : (
                         <Tag className="text-slate-400">— Not Scanned</Tag>
                       )}
+                      {isDelivered && deliveredData && (
+                        deliveredData.locationVerified === true ? (
+                          <Tag color="green">📍 Verified ({Math.round(deliveredData.distanceFromShop || 0)}m)</Tag>
+                        ) : deliveredData.locationVerified === false && deliveredData.latitude != null ? (
+                          <Tag color="orange">📍 Outside Radius ({Math.round(deliveredData.distanceFromShop || 0)}m)</Tag>
+                        ) : (
+                          <Tag className="text-slate-400">📍 No GPS Data</Tag>
+                        )
+                      )}
                     </Space>
                   }
                   extra={

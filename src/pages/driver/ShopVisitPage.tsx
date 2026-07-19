@@ -7,6 +7,7 @@ import {
   CheckCircleOutlined, ShopOutlined, CloseCircleOutlined, ArrowLeftOutlined, WarningOutlined
 } from '@ant-design/icons';
 import { qrApi, deliveryApi } from '../../api/sales';
+import { useGeolocation } from '../../hooks/useGeolocation';
 
 const { Title, Text } = Typography;
 
@@ -38,6 +39,7 @@ export function ShopVisitPage() {
   const [cancelling, setCancelling] = useState(false);
   const [shopName, setShopName] = useState<string>('');
   const [sheetData, setSheetData] = useState<LoadingSheet | null>(null);
+  const { location: gpsLocation, fetchLocation } = useGeolocation();
 
   const initializeForm = (sheet: LoadingSheet) => {
     form.setFieldsValue({
@@ -86,6 +88,10 @@ export function ShopVisitPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shopId, deliveryId]);
 
+  useEffect(() => {
+    fetchLocation();
+  }, [fetchLocation]);
+
   const cashVal = Form.useWatch('cashAmount', form) || 0;
   const chequeVal = Form.useWatch('chequeAmount', form) || 0;
   const loanVal = Form.useWatch('loanAmount', form) || 0;
@@ -108,7 +114,10 @@ export function ShopVisitPage() {
         items: [],
         returns: [],
         payments: [],
-        notes: 'Order cancelled by driver (Shop Closed / No Time)'
+        notes: 'Order cancelled by driver (Shop Closed / No Time)',
+        latitude: gpsLocation.latitude ?? undefined,
+        longitude: gpsLocation.longitude ?? undefined,
+        locationAccuracy: gpsLocation.accuracy ?? undefined,
       });
       message.success('Order cancelled successfully');
       navigate('/qr-scan');
@@ -152,6 +161,9 @@ export function ShopVisitPage() {
         items,
         returns: [],
         payments,
+        latitude: gpsLocation.latitude ?? undefined,
+        longitude: gpsLocation.longitude ?? undefined,
+        locationAccuracy: gpsLocation.accuracy ?? undefined,
       });
 
       message.success(`Delivery recorded successfully!`);

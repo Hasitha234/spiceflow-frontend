@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Card, Typography, Skeleton, ConfigProvider, Input, Button, Upload, message } from 'antd';
-import { ResponsiveModal } from '@/components/common';
+import { ResponsiveModal, ChangePasswordModal } from '@/components/common';
 
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,7 @@ import {
   SettingOutlined,
   UploadOutlined,
   DeleteOutlined,
+  LockOutlined,
 } from '@ant-design/icons';
 import { useGetProducts } from '@/api/generated/products/products';
 import { useGetCategories } from '@/api/generated/product-categories/product-categories';
@@ -206,6 +207,7 @@ function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => 
 export function SettingsPage() {
   const { t } = useTranslation();
   const [isAgencyModalOpen, setIsAgencyModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   // Fetch only 1 item to minimize payload size since we just need the count
   const queryParams = { pageable: { size: 1 } };
@@ -263,6 +265,13 @@ export function SettingsPage() {
             onClick={() => setIsAgencyModalOpen(true)}
             hideCount
           />
+          <CategoryCard 
+            id="change-password"
+            title="Change Password"
+            icon={<LockOutlined />}
+            onClick={() => setIsChangePasswordModalOpen(true)}
+            hideCount
+          />
         </div>
 
         <Title level={4} style={{ marginBottom: '16px' }}>Master Data</Title>
@@ -286,6 +295,7 @@ export function SettingsPage() {
         </div>
         
         <AgencySettingsModal open={isAgencyModalOpen} onClose={() => setIsAgencyModalOpen(false)} />
+        <ChangePasswordModal open={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)} />
       </div>
     </ConfigProvider>
   );
