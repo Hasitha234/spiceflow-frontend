@@ -4,12 +4,14 @@ import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
 import { ResponsiveModal } from '@/components/common';
 
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined, DownloadOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
 import dayjs from 'dayjs';
 import { VehicleLoadingSheetsTab } from '../features/inventory/components/VehicleLoadingSheetsTab';
 import { WarehouseTypeBadge } from '../components/common/WarehouseTypeBadge';
+import { downloadInventoryPdf } from '../utils/pdfExport';
+import { useAgencyStore } from '../store/agencyStore';
 
 export function InventoryPage() {
   const { t } = useTranslation();
@@ -215,6 +217,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState('');
   const [stockFilter, setStockFilter] = useState('ALL');
+  const { agencyName } = useAgencyStore();
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -684,6 +687,14 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           />
           <Button icon={<ReloadOutlined />} onClick={fetchData} size="middle">
             Refresh
+          </Button>
+          <Button 
+            icon={<DownloadOutlined />} 
+            onClick={() => warehouse && downloadInventoryPdf(warehouse, items, agencyName)} 
+            disabled={items.length === 0}
+            size="middle"
+          >
+            Download PDF
           </Button>
         </div>
       </div>
