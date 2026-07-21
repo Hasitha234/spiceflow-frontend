@@ -162,7 +162,7 @@ export function RepOrdersPage() {
               onChange={(e) => setSearchText(e.target.value)}
               className="w-full sm:w-[280px]"
             />
-            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_REP', 'ROLE_SALES_MANAGER']}>
+            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_REP', 'ROLE_SALES_MANAGER', 'ROLE_DATA_ENTRY']}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
