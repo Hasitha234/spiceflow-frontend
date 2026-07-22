@@ -162,7 +162,7 @@ export const ShopTable: React.FC<ShopTableProps> = ({
       width: 120,
       render: (_: unknown, record: ShopResponse) => (
         <Space size="small">
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
+          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP', 'ROLE_DATA_ENTRY']}>
             <Tooltip title="View QR">
               <Button
                 type="text"

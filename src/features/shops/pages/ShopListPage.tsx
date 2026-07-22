@@ -86,7 +86,7 @@ export function ShopListPage() {
                 style={{ width: 280 }}
               />
             )}
-            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP']}>
+            <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_SALES_REP', 'ROLE_DATA_ENTRY']}>
               <Button
                 type="primary"
                 icon={<PlusOutlined />}
