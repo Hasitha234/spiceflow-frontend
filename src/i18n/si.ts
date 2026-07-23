@@ -144,6 +144,7 @@ const si = {
     main: 'ප්‍රධාන ගබඩාව',
     vehicle: 'වාහනය',
     custom: 'දෙවන ගබඩාව',
+    returnStore: 'ආපසු ගබඩාව',
     createSuccess: 'ගබඩාව සාර්ථකව සෑදිණ',
     updateSuccess: 'ගබඩාව සාර්ථකව යාවත්කාලීන විය',
     deleteSuccess: 'ගබඩාව සාර්ථකව මකා දමා ඇත',

@@ -144,6 +144,7 @@ const en = {
     main: 'Main Store',
     vehicle: 'Vehicle',
     custom: 'Second Store',
+    returnStore: 'Return Store',
     createSuccess: 'Warehouse created successfully',
     updateSuccess: 'Warehouse updated successfully',
     deleteSuccess: 'Warehouse deleted successfully',
