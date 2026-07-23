@@ -14,7 +14,7 @@ const { Title, Text } = Typography;
 
 const schema = z.object({
   name: z.string().min(1, 'common.required'),
-  storeType: z.enum(['MAIN', 'VEHICLE', 'CUSTOM']),
+  storeType: z.enum(['MAIN', 'VEHICLE', 'CUSTOM', 'RETURN']),
   location: z.string().optional(),
 });
 
@@ -101,6 +101,7 @@ export function WarehousesPage() {
           if (type === 'MAIN') return <Tag icon={<BankOutlined />} color="green">{t('warehouse.main')}</Tag>;
           if (type === 'VEHICLE') return <Tag icon={<CarOutlined />} color="blue">{t('warehouse.vehicle')}</Tag>;
           if (type === 'CUSTOM') return <Tag icon={<AppstoreOutlined />} color="orange">{t('warehouse.custom')}</Tag>;
+          if (type === 'RETURN') return <Tag icon={<BankOutlined />} color="red">{t('warehouse.returnStore')}</Tag>;
           return <Tag>{type}</Tag>;
         },
       },
