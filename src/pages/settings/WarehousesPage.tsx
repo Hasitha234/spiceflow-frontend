@@ -38,6 +38,7 @@ export function WarehousesPage() {
       { label: t('warehouse.main'), value: 'MAIN' },
       { label: t('warehouse.vehicle'), value: 'VEHICLE' },
       { label: t('warehouse.custom'), value: 'CUSTOM' },
+      { label: t('warehouse.returnStore'), value: 'RETURN' },
     ],
     [t]
   );
