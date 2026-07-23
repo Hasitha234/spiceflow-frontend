@@ -53,7 +53,7 @@ export function PurchasesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const purchaseRes = await purchaseApi.list({ page, size });
+      const purchaseRes = await purchaseApi.list({ page, size, sort: 'id,desc' });
       setPurchases(purchaseRes?.content || []);
       setTotal(purchaseRes?.totalElements || 0);
     } catch {

@@ -51,7 +51,7 @@ export function LoadingSheetsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await loadingSheetApi.list({ page, size });
+      const res = await loadingSheetApi.list({ page, size, sort: 'id,desc' });
       setSheets((res?.content as any) || []);
       setTotal(res?.totalElements || 0);
     } catch {
