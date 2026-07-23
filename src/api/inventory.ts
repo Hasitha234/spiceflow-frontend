@@ -59,7 +59,7 @@ export const productApi = {
 
 // ─── Warehouses ───────────────────────────────────────────────────────────────
 export const warehouseApi = {
-  list: (params?: { search?: string; page?: number; size?: number }) =>
+  list: (params?: { search?: string; page?: number; size?: number; sort?: string }) =>
     apiClient
       .get<PageResponse<Warehouse>>('/api/v1/warehouses', { params })
       .then((r) => r.data),

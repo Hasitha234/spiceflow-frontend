@@ -50,7 +50,7 @@ export function RepOrdersPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await repOrderApi.list({ page, size });
+      const res = await repOrderApi.list({ page, size, sort: 'id,desc' });
       setOrders(res?.content || []);
       setTotal(res?.totalElements || 0);
     } catch {

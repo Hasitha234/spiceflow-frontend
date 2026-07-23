@@ -32,7 +32,7 @@ export const shopApi = {
 
 // ─── Rep Orders ───────────────────────────────────────────────────────────────
 export const repOrderApi = {
-  list: (params?: { repId?: string; date?: string; page?: number; size?: number }) =>
+  list: (params?: { repId?: string; date?: string; page?: number; size?: number; sort?: string }) =>
     apiClient.get<PageResponse<RepOrder>>('/api/v1/sales/rep-orders', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<RepOrder>(`/api/v1/sales/rep-orders/${id}`).then((r) => r.data),
@@ -42,7 +42,7 @@ export const repOrderApi = {
 
 // ─── Loading Sheets ───────────────────────────────────────────────────────────
 export const loadingSheetApi = {
-  list: (params?: { driverId?: string | number; status?: string; page?: number; size?: number }) =>
+  list: (params?: { driverId?: string | number; status?: string; page?: number; size?: number; sort?: string }) =>
     apiClient.get<PageResponse<LoadingSheet>>('/api/v1/sales/loading-sheets', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<LoadingSheet>(`/api/v1/sales/loading-sheets/${id}`).then((r) => r.data),
@@ -58,7 +58,7 @@ export const loadingSheetApi = {
 
 // ─── Deliveries ───────────────────────────────────────────────────────────────
 export const deliveryApi = {
-  list: (params?: { page?: number; size?: number; date?: string }) =>
+  list: (params?: { page?: number; size?: number; date?: string; sort?: string }) =>
     apiClient.get<PageResponse<Delivery>>('/api/v1/sales/deliveries', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Delivery>(`/api/v1/sales/deliveries/${id}`).then((r) => r.data),
@@ -72,7 +72,7 @@ export const deliveryApi = {
 
 // ─── Purchases ────────────────────────────────────────────────────────────────
 export const purchaseApi = {
-  list: (params?: { invoiceNo?: string; date?: string; page?: number; size?: number }) =>
+  list: (params?: { invoiceNo?: string; date?: string; page?: number; size?: number; sort?: string }) =>
     apiClient.get<PageResponse<Purchase>>('/api/v1/purchases', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Purchase>(`/api/v1/purchases/${id}`).then((r) => r.data),

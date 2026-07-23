@@ -54,7 +54,7 @@ export function WarehousesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await warehouseApi.list({ page, size });
+      const result = await warehouseApi.list({ page, size, sort: 'id,desc' });
       setWarehouses(result.content);
       setTotal(result.totalElements || 0);
     } catch {

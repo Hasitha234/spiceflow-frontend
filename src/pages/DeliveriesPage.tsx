@@ -38,7 +38,7 @@ export function DeliveriesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await deliveryApi.list({ page, size });
+      const res = await deliveryApi.list({ page, size, sort: 'id,desc' });
       setDeliveries(res?.content || []);
       setTotal(res?.totalElements || 0);
     } catch {
