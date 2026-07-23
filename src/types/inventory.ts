@@ -36,7 +36,7 @@ export interface Product {
 export interface Warehouse {
   id: string;
   name: string;
-  storeType: 'MAIN' | 'VEHICLE' | 'CUSTOM';
+  storeType: 'MAIN' | 'VEHICLE' | 'CUSTOM' | 'RETURN';
   location?: string;
   createdAt: string;
 }
