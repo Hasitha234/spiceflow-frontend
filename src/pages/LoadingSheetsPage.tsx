@@ -37,6 +37,9 @@ export function LoadingSheetsPage() {
   const [selectedSheet, setSelectedSheet] = useState<LoadingSheetRow | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   // Create form data
   const [repOrders, setRepOrders] = useState<any[]>([]);
@@ -48,14 +51,15 @@ export function LoadingSheetsPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await loadingSheetApi.list({ page: 0, size: 50 });
+      const res = await loadingSheetApi.list({ page, size });
       setSheets((res?.content as any) || []);
+      setTotal(res?.totalElements || 0);
     } catch {
       message.error('Failed to load loading sheets');
     } finally {
       setLoading(false);
     }
-  }, [message]);
+  }, [message, page, size]);
 
   useEffect(() => { loadData(); }, [loadData]);
 
@@ -376,7 +380,24 @@ export function LoadingSheetsPage() {
         }}
         styles={{ body: { padding: 0 } }}
       >
-        <Table rowKey="id" loading={loading} dataSource={filteredSheets} columns={columns} pagination={{ pageSize: 10, className: 'px-4 py-3 m-0 border-t border-slate-100' }} className="spiceflow-table"  />
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={filteredSheets}
+          columns={columns}
+          scroll={{ x: 1000 }}
+          pagination={{
+            current: page + 1,
+            pageSize: size,
+            total: total,
+            onChange: (p, s) => {
+              setPage(p - 1);
+              setSize(s);
+            },
+            className: 'px-4 py-3 m-0 border-t border-slate-100'
+          }}
+          className="spiceflow-table"
+        />
       </Card>
 
       {/* Create Modal */}

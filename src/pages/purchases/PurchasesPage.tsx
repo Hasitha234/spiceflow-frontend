@@ -40,6 +40,9 @@ export function PurchasesPage() {
   const [loading, setLoading] = useState(false);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   // Warehouse selection state
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -50,14 +53,15 @@ export function PurchasesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const purchaseRes = await purchaseApi.list({ page: 0, size: 50 });
+      const purchaseRes = await purchaseApi.list({ page, size });
       setPurchases(purchaseRes?.content || []);
+      setTotal(purchaseRes?.totalElements || 0);
     } catch {
       message.error('Failed to load purchase data');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, size]);
 
   useEffect(() => {
     loadData();
@@ -232,13 +236,22 @@ export function PurchasesPage() {
       </div>
 
       <Card style={{ borderRadius: '8px', boxShadow: 'var(--shadow-sm)', border: '1px solid var(--surface-border)' }} className="overflow-hidden">
-        <Table
-          rowKey="id"
-          loading={loading}
-          dataSource={purchases}
-          columns={columns}
-          pagination={{ pageSize: 10 }}
-         />
+        <Table<Purchase>
+        rowKey="id"
+        loading={loading}
+        dataSource={purchases}
+        columns={columns}
+        scroll={{ x: 1000 }}
+        pagination={{
+          current: page + 1,
+          pageSize: size,
+          total: total,
+          onChange: (p, s) => {
+            setPage(p - 1);
+            setSize(s);
+          },
+        }}
+      />
       </Card>
 
       <ResponsiveModal

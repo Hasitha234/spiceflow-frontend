@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Button,
@@ -33,6 +33,9 @@ export function RepOrdersPage() {
   const [orders, setOrders] = useState<RepOrder[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<RepOrder | null>(null);
   const [searchText, setSearchText] = useState('');
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const filteredOrders = useMemo(() => {
     if (!searchText) return orders;
@@ -44,21 +47,22 @@ export function RepOrdersPage() {
     );
   }, [orders, searchText]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await repOrderApi.list({ page: 0, size: 50 });
+      const res = await repOrderApi.list({ page, size });
       setOrders(res?.content || []);
+      setTotal(res?.totalElements || 0);
     } catch {
       message.error('Failed to load rep orders');
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const columns = useMemo(
     () => [
@@ -182,6 +186,15 @@ export function RepOrdersPage() {
         dataSource={filteredOrders}
         columns={columns}
         scroll={{ x: 1000 }}
+        pagination={{
+          current: page + 1,
+          pageSize: size,
+          total: total,
+          onChange: (p, s) => {
+            setPage(p - 1);
+            setSize(s);
+          },
+        }}
       />
 
       <ResponsiveModal

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   Button, Card, Col, DatePicker, Descriptions, Form, Input, InputNumber, Row, Select, Table, Tag, Tooltip, Typography, message, Space, Divider, Popconfirm,
 } from 'antd';
@@ -20,6 +20,9 @@ export function DeliveriesPage() {
   const [detailOpen, setDetailOpen] = useState(false);
   const [recordShopOpen, setRecordShopOpen] = useState(false);
   const [selectedDelivery, setSelectedDelivery] = useState<any>(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [total, setTotal] = useState(0);
   const [selectedShop, setSelectedShop] = useState<any>(null);
   const [qrVisits, setQrVisits] = useState<Record<string, string>>({});
 
@@ -32,19 +35,20 @@ export function DeliveriesPage() {
   const [shopForm] = Form.useForm();
   const [repOrderShops, setRepOrderShops] = useState<any[]>([]);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await deliveryApi.list({ page: 0, size: 50 });
+      const res = await deliveryApi.list({ page, size });
       setDeliveries(res?.content || []);
+      setTotal(res?.totalElements || 0);
     } catch {
       message.error('Failed to load deliveries');
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [loadData]);
 
   const openCreate = async () => {
     try {
@@ -253,8 +257,32 @@ export function DeliveriesPage() {
         </Col>
       </Row>
 
-      <Card style={{ borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-        <Table rowKey="id" loading={loading} dataSource={deliveries} columns={columns} pagination={{ pageSize: 10 }} scroll={{ x: 800 }} />
+      <Card
+        variant="borderless"
+        style={{
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px -2px rgba(0,0,0,0.05), 0 2px 6px -2px rgba(0,0,0,0.03)',
+        }}
+        styles={{ body: { padding: 0 } }}
+      >
+        <Table
+          rowKey="id"
+          loading={loading}
+          dataSource={deliveries}
+          columns={columns}
+          scroll={{ x: 1000 }}
+          pagination={{
+            current: page + 1,
+            pageSize: size,
+            total: total,
+            onChange: (p, s) => {
+              setPage(p - 1);
+              setSize(s);
+            },
+            className: 'px-4 py-3 m-0 border-t border-slate-100'
+          }}
+          className="spiceflow-table"
+        />
       </Card>
 
       {/* Create Delivery Modal */}
