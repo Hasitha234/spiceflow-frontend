@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { Button, Card, Col, Form, Input, Row, Select, Space, Table, message, ConfigProvider, Typography, Statistic, Tag, Popconfirm, Tooltip, Drawer, Empty } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined, EnvironmentOutlined, BankOutlined, CarOutlined, AppstoreOutlined, CloseOutlined } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +29,9 @@ export function WarehousesPage() {
   const [editWarehouse, setEditWarehouse] = useState<Warehouse | null>(null);
   const [searchText, setSearchText] = useState('');
   const [filterType, setFilterType] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const [size, setSize] = useState(10);
+  const [total, setTotal] = useState(0);
 
   const storeTypeOptions = useMemo(
     () => [
@@ -48,21 +51,22 @@ export function WarehousesPage() {
     },
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await warehouseApi.list({ page: 0, size: 50 });
+      const result = await warehouseApi.list({ page, size });
       setWarehouses(result.content);
+      setTotal(result.totalElements || 0);
     } catch {
       message.error('Failed to load warehouses');
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, size]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const filteredWarehouses = useMemo(() => {
     return warehouses.filter(w => {
@@ -281,7 +285,16 @@ export function WarehousesPage() {
               loading={loading} 
               dataSource={filteredWarehouses} 
               columns={columns} 
-              pagination={{ pageSize: 10, showSizeChanger: true }} 
+              pagination={{
+                current: page + 1,
+                pageSize: size,
+                total: total,
+                onChange: (p, s) => {
+                  setPage(p - 1);
+                  setSize(s);
+                },
+                showSizeChanger: true
+              }} 
               locale={{
                 emptyText: (
                   <Empty 

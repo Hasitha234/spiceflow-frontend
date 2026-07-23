@@ -38,12 +38,17 @@ export const DataTable = <T extends object>({
     <div className="data-table-container">
       <Table<T>
         dataSource={dataSource}
-        pagination={{
-          defaultPageSize: 10,
-          showSizeChanger: true,
-          showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-          className: '!px-6 !py-4',
-        }}
+        pagination={
+          restProps.pagination === false
+            ? false
+            : {
+                defaultPageSize: 10,
+                showSizeChanger: true,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+                className: '!px-6 !py-4',
+                ...(typeof restProps.pagination === 'object' ? restProps.pagination : {}),
+              }
+        }
         className="custom-data-table"
         {...restProps}
       />
