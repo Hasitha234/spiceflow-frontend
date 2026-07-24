@@ -25,9 +25,25 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
 
   const lineItems = useWatch({ control, name: 'lineItems' });
 
-  const getUnitsPerBox = (product: Product | undefined) => {
+  const getUnitDivisor = (unitType: string): number => {
+    switch (unitType) {
+      case 'DZ': return 12;
+      case 'EA': return 1;
+      case 'MC': return 1000;
+      default: return 1;
+    }
+  };
+
+  const getTotalItemsPerBox = (product: Product | undefined): number => {
     if (!product) return 1;
-    return Number(product.soldUnitsPerBox || 1);
+    const itemsPerSoldUnit = Number(product.itemsPerSoldUnit || 1);
+    const soldUnitsPerBox = Number(product.soldUnitsPerBox || 1);
+    return itemsPerSoldUnit * soldUnitsPerBox;
+  };
+
+  const calcSoldQty = (boxes: number, product: Product | undefined, unitType: string): number => {
+    const totalItems = boxes * getTotalItemsPerBox(product);
+    return totalItems / getUnitDivisor(unitType);
   };
 
   const handleProductSelect = (productId: string, index: number) => {
@@ -39,7 +55,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       
       setValue(`lineItems.${index}.rate`, rate);
       setValue(`lineItems.${index}.unitType`, unitType);
-      setValue(`lineItems.${index}.soldQuantity`, inputQty * getUnitsPerBox(product));
+      setValue(`lineItems.${index}.soldQuantity`, calcSoldQty(inputQty, product, unitType));
       setValue(`lineItems.${index}.amount`, undefined);
     }
   };
@@ -49,9 +65,20 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
     if (productId) {
       const product = supplierProducts.find((p) => String(p.id) === String(productId));
       if (product) {
-        setValue(`lineItems.${index}.soldQuantity`, (qty || 1) * getUnitsPerBox(product));
+        const unitType = lineItems?.[index]?.unitType || 'DZ';
+        setValue(`lineItems.${index}.soldQuantity`, calcSoldQty(qty || 1, product, unitType));
         setValue(`lineItems.${index}.amount`, undefined);
       }
+    }
+  };
+
+  const handleUnitChange = (newUnit: string, index: number) => {
+    const productId = lineItems?.[index]?.productId;
+    const boxes = Number(lineItems?.[index]?.noOfBoxes || 1);
+    if (productId) {
+      const product = supplierProducts.find((p) => String(p.id) === String(productId));
+      setValue(`lineItems.${index}.soldQuantity`, calcSoldQty(boxes, product, newUnit));
+      setValue(`lineItems.${index}.amount`, undefined);
     }
   };
 
@@ -137,8 +164,11 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       render: (_: any, __: any, index: number) => {
         const selectedProductId = lineItems?.[index]?.productId;
         const product = supplierProducts.find(p => String(p.id) === String(selectedProductId));
-        const multiplier = getUnitsPerBox(product);
-        const uom = product?.unitType || 'DZ';
+        const uom = lineItems?.[index]?.unitType || product?.unitType || 'DZ';
+        const boxes = lineItems?.[index]?.noOfBoxes || 0;
+        const itemsPerSoldUnit = product?.itemsPerSoldUnit || 1;
+        const soldUnitsPerBox = product?.soldUnitsPerBox || 1;
+        const divisor = getUnitDivisor(uom);
         
         return (
           <Controller
@@ -158,7 +188,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 />
                 {product && (
                   <div style={{ fontSize: '12px', color: '#94A3B8', fontFamily: 'monospace', marginTop: 4, whiteSpace: 'nowrap' }}>
-                    = {lineItems?.[index]?.noOfBoxes || 0} × {multiplier} {uom}
+                    = {boxes} × {soldUnitsPerBox} × {itemsPerSoldUnit} ÷ {divisor} = {f.value || 0} {uom}
                   </div>
                 )}
               </div>
@@ -189,6 +219,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 status={error ? 'error' : ''}
                 onChange={(val) => {
                   f.onChange(val);
+                  handleUnitChange(val, index);
                 }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
