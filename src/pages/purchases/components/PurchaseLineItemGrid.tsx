@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Button, InputNumber, Select, Tooltip, Table, message } from 'antd';
+import { Button, InputNumber, Select, Tooltip, Table } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import type { Control, UseFormSetValue } from 'react-hook-form';
 import type { FormValues } from '../CreatePurchasePage';
 import { emptyLineItem } from '../constants';
 import type { Product } from '../../../types/inventory';
-import { productApi } from '../../../api/inventory';
+
 
 interface PurchaseLineItemGridProps {
   control: Control<FormValues>;
   setValue: UseFormSetValue<FormValues>;
   supplierProducts: Product[];
-  setSupplierProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+
   errors: any;
 }
 
-export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setSupplierProducts, errors }: PurchaseLineItemGridProps) {
+export function PurchaseLineItemGrid({ control, setValue, supplierProducts, errors }: PurchaseLineItemGridProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'lineItems',
@@ -25,24 +25,21 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
 
   const lineItems = useWatch({ control, name: 'lineItems' });
 
-  const getMultiplier = (product: Product | undefined) => {
+  const getUnitsPerBox = (product: Product | undefined) => {
     if (!product) return 1;
-    const itemsPerSoldUnit = Number(product.itemsPerSoldUnit || 1);
-    const soldUnitsPerBox = Number(product.soldUnitsPerBox || 1);
-    
-    return itemsPerSoldUnit * soldUnitsPerBox;
+    return Number(product.soldUnitsPerBox || 1);
   };
 
   const handleProductSelect = (productId: string, index: number) => {
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
     if (product) {
       const rate = Number(product.basePrice || product.ratePerSoldUnit || 0);
-      const unitType = product.unitType || 'BOX';
+      const unitType = product.unitType || 'DZ';
       const inputQty = Number(lineItems?.[index]?.noOfBoxes || 1);
       
       setValue(`lineItems.${index}.rate`, rate);
       setValue(`lineItems.${index}.unitType`, unitType);
-      setValue(`lineItems.${index}.soldQuantity`, inputQty * getMultiplier(product));
+      setValue(`lineItems.${index}.soldQuantity`, inputQty * getUnitsPerBox(product));
       setValue(`lineItems.${index}.amount`, undefined);
     }
   };
@@ -52,78 +49,21 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
     if (productId) {
       const product = supplierProducts.find((p) => String(p.id) === String(productId));
       if (product) {
-        setValue(`lineItems.${index}.soldQuantity`, (qty || 1) * getMultiplier(product));
+        setValue(`lineItems.${index}.soldQuantity`, (qty || 1) * getUnitsPerBox(product));
         setValue(`lineItems.${index}.amount`, undefined);
-      }
-    }
-  };
-
-
-
-  const handleTotalQtyBlur = async (totalQty: number | null, index: number) => {
-    if (!totalQty || totalQty < 1) return;
-    const productId = lineItems?.[index]?.productId;
-    const noOfBoxes = Number(lineItems?.[index]?.noOfBoxes || 1);
-    const product = supplierProducts.find((p) => String(p.id) === String(productId));
-    if (!productId || !product) return;
-
-    setValue(`lineItems.${index}.amount`, undefined);
-    const newMultiplier = totalQty / noOfBoxes;
-    
-    const newItemsPerSoldUnit = product.itemsPerSoldUnit || 1;
-    const newSoldUnitsPerBox = Math.max(1, Math.round(newMultiplier / newItemsPerSoldUnit));
-
-    try {
-      const payload = {
-        ...product,
-        itemsPerSoldUnit: newItemsPerSoldUnit,
-        soldUnitsPerBox: newSoldUnitsPerBox,
-        categoryId: (product as any).categoryId,
-        supplierId: (product as any).supplierId,
-      };
-      await productApi.update(productId, payload);
-
-      // Update local state so multiplier recalculates in the UI
-      setSupplierProducts(prev => prev.map(p => 
-        String(p.id) === String(productId) 
-          ? { ...p, itemsPerSoldUnit: newItemsPerSoldUnit, soldUnitsPerBox: newSoldUnitsPerBox }
-          : p
-      ));
-
-      message.success('Product box configuration updated!');
-    } catch (e: any) {
-      console.error('Box config update failed:', e?.response?.data || e);
-      const errMsg = e?.response?.data?.message || 'Unknown error';
-      message.error(`Update failed: ${errMsg}`);
-    }
-  };
-
-  const handleRateBlur = async (rate: number | null, index: number) => {
-    if (rate === null || rate === undefined) return;
-    const productId = lineItems?.[index]?.productId;
-    const product = supplierProducts.find((p) => String(p.id) === String(productId));
-    if (productId && product) {
-      try {
-        // The backend requires the full payload for PUT requests
-        const payload = {
-          ...product,
-          ratePerSoldUnit: rate,
-          basePrice: rate,
-          categoryId: (product as any).categoryId,
-          supplierId: (product as any).supplierId,
-        };
-        setValue(`lineItems.${index}.amount`, undefined);
-        await productApi.update(productId, payload);
-        message.success('Product database price updated!');
-      } catch (e: any) {
-        console.error('Update failed:', e?.response?.data || e);
-        const errMsg = e?.response?.data?.message || JSON.stringify(e?.response?.data || 'Unknown error');
-        message.error(`Update failed: ${errMsg}`);
       }
     }
   };
 
   const columns = [
+    {
+      title: '#',
+      key: 'index',
+      width: '5%',
+      render: (_: any, __: any, index: number) => (
+        <span style={{ color: '#94A3B8', fontWeight: 500 }}>{index + 1}</span>
+      ),
+    },
     {
       title: 'Product',
       key: 'product',
@@ -140,7 +80,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
                 placeholder="Search product..."
                 options={supplierProducts.map((p) => ({
                   value: String(p.id),
-                  label: `${p.sku ? `[${p.sku}] ` : ''}${p.name}`,
+                  label: p.name,
                 }))}
                 showSearch
                 optionFilterProp="label"
@@ -164,37 +104,7 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
       ),
     },
     {
-      title: 'Unit',
-      key: 'unit',
-      width: '10%',
-      render: (_: any, __: any, index: number) => (
-        <Controller
-          name={`lineItems.${index}.unitType`}
-          control={control}
-          render={({ field: f, fieldState: { error } }) => (
-            <div>
-              <Select
-                {...f}
-                size="middle"
-                options={[
-                  { label: 'Box', value: 'BOX' },
-                  { label: 'Bundle', value: 'BUNDLE' },
-                  { label: 'Each', value: 'EACH' },
-                ]}
-                style={{ width: '100%' }}
-                status={error ? 'error' : ''}
-                onChange={(val) => {
-                  f.onChange(val);
-                }}
-              />
-              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
-            </div>
-          )}
-        />
-      ),
-    },
-    {
-      title: 'Qty',
+      title: 'No. of Boxes',
       key: 'boxes',
       width: '10%',
       render: (_: any, __: any, index: number) => (
@@ -221,14 +131,14 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
       ),
     },
     {
-      title: 'Quantity (Total)',
+      title: 'Sold Qty',
       key: 'quantity',
       width: '14%',
       render: (_: any, __: any, index: number) => {
         const selectedProductId = lineItems?.[index]?.productId;
         const product = supplierProducts.find(p => String(p.id) === String(selectedProductId));
-        const multiplier = getMultiplier(product);
-        const uom = product?.unitOfMeasure || 'PCS';
+        const multiplier = getUnitsPerBox(product);
+        const uom = product?.unitType || 'DZ';
         
         return (
           <Controller
@@ -245,13 +155,6 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
                   onChange={(val) => {
                     f.onChange(val);
                   }}
-                  onBlur={(e) => {
-                    f.onBlur();
-                    const val = parseFloat(e.target.value);
-                    if (!isNaN(val)) {
-                      handleTotalQtyBlur(val, index);
-                    }
-                  }}
                 />
                 {product && (
                   <div style={{ fontSize: '12px', color: '#94A3B8', fontFamily: 'monospace', marginTop: 4, whiteSpace: 'nowrap' }}>
@@ -265,7 +168,37 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
       }
     },
     {
-      title: 'Rate',
+      title: 'Unit',
+      key: 'unit',
+      width: '10%',
+      render: (_: any, __: any, index: number) => (
+        <Controller
+          name={`lineItems.${index}.unitType`}
+          control={control}
+          render={({ field: f, fieldState: { error } }) => (
+            <div>
+              <Select
+                {...f}
+                size="middle"
+                options={[
+                  { label: 'DZ', value: 'DZ' },
+                  { label: 'MC', value: 'MC' },
+                  { label: 'EA', value: 'EA' },
+                ]}
+                style={{ width: '100%' }}
+                status={error ? 'error' : ''}
+                onChange={(val) => {
+                  f.onChange(val);
+                }}
+              />
+              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
+            </div>
+          )}
+        />
+      ),
+    },
+    {
+      title: 'Unit Price',
       key: 'rate',
       width: '13%',
       align: 'right' as const,
@@ -283,13 +216,6 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setS
                 size="middle"
                 style={{ width: '100%' }} 
                 status={error ? 'error' : ''} 
-                onBlur={(e) => {
-                  f.onBlur();
-                  const val = parseFloat(e.target.value);
-                  if (!isNaN(val)) {
-                    handleRateBlur(val, index);
-                  }
-                }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
             </div>

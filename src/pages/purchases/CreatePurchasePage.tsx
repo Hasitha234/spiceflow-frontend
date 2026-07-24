@@ -471,7 +471,6 @@ export function CreatePurchasePage() {
                 control={control} 
                 setValue={setValue} 
                 supplierProducts={supplierProducts}
-                setSupplierProducts={setSupplierProducts}
                 errors={errors}
               />
             )}
