@@ -164,7 +164,7 @@ export function PurchasesPage() {
               />
             </Tooltip>
             {record.status === 'DRAFT' && (
-              <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+              <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER', 'ROLE_DATA_ENTRY', 'ROLE_OWNER']}>
                 <Tooltip title="Edit Purchase Order">
                   <Button
                     type="text"
@@ -221,7 +221,7 @@ export function PurchasesPage() {
             Manage supplier invoices and receive inventory items
           </Text>
         </div>
-        <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+        <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER', 'ROLE_DATA_ENTRY', 'ROLE_OWNER']}>
           <Button
             type="primary"
             icon={<PlusOutlined />}

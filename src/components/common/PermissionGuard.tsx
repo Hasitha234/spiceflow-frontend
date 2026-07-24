@@ -8,6 +8,17 @@ export interface PermissionGuardProps {
   fallback?: React.ReactNode;
 }
 
+/**
+ * Maps a user's `userType` (from JWT) to a synthetic ROLE_ string so that
+ * guards like `requireRole={['ROLE_DATA_ENTRY']}` work regardless of
+ * what the user's assigned role is actually named in the database.
+ */
+function deriveRolesFromUserType(userType?: string): string[] {
+  if (!userType) return [];
+  // e.g. "DATA_ENTRY" → "ROLE_DATA_ENTRY", "TENANT_OWNER" → "ROLE_TENANT_OWNER"
+  return [`ROLE_${userType}`];
+}
+
 export const PermissionGuard: React.FC<PermissionGuardProps> = ({
   children,
   requirePermission,
@@ -27,7 +38,12 @@ export const PermissionGuard: React.FC<PermissionGuardProps> = ({
 
   if (requireRole) {
     const roles = Array.isArray(requireRole) ? requireRole : [requireRole];
-    const hasRole = roles.some((role) => user.roles?.includes(role));
+    // Combine actual JWT roles with synthetic roles derived from userType
+    const allUserRoles = [
+      ...(user.roles || []),
+      ...deriveRolesFromUserType(user.userType),
+    ];
+    const hasRole = roles.some((role) => allUserRoles.includes(role));
     if (!hasRole) {
       return <>{fallback}</>;
     }
