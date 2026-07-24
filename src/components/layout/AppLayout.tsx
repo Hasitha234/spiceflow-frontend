@@ -384,6 +384,15 @@ export function AppLayout() {
           mode="inline"
           selectedKeys={[currentKey]}
           onClick={({ key }) => {
+            if (key === 'change-password') {
+              setChangePasswordOpen(true);
+              setMobileMenuOpen(false);
+              return;
+            }
+            if (key === 'logout') {
+              handleLogout();
+              return;
+            }
             navigate(key);
             setMobileMenuOpen(false);
           }}
@@ -392,15 +401,31 @@ export function AppLayout() {
             borderRight: 'none',
             padding: '16px 12px 16px 0'
           }}
-          items={menuItems.map((group) => ({
-            type: 'group',
-            label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 8, marginBottom: 8, paddingLeft: 20 }}>{group.label}</div>,
-            children: group.children.map((item) => ({
-              key: item.key,
-              label: t(item.translateKey),
+          items={[
+            ...menuItems.map((group) => ({
+              type: 'group' as const,
+              label: <div style={{ fontSize: '0.6875rem', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#64748b', marginTop: 8, marginBottom: 8, paddingLeft: 20 }}>{group.label}</div>,
+              children: group.children.map((item) => ({
+                key: item.key,
+                label: t(item.translateKey),
+                style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+              }))
+            })),
+            { type: 'divider' },
+            {
+              key: 'change-password',
+              icon: <LockOutlined />,
+              label: t('settings.changePassword', 'Change Password'),
               style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
-            }))
-          }))}
+            },
+            {
+              key: 'logout',
+              icon: <LogoutOutlined />,
+              label: t('nav.logout'),
+              danger: true,
+              style: { borderRadius: '0 8px 8px 0', marginBottom: 4 }
+            }
+          ]}
         />
       </Drawer>
       <ChangePasswordModal 

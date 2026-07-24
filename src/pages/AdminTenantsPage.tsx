@@ -77,8 +77,16 @@ export function AdminTenantsPage() {
       setDrawerVisible(false);
       fetchTenants();
     } catch (e: unknown) {
-      const err = e as { response?: { data?: { detail?: string } } };
-      message.error(err.response?.data?.detail || 'Operation failed');
+      const err = e as { response?: { data?: { detail?: string; title?: string } }; message?: string; code?: string };
+      if (err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
+        message.error('Cannot reach the server. Please check if the backend is running.');
+      } else if (err.response?.data?.detail) {
+        message.error(err.response.data.detail);
+      } else if (err.response?.data?.title) {
+        message.error(err.response.data.title);
+      } else {
+        message.error('Operation failed. Please try again.');
+      }
     }
   };
 
