@@ -73,6 +73,8 @@ type CatalogStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export function CreatePurchasePage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
   const queryClient = useQueryClient();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -180,8 +182,7 @@ export function CreatePurchasePage() {
     }
   }, [returnItems, setValue]);
 
-  const { id } = useParams<{ id: string }>();
-  const isEditMode = !!id;
+
 
   useEffect(() => {
     if (isEditMode && id) {
