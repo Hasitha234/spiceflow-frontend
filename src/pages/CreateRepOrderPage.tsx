@@ -115,7 +115,7 @@ export function CreateRepOrderPage() {
     apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
   }, []);
 
-  const { control, handleSubmit, setValue } = useForm<FormValues>({
+  const { control, handleSubmit, setValue, setError } = useForm<FormValues>({
     resolver: zodResolver(repOrderSchema) as any,
     defaultValues: {
       repId: '',
@@ -185,9 +185,14 @@ export function CreateRepOrderPage() {
       await repOrderApi.create(payload);
       message.success('Rep Order created successfully');
       navigate('/sales');
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      message.error('Failed to create Rep Order');
+      if (error.response?.status === 409) {
+        setError('orderNumber', { type: 'manual', message: 'Order number already exists' });
+        message.error('Order number already exists. Please choose a different one.');
+      } else {
+        message.error(error.response?.data?.detail || 'Failed to create Rep Order');
+      }
     } finally {
       setSubmitting(false);
     }
