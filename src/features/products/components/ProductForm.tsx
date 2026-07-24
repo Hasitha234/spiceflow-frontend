@@ -38,7 +38,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item
-            label="Product Code"
+            label="SKU"
             htmlFor="sku"
             validateStatus={errors.sku ? 'error' : ''}
             help={errors.sku?.message}
