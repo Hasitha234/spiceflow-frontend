@@ -9,7 +9,7 @@ export const productSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
   description: z.string().optional(),
   basePrice: z.number().min(0, 'Base price must be ≥ 0'),
-  unitOfMeasure: z.string().default('N/A'),
+  unitOfMeasure: z.string().min(1, 'Unit of measure is required'),
   categoryId: z.number().optional(),
   supplierId: z.number().min(1, 'Supplier is required'),
   netWeight: z.string().optional(),
