@@ -30,6 +30,8 @@ export function SelectAgencyPage() {
   }
 
   const handleSelectAgency = (tenantId: number) => {
+    // Clear any stale agency branding from a previous tenant session
+    localStorage.removeItem('sf_agency');
     setTenantId(tenantId);
     navigate('/');
   };
