@@ -478,6 +478,12 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                           optionFilterProp="label"
                           style={{ width: '100%' }}
                           options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
+                          popupMatchSelectWidth={false}
+                          optionRender={(option) => (
+                            <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
+                              {option.data.label}
+                            </div>
+                          )}
                           onChange={(val) => {
                             field.onChange(val);
                             const prod = products.find((p: any) => p.id.toString() === val);
@@ -555,8 +561,13 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                           {...field}
                           showSearch
                           optionFilterProp="label"
-                          style={{ width: '100%' }}
                           options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
+                          popupMatchSelectWidth={false}
+                          optionRender={(option) => (
+                            <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
+                              {option.data.label}
+                            </div>
+                          )}
                         />
                       )}
                     />
