@@ -1,23 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { Button, InputNumber, Select, Tooltip, Table, message } from 'antd';
+import { Button, InputNumber, Select, Tooltip, Table } from 'antd';
 import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import type { Control, UseFormSetValue } from 'react-hook-form';
 import type { FormValues } from '../CreatePurchasePage';
 import { emptyLineItem } from '../constants';
 import type { Product } from '../../../types/inventory';
-import { productApi } from '../../../api/inventory';
+
 
 interface PurchaseLineItemGridProps {
   control: Control<FormValues>;
   setValue: UseFormSetValue<FormValues>;
   supplierProducts: Product[];
-  setSupplierProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+
   errors: any;
 }
 
-export function PurchaseLineItemGrid({ control, setValue, supplierProducts, setSupplierProducts, errors }: PurchaseLineItemGridProps) {
+export function PurchaseLineItemGrid({ control, setValue, supplierProducts, errors }: PurchaseLineItemGridProps) {
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'lineItems',

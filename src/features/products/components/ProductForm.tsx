@@ -2,7 +2,6 @@ import React from 'react';
 import { Form, Input, InputNumber, Select, Spin, Row, Col } from 'antd';
 import { Controller, useFormContext } from 'react-hook-form';
 import type { ProductFormValues } from '../schemas/productSchema';
-import { UNIT_TYPE_OPTIONS, UNIT_OF_MEASURE_OPTIONS } from '../constants';
 
 export interface ProductFormProps {
   supplierOptions: { label: string; value: number }[];
