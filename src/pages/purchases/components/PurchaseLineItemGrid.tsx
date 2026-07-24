@@ -49,11 +49,11 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
   const handleProductSelect = (productId: string, index: number) => {
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
     if (product) {
-      const rate = Number(product.basePrice || product.ratePerSoldUnit || 0);
       const unitType = product.unitType || 'DZ';
       const inputQty = Number(lineItems?.[index]?.noOfBoxes || 1);
       
-      setValue(`lineItems.${index}.rate`, rate);
+      // Do NOT auto-fill rate — purchase unit price is separate from selling price
+      setValue(`lineItems.${index}.rate`, 0);
       setValue(`lineItems.${index}.unitType`, unitType);
       setValue(`lineItems.${index}.soldQuantity`, calcSoldQty(inputQty, product, unitType));
       setValue(`lineItems.${index}.amount`, undefined);
