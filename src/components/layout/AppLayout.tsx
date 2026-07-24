@@ -116,6 +116,8 @@ export function AppLayout() {
               </span>
             ),
             onClick: () => {
+              // Clear agency branding before switching to prevent cross-tenant logo/name leakage
+              localStorage.removeItem('sf_agency');
               setTenantId(t.id);
               window.location.href = '/'; // Full reload to clear cache
             }

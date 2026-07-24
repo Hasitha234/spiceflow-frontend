@@ -35,6 +35,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   setAccessToken: (token) =>
     set({ accessToken: token, isAuthenticated: true }),
 
-  clearAuth: () =>
-    set({ user: null, accessToken: null, isAuthenticated: false }),
+  clearAuth: () => {
+    // Clear tenant-specific persisted data to prevent cross-tenant data leakage
+    // These are persisted in localStorage and MUST be reset on logout
+    try {
+      localStorage.removeItem('sf_agency');
+      localStorage.removeItem('sf_tenant');
+    } catch {
+      // localStorage might be unavailable in some contexts
+    }
+    set({ user: null, accessToken: null, isAuthenticated: false });
+  },
 }));
