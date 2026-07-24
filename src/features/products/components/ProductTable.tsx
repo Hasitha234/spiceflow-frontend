@@ -65,7 +65,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       sorter: true,
       render: (name: string) => (
         // Fixed: added tooltip to TruncatedCell for Product Name column (Item 3)
-        <TruncatedCell value={name} className="font-medium !text-slate-100" />
+        <TruncatedCell value={name} className="font-medium !text-slate-700" />
       ),
     },
     {
@@ -75,7 +75,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       width: 160,
       render: (supplierName: string) => (
         // Fixed: Supplier column already uses TruncatedCell which provides the tooltip (Item 3)
-        <TruncatedCell value={supplierName} />
+        <TruncatedCell value={supplierName} className="text-slate-600" />
       ),
     },
     {
@@ -98,11 +98,11 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       align: 'right' as const,
       render: (rate: number) =>
         rate != null ? (
-          <span className="tabular-nums font-medium text-slate-200">
+          <span className="tabular-nums font-medium text-slate-700">
             LKR {rate.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </span>
         ) : (
-          <span className="text-slate-500">—</span>
+          <span className="text-slate-400">—</span>
         ),
     },
     {
@@ -119,7 +119,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 size="small"
                 icon={<EditOutlined />}
                 onClick={() => onEdit(record)}
-                className="!text-slate-400 hover:!text-slate-900 hover:!bg-slate-100 flex items-center justify-center"
+                className="!text-slate-500 hover:!text-indigo-600 hover:!bg-indigo-50 flex items-center justify-center"
               />
             </Tooltip>
             <Tooltip title="Delete">
@@ -129,7 +129,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
                 danger
                 icon={<DeleteOutlined />}
                 onClick={() => setDeleteTarget(record)}
-                className="!text-slate-400 hover:!text-red-600 hover:!bg-red-50 flex items-center justify-center"
+                className="!text-slate-500 hover:!text-red-600 hover:!bg-red-50 flex items-center justify-center"
               />
             </Tooltip>
           </PermissionGuard>
