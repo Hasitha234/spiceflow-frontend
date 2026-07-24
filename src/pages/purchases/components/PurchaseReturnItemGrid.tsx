@@ -35,7 +35,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
     const product = supplierProducts.find((p) => String(p.id) === String(productId));
     if (product) {
       const rate = Number(product.basePrice || product.ratePerSoldUnit || 0);
-      const unitType = product.unitType || 'BOX';
+      const unitType = product.unitType || 'DZ';
       setValue(`returnItems.${index}.rate`, rate);
       setValue(`returnItems.${index}.unitType`, unitType);
       setValue(`returnItems.${index}.amount`, undefined);
@@ -59,7 +59,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
                 placeholder="Search product..."
                 options={supplierProducts.map((p) => ({
                   value: String(p.id),
-                  label: `${p.sku ? `[${p.sku}] ` : ''}${p.name}`,
+                  label: p.name,
                 }))}
                 showSearch
                 optionFilterProp="label"
@@ -96,9 +96,9 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
                 {...f}
                 size="middle"
                 options={[
-                  { label: 'Box', value: 'BOX' },
-                  { label: 'Bundle', value: 'BUNDLE' },
-                  { label: 'Each', value: 'EACH' },
+                  { label: 'DZ', value: 'DZ' },
+                  { label: 'MC', value: 'MC' },
+                  { label: 'EA', value: 'EA' },
                 ]}
                 style={{ width: '100%' }}
                 status={error ? 'error' : ''}
@@ -137,7 +137,7 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
       ),
     },
     {
-      title: 'Rate',
+      title: 'Unit Price',
       key: 'rate',
       width: '15%',
       align: 'right' as const,

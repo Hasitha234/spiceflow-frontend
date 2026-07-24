@@ -108,7 +108,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item
-            label="Rate (LKR)"
+            label="Unit Price (LKR)"
             htmlFor="basePrice"
             validateStatus={errors.basePrice ? 'error' : ''}
             help={errors.basePrice?.message}
@@ -137,26 +137,6 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item
-            label="Net Weight"
-            validateStatus={errors.unitOfMeasure ? 'error' : ''}
-            help={errors.unitOfMeasure?.message}
-            required
-          >
-            <Controller
-              name="unitOfMeasure"
-              control={control}
-              render={({ field }) => (
-                <Select
-                  {...field}
-                  placeholder="Select unit"
-                  options={[...UNIT_OF_MEASURE_OPTIONS]}
-                />
-              )}
-            />
-          </Form.Item>
-        </Col>
-        <Col xs={24} md={12}>
-          <Form.Item
             label="Unit Type"
             validateStatus={errors.unitType ? 'error' : ''}
             help={errors.unitType?.message}
@@ -166,7 +146,11 @@ export const ProductForm: React.FC<ProductFormProps> = ({
               name="unitType"
               control={control}
               render={({ field }) => (
-                <Select {...field} options={[...UNIT_TYPE_OPTIONS]} />
+                <Select {...field} options={[
+                  { label: 'DZ', value: 'DZ' },
+                  { label: 'MC', value: 'MC' },
+                  { label: 'EA', value: 'EA' },
+                ]} />
               )}
             />
           </Form.Item>
@@ -175,7 +159,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       <Row gutter={16}>
         <Col xs={24} md={12}>
-          <Form.Item label="Items per Bundle">
+          <Form.Item label="Items per Unit">
             <Controller
               name="itemsPerSoldUnit"
               control={control}
@@ -186,7 +170,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           </Form.Item>
         </Col>
         <Col xs={24} md={12}>
-          <Form.Item label="Bundles per Box">
+          <Form.Item label="Units per Box">
             <Controller
               name="soldUnitsPerBox"
               control={control}
