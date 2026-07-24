@@ -36,7 +36,20 @@ export const ProductTable: React.FC<ProductTableProps> = ({
 
   const columns: ColumnsType<ProductResponse> = [
     {
-      title: 'Product Code',
+      title: '#',
+      key: 'index',
+      width: 60,
+      render: (_: unknown, __: ProductResponse, index: number) => {
+        const rowNumber = tableState.page * tableState.size + index + 1;
+        return (
+          <span className="font-mono text-slate-400">
+            {rowNumber.toString().padStart(2, '0')}
+          </span>
+        );
+      },
+    },
+    {
+      title: 'SKU',
       dataIndex: 'sku',
       key: 'sku',
       sorter: true,

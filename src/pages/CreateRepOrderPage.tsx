@@ -51,6 +51,7 @@ const repOrderShopSchema = z.object({
   shopId: z.string().min(1, 'Shop is required'),
   discountAmount: z.number().min(0).optional(),
   skuDiscountAmount: z.number().min(0).optional(),
+  reverseGrts: z.number().min(0).optional(),
   returnWarehouseId: z.string().optional(),
   items: z.array(repOrderItemSchema).min(1, 'At least one item is required'),
   returns: z.array(shopReturnSchema).optional(),
@@ -88,6 +89,7 @@ const emptyShop = {
   shopId: '',
   discountAmount: 0,
   skuDiscountAmount: 0,
+  reverseGrts: 0,
   returnWarehouseId: '',
   items: [emptyItem],
   returns: [],
@@ -142,8 +144,9 @@ export function CreateRepOrderPage() {
     
     const itemsTotal = items.reduce((s: number, item: any) => s + (Number(item.quantity || 0) * Number(item.rate || 0)), 0);
     const returnsTotal = returns.reduce((s: number, r: any) => s + Number(r.creditValue || 0), 0);
+    const effectiveReturns = Math.max(returnsTotal - Number(shop.reverseGrts || 0), 0);
     
-    const shopNet = itemsTotal - returnsTotal - Number(shop.discountAmount || 0) - Number(shop.skuDiscountAmount || 0);
+    const shopNet = itemsTotal - effectiveReturns - Number(shop.discountAmount || 0) - Number(shop.skuDiscountAmount || 0);
     return sum + shopNet;
   }, 0);
 
@@ -159,6 +162,7 @@ export function CreateRepOrderPage() {
           shopId: Number(shop.shopId),
           discountAmount: shop.discountAmount || 0,
           skuDiscountAmount: shop.skuDiscountAmount || 0,
+          reverseGrts: shop.reverseGrts || 0,
           returnWarehouseId: shop.returnWarehouseId ? Number(shop.returnWarehouseId) : undefined,
           items: shop.items.map(item => ({
             productId: Number(item.productId),
@@ -357,10 +361,12 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
   const shopReturns = useWatch({ control, name: `shops.${shopIndex}.returns` }) || [];
   const discountAmount = useWatch({ control, name: `shops.${shopIndex}.discountAmount` }) || 0;
   const skuDiscountAmount = useWatch({ control, name: `shops.${shopIndex}.skuDiscountAmount` }) || 0;
+  const reverseGrts = useWatch({ control, name: `shops.${shopIndex}.reverseGrts` }) || 0;
 
   const itemsTotal = shopItems.reduce((sum: number, item: any) => sum + (Number(item.quantity || 0) * Number(item.rate || 0)), 0);
   const returnsTotal = shopReturns.reduce((sum: number, item: any) => sum + Number(item.creditValue || 0), 0);
-  const shopNetTotal = itemsTotal - returnsTotal - Number(discountAmount) - Number(skuDiscountAmount);
+  const effectiveReturns = Math.max(returnsTotal - Number(reverseGrts), 0);
+  const shopNetTotal = itemsTotal - effectiveReturns - Number(discountAmount) - Number(skuDiscountAmount);
 
   return (
     <Card 
@@ -618,11 +624,50 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
           </tbody>
         </table>
       </div>
-      <div style={{ padding: '16px 24px', backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0' }}>
+      <div style={{ padding: '16px 24px', backgroundColor: '#fafafa', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
         <Button type="dashed" style={{ color: '#4b5563', borderColor: '#d1d5db' }} icon={<PlusOutlined />} onClick={() => appendReturn(emptyReturn)}>
           Add Return
         </Button>
+
+        {/* Reverse GRTs input - only show when there are returns */}
+        {returnFields.length > 0 && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Text strong style={{ whiteSpace: 'nowrap', color: '#4b5563' }}>Reverse GRTs (LKR):</Text>
+            <Controller
+              name={`shops.${shopIndex}.reverseGrts`}
+              control={control}
+              render={({ field }) => (
+                <InputNumber
+                  size="large"
+                  onFocus={(e) => e.target.select()}
+                  {...field}
+                  min={0}
+                  step={0.01}
+                  precision={2}
+                  style={{ width: '160px', fontWeight: 600, fontSize: '16px' }}
+                  className="text-right"
+                  placeholder="0.00"
+                />
+              )}
+            />
+          </div>
+        )}
       </div>
+
+      {/* Returns breakdown summary */}
+      {returnFields.length > 0 && Number(reverseGrts) > 0 && (
+        <div style={{ padding: '12px 24px', backgroundColor: '#fff7e6', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'flex-end', gap: '24px' }}>
+          <Text style={{ color: '#8c8c8c' }}>
+            Returns Total: <Text strong style={{ fontFamily: 'monospace' }}>LKR {returnsTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+          </Text>
+          <Text style={{ color: '#d4380d' }}>
+            − Reverse GRTs: <Text strong style={{ fontFamily: 'monospace' }}>LKR {Number(reverseGrts).toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+          </Text>
+          <Text style={{ color: '#389e0d' }}>
+            = Net Returns: <Text strong style={{ fontFamily: 'monospace' }}>LKR {effectiveReturns.toLocaleString(undefined, { minimumFractionDigits: 2 })}</Text>
+          </Text>
+        </div>
+      )}
 
       <div style={{ padding: '24px', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <div style={{ textAlign: 'right' }}>
