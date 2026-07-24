@@ -73,11 +73,27 @@ type CatalogStatus = 'idle' | 'loading' | 'success' | 'error';
 
 export function CreatePurchasePage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
   const queryClient = useQueryClient();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>('idle');
   const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
+
+  // ── Draft persistence: survive navigation to Settings and back ──
+  const DRAFT_KEY = 'purchase_draft';
+
+  const loadDraft = (): FormValues | null => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  };
+
+  const clearDraft = () => sessionStorage.removeItem(DRAFT_KEY);
+
+  const savedDraft = loadDraft();
 
   const {
     control,
@@ -85,9 +101,10 @@ export function CreatePurchasePage() {
     formState: { errors, isSubmitting },
     setValue,
     reset,
+    watch,
   } = useForm<FormValues>({
     resolver: zodResolver(purchaseSchema) as unknown as Resolver<FormValues>,
-    defaultValues: {
+    defaultValues: savedDraft || {
       invoiceNo: '',
       supplierId: '',
       invoiceDate: new Date().toISOString().slice(0, 10),
@@ -103,6 +120,15 @@ export function CreatePurchasePage() {
       returnItems: [],
     },
   });
+
+  // Auto-save form to sessionStorage on every change (only in create mode)
+  useEffect(() => {
+    if (isEditMode) return;
+    const subscription = watch((values) => {
+      try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values)); } catch { /* quota */ }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, isEditMode]);
 
   const paymentMethod = useWatch({ control, name: 'paymentMethod' });
   const selectedSupplierId = useWatch({ control, name: 'supplierId' });
@@ -156,8 +182,7 @@ export function CreatePurchasePage() {
     }
   }, [returnItems, setValue]);
 
-  const { id } = useParams<{ id: string }>();
-  const isEditMode = !!id;
+
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -258,6 +283,7 @@ export function CreatePurchasePage() {
         await purchaseApi.create(payload);
         message.success('Purchase created successfully');
       }
+      clearDraft();
       queryClient.invalidateQueries({ queryKey: ['dashboard'] });
       navigate('/purchases');
     } catch (err: unknown) {
@@ -573,7 +599,7 @@ export function CreatePurchasePage() {
                 </div>
               </div>
               
-              <Button size="large" onClick={() => navigate('/purchases')} disabled={isSubmitting}>
+              <Button size="large" onClick={() => { clearDraft(); navigate('/purchases'); }} disabled={isSubmitting}>
                 Cancel
               </Button>
               <Button size="large" type="primary" htmlType="submit" loading={isSubmitting}>
