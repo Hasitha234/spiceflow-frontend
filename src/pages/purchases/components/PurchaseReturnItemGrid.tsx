@@ -64,6 +64,11 @@ export function PurchaseReturnItemGrid({ control, setValue, supplierProducts, er
                 showSearch
                 optionFilterProp="label"
                 popupMatchSelectWidth={false}
+                optionRender={(option) => (
+                  <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
+                    {option.data.label}
+                  </div>
+                )}
                 style={{ width: '100%' }}
                 status={error ? 'error' : ''}
                 onChange={(val) => {
