@@ -474,32 +474,37 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
               return (
                 <tr key={itemField.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                   <td style={{ padding: '12px 24px' }}>
-                    <Controller
-                      name={`shops.${shopIndex}.items.${itemIndex}.productId`}
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          showSearch
-                          optionFilterProp="label"
-                          style={{ width: '100%' }}
-                          options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
-                          popupMatchSelectWidth={false}
-                          optionRender={(option) => (
-                            <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
-                              {option.data.label}
-                            </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Text type="secondary" style={{ width: '20px', fontWeight: 600 }}>{itemIndex + 1}</Text>
+                      <div style={{ flex: 1 }}>
+                        <Controller
+                          name={`shops.${shopIndex}.items.${itemIndex}.productId`}
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              showSearch
+                              optionFilterProp="label"
+                              style={{ width: '100%' }}
+                              options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
+                              popupMatchSelectWidth={false}
+                              optionRender={(option) => (
+                                <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
+                                  {option.data.label}
+                                </div>
+                              )}
+                              onChange={(val) => {
+                                field.onChange(val);
+                                const prod = products.find((p: any) => p.id.toString() === val);
+                                if (prod) {
+                                  setValue(`shops.${shopIndex}.items.${itemIndex}.rate`, prod.basePrice);
+                                }
+                              }}
+                            />
                           )}
-                          onChange={(val) => {
-                            field.onChange(val);
-                            const prod = products.find((p: any) => p.id.toString() === val);
-                            if (prod) {
-                              setValue(`shops.${shopIndex}.items.${itemIndex}.rate`, prod.basePrice);
-                            }
-                          }}
                         />
-                      )}
-                    />
+                      </div>
+                    </div>
                   </td>
                   <td style={{ padding: '12px' }}>
                     <Controller
@@ -559,24 +564,29 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
               return (
                 <tr key={returnField.id} style={{ borderBottom: '1px solid #f0f0f0' }}>
                   <td style={{ padding: '12px 24px' }}>
-                    <Controller
-                      name={`shops.${shopIndex}.returns.${returnIndex}.productId`}
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          {...field}
-                          showSearch
-                          optionFilterProp="label"
-                          options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
-                          popupMatchSelectWidth={false}
-                          optionRender={(option) => (
-                            <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
-                              {option.data.label}
-                            </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Text type="secondary" style={{ width: '20px', fontWeight: 600 }}>{returnIndex + 1}</Text>
+                      <div style={{ flex: 1 }}>
+                        <Controller
+                          name={`shops.${shopIndex}.returns.${returnIndex}.productId`}
+                          control={control}
+                          render={({ field }) => (
+                            <Select
+                              {...field}
+                              showSearch
+                              optionFilterProp="label"
+                              options={products.map((p: any) => ({ label: `${p.sku} - ${p.name}`, value: p.id.toString() }))}
+                              popupMatchSelectWidth={false}
+                              optionRender={(option) => (
+                                <div style={{ whiteSpace: 'normal', wordWrap: 'break-word', maxWidth: '400px' }}>
+                                  {option.data.label}
+                                </div>
+                              )}
+                            />
                           )}
                         />
-                      )}
-                    />
+                      </div>
+                    </div>
                   </td>
                   <td style={{ padding: '12px' }}>
                     <Controller
