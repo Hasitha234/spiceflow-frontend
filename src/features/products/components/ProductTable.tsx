@@ -185,6 +185,7 @@ export const ProductTable: React.FC<ProductTableProps> = ({
       <ConfirmDeleteDialog
         open={!!deleteTarget}
         entityName={deleteTarget?.name}
+        description={`Are you sure you want to delete "${deleteTarget?.name}"? You can only delete products that have no existing inventory stock and no purchase history.`}
         confirmLoading={deleteMutation.isPending}
         onConfirm={() => {
           if (deleteTarget?.id) {
