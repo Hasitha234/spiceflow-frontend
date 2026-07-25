@@ -54,7 +54,11 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
               newSummaryMap[wh.id] = {
                 products: data.length,
                 units: data.reduce((s, i) => s + i.quantityAvailable, 0),
-                value: data.reduce((s, i) => s + (i.quantityAvailable * (i.productBasePrice || 0)), 0),
+                value: data.reduce((s, i) => {
+                  const perUnit = i.itemsPerSoldUnit || 1;
+                  const soldUnits = i.quantityAvailable / perUnit;
+                  return s + (soldUnits * (i.productBasePrice || 0));
+                }, 0),
               };
             } catch (err) {
               console.error(`Failed to fetch items for warehouse ${wh.id}`, err);
@@ -367,7 +371,11 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
 
   const totalProducts = items.length;
   const totalUnits = items.reduce((acc, item) => acc + item.quantityAvailable, 0);
-  const totalValue = items.reduce((acc, item) => acc + (item.quantityAvailable * (item.productBasePrice || 0)), 0);
+  const totalValue = items.reduce((acc, item) => {
+    const perUnit = item.itemsPerSoldUnit || 1;
+    const soldUnits = item.quantityAvailable / perUnit;
+    return acc + (soldUnits * (item.productBasePrice || 0));
+  }, 0);
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
@@ -479,7 +487,9 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       align: 'right' as const,
       width: 160,
       render: (_: unknown, record: InventoryItem) => {
-        const val = record.quantityAvailable * (record.productBasePrice || 0);
+        const perUnit = record.itemsPerSoldUnit || 1;
+        const soldUnits = record.quantityAvailable / perUnit;
+        const val = soldUnits * (record.productBasePrice || 0);
         return (
           <span style={{
             fontFamily: 'var(--font-mono)',
