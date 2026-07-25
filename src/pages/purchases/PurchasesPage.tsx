@@ -116,7 +116,7 @@ export function PurchasesPage() {
         title: t('purchase.supplier', 'Supplier'),
         key: 'supplier',
         render: (_: unknown, record: Purchase) => (
-          <span className="font-medium text-slate-200">
+          <span className="font-medium text-slate-700">
             {record.supplierName || record.supplier?.name || '—'}
           </span>
         ),
@@ -125,7 +125,7 @@ export function PurchasesPage() {
         title: t('purchase.purchaseDate', 'Invoice Date'),
         key: 'invoiceDate',
         render: (_: unknown, record: Purchase) => (
-          <span className="text-slate-300">{record.invoiceDate || record.purchaseDate || '—'}</span>
+          <span className="text-slate-500">{record.invoiceDate || record.purchaseDate || '—'}</span>
         ),
       },
       {
@@ -143,7 +143,7 @@ export function PurchasesPage() {
         align: 'right' as const,
         render: (_: unknown, record: Purchase) => {
           const val = record.netAmount !== undefined ? record.netAmount : record.totalOrderValue ?? record.totalAmount ?? 0;
-          return <span className="font-mono text-slate-100 font-semibold">{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
+          return <span className="font-mono text-slate-900 font-semibold">{Number(val).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>;
         },
       },
       {
