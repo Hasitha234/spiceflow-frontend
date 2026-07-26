@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UseFormReturn, FieldValues } from 'react-hook-form';
+import type { UseFormReturn, FieldValues } from 'react-hook-form';
 
 interface UseFormDraftOptions {
   key: string;
