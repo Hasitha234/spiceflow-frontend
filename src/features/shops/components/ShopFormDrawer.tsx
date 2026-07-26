@@ -43,7 +43,7 @@ export const ShopFormDrawer: React.FC<ShopFormDrawerProps> = ({
     if (editingShop) {
       methods.reset({
         name: editingShop.name ?? '',
-        ownerName: editingShop.ownerName ?? '',
+        outletId: editingShop.outletId ?? '',
         phone: editingShop.phone ?? '',
         address: editingShop.address ?? '',
         area: editingShop.area ?? '',

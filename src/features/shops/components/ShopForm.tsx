@@ -89,12 +89,12 @@ export const ShopForm: React.FC<{ isEditing?: boolean }> = ({ isEditing }) => {
       </Form.Item>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-        <Form.Item label="Owner Name" htmlFor="ownerName">
+        <Form.Item label="Outlet ID" htmlFor="outletId" required>
           <Controller
-            name="ownerName"
+            name="outletId"
             control={control}
             render={({ field }) => (
-              <Input {...field} id="ownerName" placeholder="Sunil Perera" />
+              <Input {...field} id="outletId" placeholder="e.g. OUTLET-01" />
             )}
           />
         </Form.Item>

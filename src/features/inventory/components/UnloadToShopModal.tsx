@@ -68,9 +68,9 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     const r = row as Record<string, unknown>;
     if (r.shop && typeof r.shop === 'object') {
       const s = r.shop as Record<string, unknown>;
-      if (s.ownerName) return String(s.ownerName);
+      if (s.outletId) return String(s.outletId);
     }
-    if (r.ownerName) return String(r.ownerName);
+    if (r.outletId) return String(r.outletId);
     return '';
   };
 

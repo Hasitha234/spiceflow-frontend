@@ -73,9 +73,9 @@ export const ShopTable: React.FC<ShopTableProps> = ({
               </Tooltip>
             )}
           </div>
-          {record.ownerName && (
-            <div className="text-xs" style={{ color: 'var(--color-text-tertiary)' }}>
-              Owner: {record.ownerName}
+          {record.outletId && (
+            <div className="text-xs text-gray-500 mt-1">
+              Outlet ID: {record.outletId}
             </div>
           )}
         </div>

@@ -15,7 +15,7 @@ export const SalesReceivablesTab: React.FC<SalesReceivablesTabProps> = ({ data }
   const debtorColumns = [
     { title: 'Shop ID', dataIndex: 'shopId', key: 'shopId', width: 80 },
     { title: 'Shop Name', dataIndex: 'shopName', key: 'shopName', render: (t: string) => <strong>{t}</strong> },
-    { title: 'Owner', dataIndex: 'ownerName', key: 'ownerName' },
+    { title: 'Outlet ID', dataIndex: 'outletId', key: 'outletId' },
     { title: 'Phone', dataIndex: 'phone', key: 'phone' },
     { title: 'Area / Route', dataIndex: 'area', key: 'area', render: (a: string) => <Tag color="blue">{a || 'General'}</Tag> },
     {

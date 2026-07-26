@@ -428,7 +428,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                       {...field}
                       showSearch
                       optionFilterProp="label"
-                      options={shopsList.map((s: any) => ({ label: s.name, value: s.id.toString() }))}
+                      options={shopsList.map((s: any) => ({ label: `${s.name} - ${s.outletId || 'No ID'}`, value: s.id.toString() }))}
                       placeholder="Search and select shop"
                       status={fieldState.error ? 'error' : undefined}
                     />
