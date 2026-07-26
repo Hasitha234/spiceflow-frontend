@@ -38,6 +38,8 @@ export const repOrderApi = {
     apiClient.get<RepOrder>(`/api/v1/sales/rep-orders/${id}`).then((r) => r.data),
   create: (data: object) =>
     apiClient.post<RepOrder>('/api/v1/sales/rep-orders', data).then((r) => r.data),
+  getNextOrderNumber: () =>
+    apiClient.get<{ nextOrderNumber: string }>('/api/v1/sales/rep-orders/next-order-number').then((r) => r.data),
 };
 
 // ─── Loading Sheets ───────────────────────────────────────────────────────────

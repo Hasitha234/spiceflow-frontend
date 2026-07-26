@@ -107,14 +107,6 @@ export function CreateRepOrderPage() {
   const [suppliers, setSuppliers] = useState<{ id: string; name: string }[]>([]);
   const [warehouses, setWarehouses] = useState<{ id: string; name: string; storeType: string }[]>([]);
 
-  useEffect(() => {
-    // Fetch dropdown data (Reps, Shops, Products, Suppliers, Warehouses)
-    apiClient.get('/api/v1/sales/master-data/reps?size=500').then(res => setReps(res.data?.content || []));
-    apiClient.get('/api/v1/sales/master-data/shops?size=500').then(res => setShopsList(res.data?.content || []));
-    apiClient.get('/api/v1/products?size=500').then(res => setProducts(res.data?.content || []));
-    apiClient.get('/api/v1/suppliers?size=500').then(res => setSuppliers(res.data?.content || []));
-    apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
-  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(repOrderSchema) as any,
@@ -127,7 +119,23 @@ export function CreateRepOrderPage() {
       shops: [emptyShop],
     },
   });
-  const { control, handleSubmit, setValue, setError } = form;
+  const { control, handleSubmit, setValue, setError, getValues } = form;
+
+  useEffect(() => {
+    // Fetch dropdown data (Reps, Shops, Products, Suppliers, Warehouses)
+    apiClient.get('/api/v1/sales/master-data/reps?size=500').then(res => setReps(res.data?.content || []));
+    apiClient.get('/api/v1/sales/master-data/shops?size=500').then(res => setShopsList(res.data?.content || []));
+    apiClient.get('/api/v1/products?size=500').then(res => setProducts(res.data?.content || []));
+    apiClient.get('/api/v1/suppliers?size=500').then(res => setSuppliers(res.data?.content || []));
+    apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
+
+    repOrderApi.getNextOrderNumber().then(res => {
+      const currentOrderNum = getValues('orderNumber');
+      if (!currentOrderNum) {
+        setValue('orderNumber', res.nextOrderNumber);
+      }
+    }).catch(err => console.error("Failed to fetch next order number", err));
+  }, [getValues, setValue]);
 
   const { isRestored, clearDraft } = useFormDraft(form, { key: 'draft_rep_order' });
 
