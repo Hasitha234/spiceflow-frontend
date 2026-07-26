@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
-import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs } from 'antd';
+import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs, Radio } from 'antd';
 import { ResponsiveModal } from '@/components/common';
 
 import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined, DownloadOutlined } from '@ant-design/icons';
@@ -55,9 +55,7 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
                 products: data.length,
                 units: data.reduce((s, i) => s + i.quantityAvailable, 0),
                 value: data.reduce((s, i) => {
-                  const perUnit = i.itemsPerSoldUnit || 1;
-                  const soldUnits = i.quantityAvailable / perUnit;
-                  return s + (soldUnits * (i.productBasePrice || 0));
+                  return s + (i.quantityAvailable * (i.productBasePrice || 0));
                 }, 0),
               };
             } catch (err) {
@@ -223,6 +221,10 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [stockFilter, setStockFilter] = useState('ALL');
   const { agencyName } = useAgencyStore();
 
+  const [inputMode, setInputMode] = useState<'packaging' | 'totalQty'>('packaging');
+  const [packagingInputs, setPackagingInputs] = useState({ boxes: 0, bundles: 0, loose: 0 });
+  const [totalQtyInput, setTotalQtyInput] = useState(0);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -255,23 +257,58 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     fetchData();
   }, [fetchData]);
 
+  const calculateTotalQty = (productId: string | number, b: number, bund: number, l: number) => {
+    const product = allProducts.find(p => String(p.id) === String(productId));
+    if (!product) return 0;
+    const perBox = product.soldUnitsPerBox || 0;
+    const perUnit = product.itemsPerSoldUnit || 0;
+    const itemsPerBox = perBox * perUnit;
+    return (b * itemsPerBox) + (bund * perUnit) + l;
+  };
+
+  const decomposeTotalQty = (productId: string | number, total: number) => {
+    const product = allProducts.find(p => String(p.id) === String(productId));
+    if (!product) return { boxes: 0, bundles: 0, loose: total };
+    const perBox = product.soldUnitsPerBox || 0;
+    const perUnit = product.itemsPerSoldUnit || 0;
+    
+    let boxes = 0;
+    let bundles = 0;
+    let loose = total;
+
+    if (perBox > 0 && perUnit > 0) {
+      const itemsPerBox = perBox * perUnit;
+      boxes = Math.floor(loose / itemsPerBox);
+      loose = loose % itemsPerBox;
+    }
+    
+    if (perUnit > 0) {
+      bundles = Math.floor(loose / perUnit);
+      loose = loose % perUnit;
+    }
+    return { boxes, bundles, loose };
+  };
+
   const handleOpenAddProduct = () => {
     setEditingItem(null);
     form.resetFields();
-    form.setFieldsValue({
-      quantityAvailable: undefined,
-      quantityReserved: undefined,
-    });
+    setInputMode('packaging');
+    setPackagingInputs({ boxes: 0, bundles: 0, loose: 0 });
+    setTotalQtyInput(0);
     setItemModalVisible(true);
   };
 
   const handleOpenEditItem = (item: InventoryItem) => {
     setEditingItem(item);
     form.resetFields();
+    
+    const decomp = decomposeTotalQty(item.productId, item.quantityAvailable);
+    setPackagingInputs(decomp);
+    setTotalQtyInput(item.quantityAvailable);
+    setInputMode('packaging');
+    
     form.setFieldsValue({
       productId: Number(item.productId),
-      quantityAvailable: item.quantityAvailable,
-      quantityReserved: item.quantityReserved || 0,
       batchNumber: item.batchNumber || '',
       expirationDate: item.expirationDate ? dayjs(item.expirationDate) : null,
     });
@@ -294,18 +331,23 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
 
   const handleSaveItem = async (values: {
     productId: number | string;
-    quantityAvailable?: number;
-    quantityReserved?: number;
     batchNumber?: string;
     expirationDate?: dayjs.Dayjs | null;
   }) => {
     setSavingItem(true);
     try {
+      let finalQty = 0;
+      if (inputMode === 'packaging') {
+        finalQty = calculateTotalQty(values.productId, packagingInputs.boxes, packagingInputs.bundles, packagingInputs.loose);
+      } else {
+        finalQty = totalQtyInput;
+      }
+
       const payload = {
         productId: Number(values.productId),
         warehouseId: Number(warehouseId),
-        quantityAvailable: Number(values.quantityAvailable || 0),
-        quantityReserved: Number(values.quantityReserved || 0),
+        quantityAvailable: finalQty,
+        quantityReserved: 0,
         batchNumber: values.batchNumber || undefined,
         expirationDate: values.expirationDate ? values.expirationDate.format('YYYY-MM-DD') : undefined,
       };
@@ -915,25 +957,111 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
             </Select>
           </Form.Item>
 
-          <Row gutter={16}>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="quantityAvailable"
-                label={t('inventory.quantityAvailable', 'Quantity Available')}
-                rules={[{ required: true, message: 'Required' }]}
-              >
-                <InputNumber min={0} placeholder="0" onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-            <Col xs={24} md={12}>
-              <Form.Item
-                name="quantityReserved"
-                label={t('inventory.quantityReserved', 'Quantity Reserved')}
-              >
-                <InputNumber min={0} placeholder="0" onFocus={(e) => e.target.select()} style={{ width: '100%' }} />
-              </Form.Item>
-            </Col>
-          </Row>
+          <Form.Item label="Input Mode" style={{ marginBottom: 16 }}>
+            <Radio.Group
+              value={inputMode}
+              onChange={e => {
+                setInputMode(e.target.value);
+              }}
+              optionType="button"
+              buttonStyle="solid"
+            >
+              <Radio.Button value="packaging">By Packaging (Boxes/Bundles)</Radio.Button>
+              <Radio.Button value="totalQty">By Total Quantity</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Form.Item noStyle shouldUpdate={(prev, current) => prev.productId !== current.productId}>
+            {({ getFieldValue }) => {
+              const selectedProductId = getFieldValue('productId');
+              const selectedProduct = allProducts.find(p => String(p.id) === String(selectedProductId));
+              
+              const currentTotal = inputMode === 'packaging' 
+                ? calculateTotalQty(selectedProductId, packagingInputs.boxes, packagingInputs.bundles, packagingInputs.loose)
+                : totalQtyInput;
+              
+              const currentEstValue = currentTotal * (selectedProduct?.basePrice || 0);
+              
+              const previewDecomp = inputMode === 'totalQty' ? decomposeTotalQty(selectedProductId, totalQtyInput) : packagingInputs;
+
+              return (
+                <>
+                  {inputMode === 'packaging' && (
+                    <Row gutter={16}>
+                      <Col xs={8}>
+                        <Form.Item label="Boxes">
+                          <InputNumber
+                            min={0}
+                            value={packagingInputs.boxes}
+                            onChange={val => setPackagingInputs(p => ({ ...p, boxes: val || 0 }))}
+                            style={{ width: '100%' }}
+                            onFocus={e => e.target.select()}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={8}>
+                        <Form.Item label="Bundles">
+                          <InputNumber
+                            min={0}
+                            value={packagingInputs.bundles}
+                            onChange={val => setPackagingInputs(p => ({ ...p, bundles: val || 0 }))}
+                            style={{ width: '100%' }}
+                            onFocus={e => e.target.select()}
+                          />
+                        </Form.Item>
+                      </Col>
+                      <Col xs={8}>
+                        <Form.Item label="Loose">
+                          <InputNumber
+                            min={0}
+                            value={packagingInputs.loose}
+                            onChange={val => setPackagingInputs(p => ({ ...p, loose: val || 0 }))}
+                            style={{ width: '100%' }}
+                            onFocus={e => e.target.select()}
+                          />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  )}
+
+                  {inputMode === 'totalQty' && (
+                    <Form.Item label="Total Quantity">
+                      <InputNumber
+                        min={0}
+                        value={totalQtyInput}
+                        onChange={val => setTotalQtyInput(val || 0)}
+                        style={{ width: '100%' }}
+                        onFocus={e => e.target.select()}
+                      />
+                    </Form.Item>
+                  )}
+
+                  <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 flex flex-col gap-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Calculated Total Qty:</span>
+                      <span className="text-lg font-bold text-slate-800 font-mono tabular-nums">
+                        {currentTotal.toLocaleString()}
+                      </span>
+                    </div>
+                    {inputMode === 'totalQty' && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-slate-500">Decomposes to:</span>
+                        <span className="text-slate-600 font-mono tabular-nums">
+                          {previewDecomp.boxes} Boxes, {previewDecomp.bundles} Bundles, {previewDecomp.loose} Loose
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Estimated Value:</span>
+                      <span className="text-lg font-bold text-emerald-600 font-mono tabular-nums">
+                        Rs. {currentEstValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              );
+            }}
+          </Form.Item>
 
           <Form.Item
             name="batchNumber"
