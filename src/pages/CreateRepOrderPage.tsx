@@ -416,7 +416,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
 
       <div style={{ padding: '24px', borderBottom: '1px solid #f0f0f0' }}>
         <Row gutter={24}>
-          <Col xs={24} md={6}>
+          <Col xs={24} md={12}>
             <Form.Item label={<Text strong>Select Shop</Text>} required style={{ margin: 0 }}>
               <Controller
                 name={`shops.${shopIndex}.shopId`}
@@ -434,45 +434,6 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                     />
                     {fieldState.error && <Text type="danger" style={{ fontSize: '12px' }}>{fieldState.error.message}</Text>}
                   </>
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={6}>
-            <Form.Item label={<Text strong>Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
-              <Controller
-                name={`shops.${shopIndex}.discountAmount`}
-                control={control}
-                render={({ field }) => (
-                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={6}>
-            <Form.Item label={<Text strong>SKU Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
-              <Controller
-                name={`shops.${shopIndex}.skuDiscountAmount`}
-                control={control}
-                render={({ field }) => (
-                  <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col xs={24} md={6}>
-            <Form.Item label={<Text strong>Returns Warehouse</Text>} style={{ margin: 0 }}>
-              <Controller
-                name={`shops.${shopIndex}.returnWarehouseId`}
-                control={control}
-                render={({ field }) => (
-                  <Select
-                    size="large"
-                    {...field}
-                    allowClear
-                    options={warehouses.map((w: any) => ({ label: w.name, value: w.id.toString() }))}
-                    placeholder="Select warehouse for returns"
-                  />
                 )}
               />
             </Form.Item>
@@ -574,8 +535,25 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
       </div>
 
       {/* Returns Table */}
-      <div style={{ padding: '16px 24px 8px 24px' }}>
+      <div style={{ padding: '16px 24px 8px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text strong style={{ fontSize: '16px', color: '#111827' }}>Returns</Text>
+        <div style={{ width: '300px' }}>
+          <Form.Item label={<Text strong>Returns Warehouse</Text>} style={{ margin: 0 }}>
+            <Controller
+              name={`shops.${shopIndex}.returnWarehouseId`}
+              control={control}
+              render={({ field }) => (
+                <Select
+                  size="large"
+                  {...field}
+                  allowClear
+                  options={warehouses.map((w: any) => ({ label: w.name, value: w.id.toString() }))}
+                  placeholder="Select warehouse for returns"
+                />
+              )}
+            />
+          </Form.Item>
+        </div>
       </div>
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse', fontSize: '14px' }}>
@@ -707,6 +685,34 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
           </Text>
         </div>
       )}
+
+
+
+      {/* Discounts */}
+      <div style={{ padding: '16px 24px', backgroundColor: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', gap: '24px', justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+        <div style={{ width: '250px' }}>
+          <Form.Item label={<Text strong>Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
+            <Controller
+              name={`shops.${shopIndex}.discountAmount`}
+              control={control}
+              render={({ field }) => (
+                <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
+              )}
+            />
+          </Form.Item>
+        </div>
+        <div style={{ width: '250px' }}>
+          <Form.Item label={<Text strong>SKU Discount Amount (LKR)</Text>} style={{ margin: 0 }}>
+            <Controller
+              name={`shops.${shopIndex}.skuDiscountAmount`}
+              control={control}
+              render={({ field }) => (
+                <InputNumber size="large" onFocus={(e) => e.target.select()} {...field} min={0} step={0.01} precision={2} style={{ width: '100%', fontWeight: 600, fontSize: '16px' }} className="text-right" />
+              )}
+            />
+          </Form.Item>
+        </div>
+      </div>
 
       <div style={{ padding: '24px', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
         <div style={{ textAlign: 'right' }}>
