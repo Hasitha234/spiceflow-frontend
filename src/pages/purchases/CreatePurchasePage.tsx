@@ -124,6 +124,7 @@ export function CreatePurchasePage() {
   // Auto-save form to sessionStorage on every change (only in create mode)
   useEffect(() => {
     if (isEditMode) return;
+    // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = watch((values) => {
       try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values)); } catch { /* quota */ }
     });

@@ -976,12 +976,9 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
               const selectedProductId = getFieldValue('productId');
               const selectedProduct = allProducts.find(p => String(p.id) === String(selectedProductId));
               
-              let currentTotal = 0;
-              if (inputMode === 'packaging') {
-                currentTotal = calculateTotalQty(selectedProductId, packagingInputs.boxes, packagingInputs.bundles, packagingInputs.loose);
-              } else {
-                currentTotal = totalQtyInput;
-              }
+              const currentTotal = inputMode === 'packaging' 
+                ? calculateTotalQty(selectedProductId, packagingInputs.boxes, packagingInputs.bundles, packagingInputs.loose)
+                : totalQtyInput;
               
               const currentEstValue = currentTotal * (selectedProduct?.basePrice || 0);
               
