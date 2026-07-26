@@ -372,9 +372,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const totalProducts = items.length;
   const totalUnits = items.reduce((acc, item) => acc + item.quantityAvailable, 0);
   const totalValue = items.reduce((acc, item) => {
-    const perUnit = item.itemsPerSoldUnit || 1;
-    const soldUnits = item.quantityAvailable / perUnit;
-    return acc + (soldUnits * (item.productBasePrice || 0));
+    return acc + (item.quantityAvailable * (item.productBasePrice || 0));
   }, 0);
 
   const filteredItems = useMemo(() => {
@@ -487,9 +485,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       align: 'right' as const,
       width: 160,
       render: (_: unknown, record: InventoryItem) => {
-        const perUnit = record.itemsPerSoldUnit || 1;
-        const soldUnits = record.quantityAvailable / perUnit;
-        const val = soldUnits * (record.productBasePrice || 0);
+        const val = record.quantityAvailable * (record.productBasePrice || 0);
         return (
           <span style={{
             fontFamily: 'var(--font-mono)',
