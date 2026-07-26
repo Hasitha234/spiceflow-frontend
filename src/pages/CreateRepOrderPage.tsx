@@ -26,6 +26,7 @@ import {
 import dayjs from 'dayjs';
 import apiClient from '../api/client';
 import { repOrderApi } from '../api/sales';
+import { useFormDraft } from '../hooks/useFormDraft';
 
 const { Title, Text } = Typography;
 
@@ -115,7 +116,7 @@ export function CreateRepOrderPage() {
     apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
   }, []);
 
-  const { control, handleSubmit, setValue, setError } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(repOrderSchema) as any,
     defaultValues: {
       repId: '',
@@ -126,6 +127,9 @@ export function CreateRepOrderPage() {
       shops: [emptyShop],
     },
   });
+  const { control, handleSubmit, setValue, setError } = form;
+
+  const { isRestored, clearDraft } = useFormDraft(form, { key: 'draft_rep_order' });
 
   const selectedSupplierId = useWatch({ control, name: 'supplierId' });
   const filteredProducts = selectedSupplierId 
@@ -183,7 +187,8 @@ export function CreateRepOrderPage() {
       };
 
       await repOrderApi.create(payload);
-      message.success('Rep Order created successfully');
+      message.success('Rep order created successfully');
+      clearDraft();
       navigate('/sales');
     } catch (error: any) {
       console.error(error);
@@ -336,13 +341,32 @@ export function CreateRepOrderPage() {
               <span style={{ fontSize: '12px', fontWeight: 600, color: '#8c8c8c', textTransform: 'uppercase', marginBottom: '4px' }}>Net Total (All Shops)</span>
               <span style={{ fontFamily: 'monospace', fontSize: '24px', fontWeight: 'bold', color: '#111827' }}>LKR {grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
             </div>
-            
-            <Button size="large" onClick={() => navigate('/sales')} disabled={submitting}>
-              Cancel
-            </Button>
-            <Button size="large" type="primary" htmlType="submit" loading={submitting} style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16,185,129,0.2)' }}>
-              Create Rep Order
-            </Button>
+            <Space>
+              {isRestored && (
+                <Button 
+                  onClick={() => {
+                    clearDraft();
+                    form.reset({
+                      repId: '',
+                      orderNumber: '',
+                      orderDate: dayjs().format('YYYY-MM-DD'),
+                      routeArea: '',
+                      supplierId: '',
+                      shops: [emptyShop],
+                    });
+                    message.info('Draft cleared');
+                  }}
+                >
+                  Clear Draft
+                </Button>
+              )}
+              <Button size="large" onClick={() => navigate('/sales')}>
+                Cancel
+              </Button>
+              <Button size="large" type="primary" htmlType="submit" loading={submitting} style={{ backgroundColor: '#10b981', boxShadow: '0 4px 6px -1px rgba(16,185,129,0.2)' }}>
+                Create Rep Order
+              </Button>
+            </Space>
           </div>
         </div>
       </Form>

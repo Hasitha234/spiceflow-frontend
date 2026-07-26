@@ -25,6 +25,7 @@ import type { Supplier, Product, Warehouse } from '../../types/inventory';
 import type { PurchaseLineItem, PurchaseReturnItem } from '../../types/sales';
 import { PurchaseLineItemGrid } from './components/PurchaseLineItemGrid';
 import { PurchaseReturnItemGrid } from './components/PurchaseReturnItemGrid';
+import { useFormDraft } from '../../hooks/useFormDraft';
 
 const { Title, Text } = Typography;
 
@@ -81,30 +82,9 @@ export function CreatePurchasePage() {
   const [catalogStatus, setCatalogStatus] = useState<CatalogStatus>('idle');
   const [supplierProducts, setSupplierProducts] = useState<Product[]>([]);
 
-  // ── Draft persistence: survive navigation to Settings and back ──
-  const DRAFT_KEY = 'purchase_draft';
-
-  const loadDraft = (): FormValues | null => {
-    try {
-      const raw = sessionStorage.getItem(DRAFT_KEY);
-      return raw ? JSON.parse(raw) : null;
-    } catch { return null; }
-  };
-
-  const clearDraft = () => sessionStorage.removeItem(DRAFT_KEY);
-
-  const savedDraft = loadDraft();
-
-  const {
-    control,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    reset,
-    watch,
-  } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(purchaseSchema) as unknown as Resolver<FormValues>,
-    defaultValues: savedDraft || {
+    defaultValues: {
       invoiceNo: '',
       supplierId: '',
       invoiceDate: new Date().toISOString().slice(0, 10),
@@ -121,15 +101,15 @@ export function CreatePurchasePage() {
     },
   });
 
-  // Auto-save form to sessionStorage on every change (only in create mode)
-  useEffect(() => {
-    if (isEditMode) return;
-    // eslint-disable-next-line react-hooks/incompatible-library
-    const subscription = watch((values) => {
-      try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(values)); } catch { /* quota */ }
-    });
-    return () => subscription.unsubscribe();
-  }, [watch, isEditMode]);
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    setValue,
+    reset,
+  } = form;
+
+  const { isRestored, clearDraft } = useFormDraft(form, { key: 'purchase_draft', enabled: !isEditMode });
 
   const paymentMethod = useWatch({ control, name: 'paymentMethod' });
   const selectedSupplierId = useWatch({ control, name: 'supplierId' });
@@ -600,6 +580,33 @@ export function CreatePurchasePage() {
                 </div>
               </div>
               
+              {isRestored && !isEditMode && (
+                <Button 
+                  size="large"
+                  onClick={() => {
+                    clearDraft();
+                    form.reset({
+                      invoiceNo: '',
+                      supplierId: '',
+                      invoiceDate: new Date().toISOString().slice(0, 10),
+                      paymentMethod: 'CASH',
+                      chequeNo: '',
+                      chequeBankName: '',
+                      chequeAmount: 0,
+                      discountAmount: 0,
+                      returnsDeductedAmount: 0,
+                      vatAmount: 0,
+                      notes: '',
+                      lineItems: [emptyLineItem],
+                      returnItems: [],
+                    });
+                    message.info('Draft cleared');
+                  }}
+                  disabled={isSubmitting}
+                >
+                  Clear Draft
+                </Button>
+              )}
               <Button size="large" onClick={() => { clearDraft(); navigate('/purchases'); }} disabled={isSubmitting}>
                 Cancel
               </Button>
