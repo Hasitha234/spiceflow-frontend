@@ -230,7 +230,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     try {
       const [whRes, itemsRes, allWhRes, productsRes] = await Promise.all([
         warehouseApi.get(warehouseId),
-        inventoryItemApi.list({ warehouseId, size: 500 }),
+        inventoryItemApi.list({ warehouseId, size: 500, sort: 'updatedAt,desc' }),
         warehouseApi.list({ size: 100 }),
         productApi.list({ size: 1000 }),
       ]);
