@@ -154,7 +154,7 @@ export const DriverTable: React.FC<DriverTableProps> = ({
       align: 'right',
       render: (_: unknown, record: DriverResponse) => (
         <Space size="small">
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER', 'ROLE_INVENTORY_MANAGER']}>
+          <PermissionGuard requirePermission="SETTINGS_DRIVERS">
             <Tooltip title="Edit">
               <Button
                 type="text"

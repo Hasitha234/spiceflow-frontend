@@ -30,7 +30,7 @@ import { useTableState } from '@/hooks/useTableState';
 import { useGetSuppliers, useDeleteSupplier } from '@/api/generated';
 import type { SupplierResponse } from '@/api/generated';
 import { pluralize } from '@/utils/pluralize';
-import { ListPageFooter, TruncatedCell } from '@/components/common';
+import { ListPageFooter, TruncatedCell, PermissionGuard } from '@/components/common';
 import { SupplierFormDrawer } from '../components/SupplierFormDrawer';
 
 const { Title, Text } = Typography;
@@ -178,17 +178,19 @@ export function SupplierListPage() {
               {totalCount} {pluralize(totalCount, 'sourcing partner')}
             </Text>
           </div>
-          <Button 
-            type="primary" 
-            icon={<PlusOutlined />} 
-            style={{ fontWeight: 600 }}
-            onClick={() => {
-              setEditingSupplier(null);
-              setDrawerOpen(true);
-            }}
-          >
-            Add Supplier
-          </Button>
+          <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />} 
+              style={{ fontWeight: 600 }}
+              onClick={() => {
+                setEditingSupplier(null);
+                setDrawerOpen(true);
+              }}
+            >
+              Add Supplier
+            </Button>
+          </PermissionGuard>
         </div>
 
         {/* MAIN DATA CONTAINER */}
@@ -228,17 +230,19 @@ export function SupplierListPage() {
                   image={<ShopOutlined style={{ fontSize: 48, color: 'var(--text-muted)', marginBottom: 16 }} />}
                   description={<Text style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>No suppliers added yet</Text>}
                 >
-                  <Button 
-                    type="default" 
-                    icon={<PlusOutlined />} 
-                    style={{ marginTop: '16px', fontWeight: 600, borderRadius: 'var(--radius-md)' }}
-                    onClick={() => {
-                      setEditingSupplier(null);
-                      setDrawerOpen(true);
-                    }}
-                  >
-                    Add Supplier
-                  </Button>
+                  <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
+                    <Button 
+                      type="default" 
+                      icon={<PlusOutlined />} 
+                      style={{ marginTop: '16px', fontWeight: 600, borderRadius: 'var(--radius-md)' }}
+                      onClick={() => {
+                        setEditingSupplier(null);
+                        setDrawerOpen(true);
+                      }}
+                    >
+                      Add Supplier
+                    </Button>
+                  </PermissionGuard>
                 </Empty>
               </motion.div>
             )}

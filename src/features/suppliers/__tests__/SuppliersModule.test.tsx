@@ -45,19 +45,19 @@ describe('Suppliers Module Reference Tests', () => {
     expect(screen.getByLabelText(/Contact Phone/i)).toBeDefined();
   });
 
-  it('renders children inside PermissionGuard only if user has granted role', () => {
+  it('renders children inside PermissionGuard only if user has required permission for Suppliers', () => {
     useAuthStore.setState({
       user: {
-        email: 'purchasing@spiceflow.com',
-        roles: ['ROLE_PURCHASING_AGENT'],
-        permissions: [],
+        email: 'agent@spiceflow.com',
+        roles: [],
+        permissions: ['SETTINGS_SUPPLIERS'],
       },
       accessToken: 'mock-jwt',
       isAuthenticated: true,
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_PURCHASING_AGENT">
+      <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
         <button>Restricted Action</button>
       </PermissionGuard>
     );
@@ -65,7 +65,7 @@ describe('Suppliers Module Reference Tests', () => {
     expect(screen.getByText('Restricted Action')).toBeDefined();
   });
 
-  it('hides children inside PermissionGuard if role is missing', () => {
+  it('hides children inside PermissionGuard if permission is missing', () => {
     useAuthStore.setState({
       user: {
         email: 'viewer@spiceflow.com',
@@ -77,7 +77,7 @@ describe('Suppliers Module Reference Tests', () => {
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_PURCHASING_AGENT">
+      <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
         <button>Restricted Action</button>
       </PermissionGuard>
     );

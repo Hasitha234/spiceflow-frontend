@@ -31,7 +31,8 @@ import { useDeleteDriver } from '../hooks/useDeleteDriver';
 import type { DriverResponse } from '@/api/generated';
 import { DriverFormDrawer } from '../components/DriverFormDrawer';
 import { pluralize } from '@/utils/pluralize';
-import { ListPageFooter, TruncatedCell, StatusTag, type StatusTagVariant } from '@/components/common';
+import { StatusTag, type StatusTagVariant } from '@/components/common/StatusTag';
+import { PermissionGuard, ListPageFooter, TruncatedCell } from '@/components/common';
 
 const { Title, Text } = Typography;
 
@@ -213,9 +214,12 @@ export function DriverListPage() {
               {totalCount} registered {pluralize(totalCount, 'driver')}
             </Text>
           </div>
-          <Button type="primary" icon={<PlusOutlined />} style={{ fontWeight: 600 }} onClick={() => { setEditingDriver(null); setDrawerOpen(true); }}>
-            Register Driver
-          </Button>
+
+          <PermissionGuard requirePermission="SETTINGS_DRIVERS">
+            <Button type="primary" icon={<PlusOutlined />} style={{ fontWeight: 600 }} onClick={() => { setEditingDriver(null); setDrawerOpen(true); }}>
+              Register Driver
+            </Button>
+          </PermissionGuard>
         </div>
 
         {/* SEARCH BAR */}
@@ -251,9 +255,11 @@ export function DriverListPage() {
                   image={<CarOutlined style={{ fontSize: 48, color: '#d9d9d9', marginBottom: 16 }} />}
                   description={<Text type="secondary" style={{ fontSize: '16px' }}>No drivers found</Text>}
                 >
-                  <Button type="primary" icon={<PlusOutlined />} style={{ marginTop: '16px', fontWeight: 600 }} onClick={() => { setEditingDriver(null); setDrawerOpen(true); }}>
-                    Register Driver
-                  </Button>
+                  <PermissionGuard requirePermission="SETTINGS_DRIVERS">
+                    <Button type="primary" icon={<PlusOutlined />} style={{ marginTop: '16px', fontWeight: 600 }} onClick={() => { setEditingDriver(null); setDrawerOpen(true); }}>
+                      Register Driver
+                    </Button>
+                  </PermissionGuard>
                 </Empty>
               </motion.div>
             )}

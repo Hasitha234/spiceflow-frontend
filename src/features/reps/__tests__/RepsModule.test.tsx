@@ -76,19 +76,19 @@ describe('Sales Representatives Module Tests', () => {
     expect(screen.getByLabelText(/Assigned Area/i)).toBeDefined();
   });
 
-  it('renders children inside PermissionGuard only if user has required role for Reps', () => {
+  it('renders children inside PermissionGuard only if user has required permission for Reps', () => {
     useAuthStore.setState({
       user: {
         email: 'salesmgr@spiceflow.com',
-        roles: ['ROLE_SALES_MANAGER'],
-        permissions: [],
+        roles: [],
+        permissions: ['SETTINGS_REPS'],
       },
       accessToken: 'mock-jwt',
       isAuthenticated: true,
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_SALES_MANAGER">
+      <PermissionGuard requirePermission="SETTINGS_REPS">
         <button>Register Sales Rep</button>
       </PermissionGuard>
     );
@@ -96,7 +96,7 @@ describe('Sales Representatives Module Tests', () => {
     expect(screen.getByText('Register Sales Rep')).toBeDefined();
   });
 
-  it('hides children inside PermissionGuard if role is missing', () => {
+  it('hides children inside PermissionGuard if permission is missing', () => {
     useAuthStore.setState({
       user: {
         email: 'viewer@spiceflow.com',
@@ -108,7 +108,7 @@ describe('Sales Representatives Module Tests', () => {
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_SALES_MANAGER">
+      <PermissionGuard requirePermission="SETTINGS_REPS">
         <button>Register Sales Rep</button>
       </PermissionGuard>
     );

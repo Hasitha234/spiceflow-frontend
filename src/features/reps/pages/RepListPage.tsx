@@ -107,7 +107,7 @@ export function RepListPage() {
           { title: 'Sales Reps' },
         ]}
         extra={
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER']}>
+          <PermissionGuard requirePermission="SETTINGS_REPS">
             <Button
               type="primary"
               icon={<PlusOutlined />}

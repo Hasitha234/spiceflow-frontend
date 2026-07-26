@@ -81,19 +81,19 @@ describe('Drivers & Logistics Module Tests', () => {
     expect(screen.getByLabelText(/Default Warehouse/i)).toBeDefined();
   });
 
-  it('renders children inside PermissionGuard only if user has required role for Drivers', () => {
+  it('renders children inside PermissionGuard only if user has required permission for Drivers', () => {
     useAuthStore.setState({
       user: {
         email: 'salesmgr@spiceflow.com',
-        roles: ['ROLE_SALES_MANAGER'],
-        permissions: [],
+        roles: [],
+        permissions: ['SETTINGS_DRIVERS'],
       },
       accessToken: 'mock-jwt',
       isAuthenticated: true,
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_SALES_MANAGER">
+      <PermissionGuard requirePermission="SETTINGS_DRIVERS">
         <button>Register Driver</button>
       </PermissionGuard>
     );
@@ -101,7 +101,7 @@ describe('Drivers & Logistics Module Tests', () => {
     expect(screen.getByText('Register Driver')).toBeDefined();
   });
 
-  it('hides children inside PermissionGuard if role is missing', () => {
+  it('hides children inside PermissionGuard if permission is missing', () => {
     useAuthStore.setState({
       user: {
         email: 'viewer@spiceflow.com',
@@ -113,7 +113,7 @@ describe('Drivers & Logistics Module Tests', () => {
     });
 
     render(
-      <PermissionGuard requireRole="ROLE_SALES_MANAGER">
+      <PermissionGuard requirePermission="SETTINGS_DRIVERS">
         <button>Register Driver</button>
       </PermissionGuard>
     );

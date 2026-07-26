@@ -77,7 +77,7 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
       key: 'actions',
       width: 80,
       render: (_: unknown, record: ProductResponse) => (
-        <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+        <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
           <Button
             type="link"
             size="small"
@@ -118,7 +118,7 @@ export const SupplierCatalogDrawer: React.FC<SupplierCatalogDrawerProps> = ({
           body: { background: '#0f172a', padding: '20px' },
         }}
         extra={
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+          <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
             <Button
               type="primary"
               icon={<PlusOutlined />}
