@@ -99,7 +99,7 @@ export const SupplierTable: React.FC<SupplierTableProps> = ({
               className="!text-emerald-400 hover:!text-emerald-300"
             />
           </Tooltip>
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER']}>
+          <PermissionGuard requirePermission="SETTINGS_SUPPLIERS">
             <Tooltip title="Edit">
               <Button
                 type="text"

@@ -99,7 +99,7 @@ export const RepTable: React.FC<RepTableProps> = ({
       align: 'right',
       render: (_: unknown, record: RepResponse) => (
         <Space size="small">
-          <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_SALES_MANAGER']}>
+          <PermissionGuard requirePermission="SETTINGS_REPS">
             <Tooltip title="Edit">
               <Button
                 type="text"
