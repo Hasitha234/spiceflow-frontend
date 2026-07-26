@@ -79,6 +79,7 @@ export const inventoryItemApi = {
     productId?: string;
     page?: number;
     size?: number;
+    sort?: string;
   }) =>
     apiClient
       .get<PageResponse<InventoryItem>>('/api/v1/inventory-items', { params })
