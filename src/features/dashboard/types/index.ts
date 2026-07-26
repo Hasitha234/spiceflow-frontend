@@ -80,7 +80,7 @@ export interface RecentRepOrder {
 export interface TopDebtorShop {
   shopId: number;
   shopName: string;
-  ownerName: string;
+  outletId: string;
   phone: string;
   area: string;
   outstandingLoan: number;

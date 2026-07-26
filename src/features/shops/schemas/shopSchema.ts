@@ -6,7 +6,7 @@ import { z } from 'zod';
  */
 export const shopSchema = z.object({
   name: z.string().min(1, 'Shop name is required'),
-  ownerName: z.string().optional(),
+  outletId: z.string().min(1, 'Outlet ID is required'),
   phone: z.string().min(1, 'Phone number is required'),
   address: z.string().min(1, 'Address is required'),
   area: z.string().min(1, 'Area is required'),
@@ -23,7 +23,7 @@ export type ShopFormValues = z.infer<typeof shopSchema>;
 /** Default form values for creating a new shop. */
 export const defaultShopValues: ShopFormValues = {
   name: '',
-  ownerName: '',
+  outletId: '',
   phone: '',
   address: '',
   area: '',

@@ -75,7 +75,7 @@ describe('Dashboard Module Reference Tests', () => {
             {
               shopId: 1,
               shopName: 'Spice Corner',
-              ownerName: 'John',
+              outletId: 'John',
               phone: '555-0101',
               area: 'Downtown',
               outstandingLoan: 5000,
