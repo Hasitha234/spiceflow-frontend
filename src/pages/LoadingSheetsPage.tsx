@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import {
-  Button, Card, DatePicker, Form, Modal, Select, Table, Tag, Typography, App, Descriptions, Dropdown, Input,
+  Button, Card, DatePicker, Form, Modal, Select, Table, Tag, Typography, App, Descriptions, Dropdown, Input, Tooltip,
 } from 'antd';
 import {
   PlusOutlined, CheckCircleOutlined, EyeOutlined, CloseCircleOutlined, DollarOutlined, StopOutlined, MoreOutlined, ReloadOutlined,
@@ -164,6 +164,20 @@ export function LoadingSheetsPage() {
           {record.repOrderNumber || 'RO-' + val}
         </span>
       ),
+    },
+    {
+      title: 'Shop Name', dataIndex: 'shopNames', key: 'shopNames',
+      render: (shopNames: string[]) => {
+        if (!shopNames || shopNames.length === 0) return '—';
+        if (shopNames.length <= 2) return shopNames.join(', ');
+        
+        const display = shopNames.slice(0, 2).join(', ') + ` + ${shopNames.length - 2} more`;
+        return (
+          <Tooltip title={shopNames.join(', ')}>
+            <span>{display}</span>
+          </Tooltip>
+        );
+      },
     },
     {
       title: 'Rep', dataIndex: 'repName', key: 'repName',
