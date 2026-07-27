@@ -70,7 +70,7 @@ export function LoadingSheetsPage() {
         driverApi.list({ page: 0, size: 200 }),
         apiClient.get('/api/v1/warehouses?size=200'),
       ]);
-      setRepOrders((ordersRes?.content || []).filter((o: any) => o.loadingStatus === 'DRAFT' || o.status === 'DRAFT'));
+      setRepOrders((ordersRes?.content || []).filter((o: any) => o.loadingStatus === 'DRAFT'));
       setDrivers(driversRes?.content || []);
       setWarehouses(warehouseRes.data?.content || []);
       form.resetFields();
@@ -154,14 +154,14 @@ export function LoadingSheetsPage() {
     },
     {
       title: 'Rep Order', dataIndex: 'repOrderId', key: 'repOrderId', width: 100,
-      render: (val: number) => (
+      render: (val: number, record: any) => (
         <span style={{
           fontFamily: 'var(--font-mono)',
           fontSize: 'var(--text-sm)',
           color: 'var(--color-text-secondary)',
           fontVariantNumeric: 'tabular-nums',
         }}>
-          RO-{val}
+          {record.repOrder?.orderNumber || 'RO-' + val}
         </span>
       ),
     },
