@@ -111,7 +111,6 @@ export function CreateRepOrderPage() {
   const { id } = useParams<{ id: string }>();
   const isEditMode = !!id;
   const [submitting, setSubmitting] = useState(false);
-  const [loadingOrder, setLoadingOrder] = useState(isEditMode);
   
   // Data for dropdowns
   const [reps, setReps] = useState<{ id: string; name: string }[]>([]);
@@ -176,8 +175,6 @@ export function CreateRepOrderPage() {
       }).catch(err => {
         console.error("Failed to fetch rep order", err);
         message.error("Failed to load rep order for editing.");
-      }).finally(() => {
-        setLoadingOrder(false);
       });
     } else {
       repOrderApi.getNextOrderNumber().then(res => {
