@@ -72,19 +72,9 @@ export const ShopFormDrawer: React.FC<ShopFormDrawerProps> = ({
       } catch {
         message.error('Failed to load QR code for the new shop');
       }
-    },
-    onError: (e: unknown) => {
-      const err = e as { response?: { data?: { detail?: string; message?: string } } };
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to create shop');
     }
   });
-  const updateMutation = useUpdateShop({ 
-    onSuccess: onClose,
-    onError: (e: unknown) => {
-      const err = e as { response?: { data?: { detail?: string; message?: string } } };
-      message.error(err?.response?.data?.detail || err?.response?.data?.message || 'Failed to update shop');
-    }
-  });
+  const updateMutation = useUpdateShop({ onSuccess: onClose });
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
