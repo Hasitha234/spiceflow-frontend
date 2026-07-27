@@ -56,6 +56,16 @@ const repOrderShopSchema = z.object({
   returnWarehouseId: z.string().optional(),
   items: z.array(repOrderItemSchema).min(1, 'At least one item is required'),
   returns: z.array(shopReturnSchema).optional(),
+}).superRefine((data, ctx) => {
+  if (data.returns && data.returns.length > 0) {
+    if (!data.returnWarehouseId || data.returnWarehouseId.trim() === '') {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Please fill the Returns Warehouse since you have added returns.',
+        path: ['returnWarehouseId'],
+      });
+    }
+  }
 });
 
 const repOrderSchema = z.object({
@@ -319,6 +329,7 @@ export function CreateRepOrderPage() {
             products={filteredProducts}
             warehouses={warehouses}
             showRemove={shopFields.length > 1}
+            errors={form.formState.errors}
           />
         ))}
 
@@ -383,7 +394,7 @@ export function CreateRepOrderPage() {
 }
 
 // Sub-component to isolate nested field array logic
-function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove }: any) {
+function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors }: any) {
   const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control,
     name: `shops.${shopIndex}.items`,
@@ -546,7 +557,12 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
       <div style={{ padding: '16px 24px 8px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text strong style={{ fontSize: '16px', color: '#111827' }}>Returns</Text>
         <div style={{ width: '300px' }}>
-          <Form.Item label={<Text strong>Returns Warehouse</Text>} style={{ margin: 0 }}>
+          <Form.Item 
+            label={<Text strong>Returns Warehouse</Text>} 
+            style={{ margin: 0 }}
+            validateStatus={errors?.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
+            help={errors?.shops?.[shopIndex]?.returnWarehouseId?.message as string}
+          >
             <Controller
               name={`shops.${shopIndex}.returnWarehouseId`}
               control={control}
@@ -557,6 +573,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                   allowClear
                   options={warehouses.map((w: any) => ({ label: w.name, value: w.id.toString() }))}
                   placeholder="Select warehouse for returns"
+                  status={errors?.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
                 />
               )}
             />
