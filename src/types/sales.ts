@@ -57,6 +57,7 @@ export interface RepOrder {
   repName: string;
   orderNumber: string;
   orderDate: string;
+  routeArea?: string;
   loadingStatus: 'DRAFT' | 'LOADING_SHEET_CREATED';
   status: string;
   netAmount: number;

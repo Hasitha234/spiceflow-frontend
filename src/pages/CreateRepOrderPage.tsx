@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useForm, Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -108,6 +108,8 @@ const emptyShop = {
 
 export function CreateRepOrderPage() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const isEditMode = !!id;
   const [submitting, setSubmitting] = useState(false);
   
   // Data for dropdowns
@@ -129,7 +131,7 @@ export function CreateRepOrderPage() {
       shops: [emptyShop],
     },
   });
-  const { control, handleSubmit, setValue, setError, getValues } = form;
+  const { control, handleSubmit, setValue, setError, getValues, reset } = form;
 
   useEffect(() => {
     // Fetch dropdown data (Reps, Shops, Products, Suppliers, Warehouses)
@@ -139,15 +141,52 @@ export function CreateRepOrderPage() {
     apiClient.get('/api/v1/suppliers?size=500').then(res => setSuppliers(res.data?.content || []));
     apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
 
-    repOrderApi.getNextOrderNumber().then(res => {
-      const currentOrderNum = getValues('orderNumber');
-      if (!currentOrderNum) {
-        setValue('orderNumber', res.nextOrderNumber);
-      }
-    }).catch(err => console.error("Failed to fetch next order number", err));
-  }, [getValues, setValue]);
+    if (isEditMode) {
+      repOrderApi.get(String(id)).then(res => {
+        const orderData = res;
+        reset({
+          repId: orderData.repId ? orderData.repId.toString() : '',
+          orderNumber: orderData.orderNumber || '',
+          orderDate: orderData.orderDate ? dayjs(orderData.orderDate).format('YYYY-MM-DD') : '',
+          routeArea: orderData.routeArea || '',
+          shops: orderData.shops?.map((s: any) => ({
+            shopId: s.shopId ? s.shopId.toString() : '',
+            discountAmount: s.discountAmount || 0,
+            skuDiscountAmount: s.skuDiscountAmount || 0,
+            reverseGrts: s.reverseGrts || 0,
+            returnWarehouseId: s.returnWarehouseId ? s.returnWarehouseId.toString() : '',
+            items: s.items?.map((i: any) => ({
+              productId: i.productId ? i.productId.toString() : '',
+              quantity: i.quantity || 1,
+              unitType: i.unitType || 'EACH',
+              rate: i.rate || 0,
+              isFreeItem: i.isFreeItem || false,
+              boxesNeeded: i.boxesNeeded || 0,
+            })) || [emptyItem],
+            returns: s.returns?.map((r: any) => ({
+              productId: r.productId ? r.productId.toString() : '',
+              quantity: r.quantity || 1,
+              unitType: r.unitType || 'EACH',
+              creditValue: r.creditValue || 0,
+              returnType: r.returnType || 'DAMAGE',
+            })) || [],
+          })) || [emptyShop],
+        });
+      }).catch(err => {
+        console.error("Failed to fetch rep order", err);
+        message.error("Failed to load rep order for editing.");
+      });
+    } else {
+      repOrderApi.getNextOrderNumber().then(res => {
+        const currentOrderNum = getValues('orderNumber');
+        if (!currentOrderNum) {
+          setValue('orderNumber', res.nextOrderNumber);
+        }
+      }).catch(err => console.error("Failed to fetch next order number", err));
+    }
+  }, [getValues, setValue, isEditMode, id, reset]);
 
-  const { isRestored, clearDraft } = useFormDraft(form, { key: 'draft_rep_order' });
+  const { isRestored, clearDraft } = useFormDraft(form, { key: isEditMode ? `draft_rep_order_${id}` : 'draft_rep_order' });
 
   const selectedSupplierId = useWatch({ control, name: 'supplierId' });
   const filteredProducts = selectedSupplierId 
@@ -204,8 +243,13 @@ export function CreateRepOrderPage() {
         })),
       };
 
-      await repOrderApi.create(payload);
-      message.success('Rep order created successfully');
+      if (isEditMode && id) {
+        await repOrderApi.update(id, payload);
+        message.success('Rep order updated successfully');
+      } else {
+        await repOrderApi.create(payload);
+        message.success('Rep order created successfully');
+      }
       clearDraft();
       navigate('/sales');
     } catch (error: any) {
@@ -225,8 +269,8 @@ export function CreateRepOrderPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f0f2f5', paddingBottom: '120px' }}>
       {/* Top Header Navigation */}
       <div style={{ padding: '24px 24px 0 24px', maxWidth: 1200, margin: '0 auto' }}>
-        <Breadcrumb items={[{ title: 'Rep Orders', href: '/sales' }, { title: 'New Rep Order' }]} />
-        <Title level={2} style={{ marginTop: '8px', marginBottom: 0 }}>New Rep Order</Title>
+        <Breadcrumb items={[{ title: 'Rep Orders', href: '/sales' }, { title: isEditMode ? 'Edit Rep Order' : 'New Rep Order' }]} />
+        <Title level={2} style={{ marginTop: '8px', marginBottom: 0 }}>{isEditMode ? 'Edit Rep Order' : 'New Rep Order'}</Title>
       </div>
 
       <Form layout="vertical" onFinish={handleSubmit(onSubmit as any)} style={{ maxWidth: 1200, margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -322,6 +366,7 @@ export function CreateRepOrderPage() {
           <ShopSection
             key={shopField.id}
             shopIndex={shopIndex}
+            isEditMode={isEditMode}
             control={control}
             removeShop={() => removeShop(shopIndex)}
             setValue={setValue}
@@ -394,7 +439,7 @@ export function CreateRepOrderPage() {
 }
 
 // Sub-component to isolate nested field array logic
-function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors }: any) {
+function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors, isEditMode }: any) {
   const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control,
     name: `shops.${shopIndex}.items`,
@@ -424,7 +469,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
     >
       <div style={{ padding: '16px 24px', borderBottom: '1px solid #f0f0f0', backgroundColor: '#fafafa', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Space>
-          <Title level={5} style={{ margin: 0 }}>Shop #{shopIndex + 1}</Title>
+          <Title level={5} style={{ margin: 0 }}>{isEditMode ? 'Edit Shop' : 'Shop'} #{shopIndex + 1}</Title>
         </Space>
         {showRemove && (
           <Button danger type="text" icon={<DeleteOutlined />} onClick={removeShop}>

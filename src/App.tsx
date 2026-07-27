@@ -85,6 +85,7 @@ function App() {
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
               <Route path="sales/new" element={<CreateRepOrderPage />} />
+              <Route path="sales/edit/:id" element={<CreateRepOrderPage />} />
               <Route path="loading" element={<LoadingSheetsPage />} />
               <Route path="deliveries" element={<DeliveriesPage />} />
               <Route path="qr-scan" element={<QrScanPage />} />
