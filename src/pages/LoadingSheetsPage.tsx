@@ -161,7 +161,7 @@ export function LoadingSheetsPage() {
           color: 'var(--color-text-secondary)',
           fontVariantNumeric: 'tabular-nums',
         }}>
-          {record.repOrder?.orderNumber || 'RO-' + val}
+          {record.repOrderNumber || 'RO-' + val}
         </span>
       ),
     },
