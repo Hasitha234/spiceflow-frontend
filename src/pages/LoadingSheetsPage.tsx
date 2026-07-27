@@ -406,10 +406,22 @@ export function LoadingSheetsPage() {
         <Form form={form} layout="vertical" style={{ marginTop: '16px' }}>
           <Form.Item name="repOrderId" label="Rep Order (DRAFT only)" rules={[{ required: true, message: 'Select a rep order' }]}>
             <Select size="large" placeholder="Select a DRAFT rep order" showSearch optionFilterProp="label"
-              options={repOrders.map((o: any) => ({
-                label: `${o.orderNumber || 'RO-' + o.id} — ${o.repName || 'Unknown Rep'} — ${o.routeArea || ''} (${dayjs(o.orderDate).format('YYYY-MM-DD')})`,
-                value: String(o.id),
-              }))} />
+              options={repOrders.map((o: any) => {
+                const shopNames = o.shops?.map((s: any) => `${s.shopName || 'Unknown Shop'}${s.outletId ? '-' + s.outletId : ''}`) || [];
+                let shopDisplayStr = '';
+                if (shopNames.length > 0) {
+                  if (shopNames.length <= 2) {
+                    shopDisplayStr = shopNames.join(', ');
+                  } else {
+                    shopDisplayStr = `${shopNames.slice(0, 2).join(', ')} + ${shopNames.length - 2} more`;
+                  }
+                }
+                
+                return {
+                  label: `${o.orderNumber || 'RO-' + o.id} — ${o.repName || 'Unknown Rep'} — ${shopDisplayStr} (${dayjs(o.orderDate).format('YYYY-MM-DD')})`,
+                  value: String(o.id),
+                };
+              })} />
           </Form.Item>
           <Form.Item name="driverId" label="Driver" rules={[{ required: true, message: 'Select a driver' }]}>
             <Select size="large" placeholder="Select driver" showSearch optionFilterProp="label"
