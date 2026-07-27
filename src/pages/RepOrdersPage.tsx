@@ -99,9 +99,9 @@ export function RepOrdersPage() {
             return <span style={{ color: 'var(--color-text-disabled)' }}>—</span>;
           }
           const firstShop = record.shops[0];
-          // Use 'as any' to bypass strict TS checking just in case the type isn't fully updated
-          const shopName = (firstShop as any).shopName || (firstShop as any).shop?.name || 'Unknown';
-          const outletId = (firstShop as any).outletId || (firstShop as any).shop?.outletId || '';
+          
+          const shopName = firstShop.shopName || firstShop.shop?.name || 'Unknown';
+          const outletId = firstShop.outletId || firstShop.shop?.outletId || '';
           
           return (
             <div className="flex flex-col">
@@ -243,10 +243,10 @@ export function RepOrdersPage() {
                 <div className="text-base font-medium">
                   {selectedOrder.shops && selectedOrder.shops.length > 0 ? (
                     <div>
-                      {(selectedOrder.shops[0] as any).shopName || (selectedOrder.shops[0] as any).shop?.name || 'Unknown'}
-                      {((selectedOrder.shops[0] as any).outletId || (selectedOrder.shops[0] as any).shop?.outletId) && (
+                      {selectedOrder.shops[0].shopName || selectedOrder.shops[0].shop?.name || 'Unknown'}
+                      {(selectedOrder.shops[0].outletId || selectedOrder.shops[0].shop?.outletId) && (
                         <span className="text-xs text-gray-500 block">
-                          ID: {(selectedOrder.shops[0] as any).outletId || (selectedOrder.shops[0] as any).shop?.outletId}
+                          ID: {selectedOrder.shops[0].outletId || selectedOrder.shops[0].shop?.outletId}
                         </span>
                       )}
                     </div>

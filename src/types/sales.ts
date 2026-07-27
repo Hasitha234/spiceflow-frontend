@@ -44,7 +44,9 @@ export interface RepOrderItem {
 
 export interface RepOrderShop {
   id: string;
-  shop: Shop;
+  shop?: Shop;
+  shopName?: string;
+  outletId?: string;
   items: RepOrderItem[];
 }
 
