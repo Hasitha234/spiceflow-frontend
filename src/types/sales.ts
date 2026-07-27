@@ -21,6 +21,7 @@ export interface Driver {
 export interface Shop {
   id: string;
   name: string;
+  outletId?: string;
   ownerName?: string;
   phone?: string;
   address?: string;
