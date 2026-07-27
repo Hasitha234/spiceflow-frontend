@@ -92,14 +92,28 @@ export function RepOrdersPage() {
         ),
       },
       {
-        title: 'Route Area',
-        dataIndex: 'routeArea',
-        key: 'routeArea',
-        render: (val: string) => val ? (
-          <span style={{ color: 'var(--color-text-primary)' }}>{val}</span>
-        ) : (
-          <span style={{ color: 'var(--color-text-disabled)' }}>—</span>
-        ),
+        title: 'Shop',
+        key: 'shop',
+        render: (_: unknown, record: RepOrder) => {
+          if (!record.shops || record.shops.length === 0) {
+            return <span style={{ color: 'var(--color-text-disabled)' }}>—</span>;
+          }
+          const firstShop = record.shops[0];
+          // Use 'as any' to bypass strict TS checking just in case the type isn't fully updated
+          const shopName = (firstShop as any).shopName || (firstShop as any).shop?.name || 'Unknown';
+          const outletId = (firstShop as any).outletId || (firstShop as any).shop?.outletId || '';
+          
+          return (
+            <div className="flex flex-col">
+              <span style={{ color: 'var(--color-text-primary)', fontWeight: 500 }}>{shopName}</span>
+              {outletId && (
+                <span className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
+                  ID: {outletId}
+                </span>
+              )}
+            </div>
+          );
+        },
       },
       {
         title: 'Status',
@@ -225,8 +239,19 @@ export function RepOrdersPage() {
                 <div className="text-base">{selectedOrder.orderDate ? dayjs(selectedOrder.orderDate).format('YYYY-MM-DD') : '—'}</div>
               </Col>
               <Col xs={24} md={8}>
-                <div className="text-xs opacity-70">Route Area</div>
-                <div>{((selectedOrder as unknown) as Record<string, unknown>).routeArea as string || '—'}</div>
+                <div className="text-xs opacity-70">Shop</div>
+                <div className="text-base font-medium">
+                  {selectedOrder.shops && selectedOrder.shops.length > 0 ? (
+                    <div>
+                      {(selectedOrder.shops[0] as any).shopName || (selectedOrder.shops[0] as any).shop?.name || 'Unknown'}
+                      {((selectedOrder.shops[0] as any).outletId || (selectedOrder.shops[0] as any).shop?.outletId) && (
+                        <span className="text-xs text-gray-500 block">
+                          ID: {(selectedOrder.shops[0] as any).outletId || (selectedOrder.shops[0] as any).shop?.outletId}
+                        </span>
+                      )}
+                    </div>
+                  ) : '—'}
+                </div>
               </Col>
               <Col xs={24} md={8}>
                 <div className="text-xs opacity-70">Status</div>
