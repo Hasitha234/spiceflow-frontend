@@ -72,7 +72,7 @@ export const ShopFormDrawer: React.FC<ShopFormDrawerProps> = ({
       } catch {
         message.error('Failed to load QR code for the new shop');
       }
-    } 
+    }
   });
   const updateMutation = useUpdateShop({ onSuccess: onClose });
 
