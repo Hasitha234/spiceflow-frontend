@@ -11,11 +11,13 @@ import {
   Tooltip,
   Typography,
   message,
+  Space,
 } from 'antd';
 import {
   PlusOutlined,
   ShoppingOutlined,
   EyeOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
 import { repOrderApi } from '../api/sales';
@@ -151,20 +153,36 @@ export function RepOrdersPage() {
         key: 'actions',
         align: 'right' as const,
         render: (_: unknown, record: RepOrder) => (
-          <Tooltip title="View Details">
-            <Button
-              type="text"
-              size="small"
-              icon={<EyeOutlined />}
-              onClick={() => setSelectedOrder(record)}
-              style={{ color: 'var(--color-text-tertiary)' }}
-              className="hover:text-emerald-500 transition-colors"
-            />
-          </Tooltip>
+          <Space>
+            <Tooltip title="View Details">
+              <Button
+                type="text"
+                size="small"
+                icon={<EyeOutlined />}
+                onClick={() => setSelectedOrder(record)}
+                style={{ color: 'var(--color-text-tertiary)' }}
+                className="hover:text-emerald-500 transition-colors"
+              />
+            </Tooltip>
+            {record.status === 'DRAFT' && (
+              <PermissionGuard requireRole={['ROLE_TENANT_OWNER']}>
+                <Tooltip title="Edit Order">
+                  <Button
+                    type="text"
+                    size="small"
+                    icon={<EditOutlined />}
+                    onClick={() => navigate(`/sales/edit/${record.id}`)}
+                    style={{ color: 'var(--color-text-tertiary)' }}
+                    className="hover:text-blue-500 transition-colors"
+                  />
+                </Tooltip>
+              </PermissionGuard>
+            )}
+          </Space>
         ),
       },
     ],
-    []
+    [navigate]
   );
 
   return (
