@@ -329,6 +329,7 @@ export function CreateRepOrderPage() {
             products={filteredProducts}
             warehouses={warehouses}
             showRemove={shopFields.length > 1}
+            errors={form.formState.errors}
           />
         ))}
 
@@ -393,7 +394,7 @@ export function CreateRepOrderPage() {
 }
 
 // Sub-component to isolate nested field array logic
-function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove }: any) {
+function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors }: any) {
   const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control,
     name: `shops.${shopIndex}.items`,
@@ -559,8 +560,8 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
           <Form.Item 
             label={<Text strong>Returns Warehouse</Text>} 
             style={{ margin: 0 }}
-            validateStatus={form.formState.errors.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
-            help={form.formState.errors.shops?.[shopIndex]?.returnWarehouseId?.message as string}
+            validateStatus={errors?.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
+            help={errors?.shops?.[shopIndex]?.returnWarehouseId?.message as string}
           >
             <Controller
               name={`shops.${shopIndex}.returnWarehouseId`}
@@ -572,7 +573,7 @@ function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, prod
                   allowClear
                   options={warehouses.map((w: any) => ({ label: w.name, value: w.id.toString() }))}
                   placeholder="Select warehouse for returns"
-                  status={form.formState.errors.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
+                  status={errors?.shops?.[shopIndex]?.returnWarehouseId ? 'error' : ''}
                 />
               )}
             />
