@@ -21,6 +21,7 @@ export interface Driver {
 export interface Shop {
   id: string;
   name: string;
+  outletId?: string;
   ownerName?: string;
   phone?: string;
   address?: string;
@@ -44,7 +45,9 @@ export interface RepOrderItem {
 
 export interface RepOrderShop {
   id: string;
-  shop: Shop;
+  shop?: Shop;
+  shopName?: string;
+  outletId?: string;
   items: RepOrderItem[];
 }
 
