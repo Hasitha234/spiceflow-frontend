@@ -142,7 +142,7 @@ export function CreateRepOrderPage() {
     apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
 
     if (isEditMode) {
-      repOrderApi.get(Number(id)).then(res => {
+      repOrderApi.get(String(id)).then(res => {
         const orderData = res;
         reset({
           repId: orderData.repId ? orderData.repId.toString() : '',
@@ -366,6 +366,7 @@ export function CreateRepOrderPage() {
           <ShopSection
             key={shopField.id}
             shopIndex={shopIndex}
+            isEditMode={isEditMode}
             control={control}
             removeShop={() => removeShop(shopIndex)}
             setValue={setValue}
@@ -438,7 +439,7 @@ export function CreateRepOrderPage() {
 }
 
 // Sub-component to isolate nested field array logic
-function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors }: any) {
+function ShopSection({ shopIndex, control, removeShop, setValue, shopsList, products, warehouses, showRemove, errors, isEditMode }: any) {
   const { fields: itemFields, append: appendItem, remove: removeItem } = useFieldArray({
     control,
     name: `shops.${shopIndex}.items`,
