@@ -22,8 +22,10 @@ import {
   CheckCircleOutlined,
   EyeOutlined,
   EditOutlined,
+  CloseCircleOutlined,
 } from '@ant-design/icons';
 import { useTranslation } from 'react-i18next';
+import { useCancelPurchase } from '@/api/generated/purchases/purchases';
 import { purchaseApi } from '../../api/sales';
 import { warehouseApi } from '../../api/inventory';
 import type { Warehouse } from '../../types/inventory';
@@ -92,6 +94,25 @@ export function PurchasesPage() {
       message.error(errorMsg);
     }
   };
+
+  const cancelPurchaseMutation = useCancelPurchase({
+    mutation: {
+      onSuccess: () => {
+        message.success('Purchase confirmation cancelled successfully');
+        queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+        loadData();
+      },
+      onError: (err: unknown) => {
+        const e = err as { response?: { data?: { detail?: string, message?: string } } };
+        const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || 'Failed to cancel purchase confirmation';
+        message.error(errorMsg);
+      }
+    }
+  });
+
+  const handleCancelPurchase = useCallback((id: number) => {
+    cancelPurchaseMutation.mutate({ id });
+  }, [cancelPurchaseMutation]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -201,11 +222,33 @@ export function PurchasesPage() {
                 </Popconfirm>
               </PermissionGuard>
             )}
+            {record.status === 'CONFIRMED' && (
+              <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_OWNER']}>
+                <Popconfirm
+                  title="Cancel Confirmation?"
+                  description="This will revert the purchase to DRAFT and reverse all warehouse inventory changes. Do you want to proceed?"
+                  onConfirm={() => handleCancelPurchase(parseInt(record.id))}
+                  okText="Yes, Cancel"
+                  cancelText="No"
+                  okButtonProps={{ danger: true }}
+                >
+                  <Tooltip title="Cancel Confirmation (Revert to Draft)">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CloseCircleOutlined />}
+                      className="!text-orange-500 hover:!text-orange-400"
+                      loading={cancelPurchaseMutation.isPending}
+                    />
+                  </Tooltip>
+                </Popconfirm>
+              </PermissionGuard>
+            )}
           </Space>
         ),
       },
     ],
-    [t, handleConfirmClick, handleDelete, navigate]
+    [t, handleConfirmClick, handleDelete, handleCancelPurchase, navigate, cancelPurchaseMutation.isPending]
   );
 
 
