@@ -77,11 +77,14 @@ export function PurchasesPage() {
     setSelectedWarehouseId(null);
   }, []);
 
+  const [confirming, setConfirming] = useState(false);
+
   const submitConfirm = async () => {
     if (!confirmingPurchaseId || !selectedWarehouseId) {
       message.error('Please select a warehouse');
       return;
     }
+    setConfirming(true);
     try {
       await purchaseApi.confirm(confirmingPurchaseId, selectedWarehouseId);
       message.success('Purchase Order confirmed successfully');
@@ -92,6 +95,8 @@ export function PurchasesPage() {
       const e = err as { response?: { data?: { detail?: string, message?: string } } };
       const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || 'Failed to confirm purchase order';
       message.error(errorMsg);
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -397,7 +402,8 @@ export function PurchasesPage() {
         onOk={submitConfirm}
         onCancel={() => setConfirmModalVisible(false)}
         okText="Confirm & Receive Stock"
-        okButtonProps={{ disabled: !selectedWarehouseId }}
+        okButtonProps={{ disabled: !selectedWarehouseId, loading: confirming }}
+        confirmLoading={confirming}
       >
         <p>Please select the warehouse where the inventory should be received:</p>
         <Select
