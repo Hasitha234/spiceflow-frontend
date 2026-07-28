@@ -6,6 +6,7 @@ import { deliveryApi, repOrderApi } from '../../../api/sales';
 import { productApi } from '../../../api/inventory';
 import { useQuery } from '@tanstack/react-query';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
+import type { Product } from '../../../types/inventory';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
@@ -301,7 +302,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
 
   const { data: productsData } = useQuery({
     queryKey: ['products', 'all'],
-    queryFn: () => productApi.getAll({ page: 0, size: 1000 }),
+    queryFn: () => productApi.list({ page: 0, size: 1000 }),
     enabled: visible,
   });
   const products = productsData?.content || [];
@@ -522,7 +523,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                               filterOption={(input, option) =>
                                 (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
                               }
-                              options={products.map((p: Record<string, unknown>) => ({
+                              options={products.map((p: Product) => ({
                                 label: p.name,
                                 value: p.id,
                               }))}
