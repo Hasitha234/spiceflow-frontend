@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col } from 'antd';
-import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined } from '@ant-design/icons';
+import { Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col, Select } from 'antd';
+import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ResponsiveModal } from '@/components/common';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
+import { productApi } from '../../../api/inventory';
+import { useQuery } from '@tanstack/react-query';
 import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
 import dayjs from 'dayjs';
 
@@ -99,6 +101,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const cashVal = Form.useWatch('cashAmount', form) || 0;
   const chequeVal = Form.useWatch('chequeAmount', form) || 0;
   const loanVal = Form.useWatch('loanAmount', form) || 0;
+  Form.useWatch('items', form);
+  Form.useWatch('returns', form);
 
   const initDeliveryFlow = useCallback(async () => {
     if (!loadingSheet) return;
@@ -198,6 +202,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       chequeNo: '',
       chequeBankName: '',
       chequeDate: null,
+      returns: [],
     });
   };
 
@@ -231,6 +236,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       }
 
       const allItems = form.getFieldValue('items') || [];
+      const allReturns = form.getFieldValue('returns') || [];
       const payload = {
         items: allItems.map((i: FormItemData & Record<string, unknown>, index: number) => {
           const validated = (values.items?.[index] || {}) as Record<string, unknown>;
@@ -248,7 +254,13 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
             isFreeItem: Boolean(i.isFreeItem || validated.isFreeItem),
           };
         }),
-        returns: [],
+        returns: allReturns.map((r: Record<string, unknown>) => ({
+          productId: Number(r.productId),
+          quantityReturned: Number(r.quantityReturned || 0),
+          unitType: r.unitType || 'PCS',
+          creditValue: Number(r.creditValue || 0),
+          returnType: r.returnType || 'DAMAGED'
+        })),
         payments,
       };
 
@@ -287,6 +299,13 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   };
 
 
+  const { data: productsData } = useQuery({
+    queryKey: ['products', 'all'],
+    queryFn: () => productApi.getAll({ page: 0, size: 1000 }),
+    enabled: visible,
+  });
+  const products = productsData?.content || [];
+
   if (!loadingSheet) return null;
 
   const recordedShopIds = new Set(
@@ -300,6 +319,13 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       const r = Number(i.rate || 0);
       const d = Number(i.discountAmount || 0);
       return sum + (q * r - d);
+    }, 0);
+  };
+
+  const calculateReturns = () => {
+    const returns = form.getFieldValue('returns') || [];
+    return returns.reduce((sum: number, r: Record<string, unknown>) => {
+      return sum + Number(r.creditValue || 0);
     }, 0);
   };
 
@@ -471,7 +497,103 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
               paddingBottom: '8px',
               borderBottom: '1px solid var(--color-border-default)'
             }}>
-              2. Payment Collection Breakdown (Cash / Cheque / Loan)
+              2. Returned Items (Optional)
+            </div>
+            
+            <Form.List name="returns">
+              {(fields, { add, remove }) => (
+                <div className="mb-6">
+                  <Table
+                    dataSource={fields}
+                    pagination={false}
+                    size="small"
+                    className="mb-2"
+                    locale={{ emptyText: 'No return items added' }}
+                    columns={[
+                      {
+                        title: 'Product',
+                        key: 'productId',
+                        render: (_, field) => (
+                          <Form.Item name={[field.name, 'productId']} noStyle rules={[{ required: true, message: 'Required' }]}>
+                            <Select
+                              showSearch
+                              placeholder="Select product"
+                              className="w-full"
+                              filterOption={(input, option) =>
+                                (option?.label ?? '').toString().toLowerCase().includes(input.toLowerCase())
+                              }
+                              options={products.map((p: Record<string, unknown>) => ({
+                                label: p.name,
+                                value: p.id,
+                              }))}
+                            />
+                          </Form.Item>
+                        ),
+                      },
+                      {
+                        title: 'Return Type',
+                        key: 'returnType',
+                        width: 140,
+                        render: (_, field) => (
+                          <Form.Item name={[field.name, 'returnType']} noStyle rules={[{ required: true, message: 'Required' }]}>
+                            <Select
+                              placeholder="Reason"
+                              className="w-full"
+                              options={[
+                                { label: 'Damaged', value: 'DAMAGED' },
+                                { label: 'Expired', value: 'EXPIRED' },
+                                { label: 'Unsold', value: 'UNSOLD' },
+                              ]}
+                            />
+                          </Form.Item>
+                        ),
+                      },
+                      {
+                        title: 'Quantity',
+                        key: 'quantityReturned',
+                        width: 120,
+                        render: (_, field) => (
+                          <Form.Item name={[field.name, 'quantityReturned']} noStyle rules={[{ required: true, message: 'Required' }]}>
+                            <InputNumber min={1} className="w-full" />
+                          </Form.Item>
+                        ),
+                      },
+                      {
+                        title: 'Credit Value (Rs)',
+                        key: 'creditValue',
+                        width: 140,
+                        render: (_, field) => (
+                          <Form.Item name={[field.name, 'creditValue']} noStyle rules={[{ required: true, message: 'Required' }]}>
+                            <InputNumber min={0} className="w-full" style={{ textAlign: 'right', fontVariantNumeric: 'tabular-nums' }} />
+                          </Form.Item>
+                        ),
+                      },
+                      {
+                        title: '',
+                        key: 'action',
+                        width: 50,
+                        render: (_, field) => (
+                          <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(field.name)} />
+                        ),
+                      },
+                    ]}
+                  />
+                  <Button type="dashed" onClick={() => add({ returnType: 'DAMAGED', quantityReturned: 1, creditValue: 0 })} block icon={<PlusOutlined />}>
+                    Add Return Item
+                  </Button>
+                </div>
+              )}
+            </Form.List>
+
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              marginBottom: '16px',
+              paddingBottom: '8px',
+              borderBottom: '1px solid var(--color-border-default)'
+            }}>
+              3. Payment Collection Breakdown (Cash / Cheque / Loan)
             </div>
             <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
               <Row gutter={16}>
@@ -543,14 +665,19 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                 <div>
                   <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Net Bill:</span>
                   <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                    Rs. {calculateNetBill().toLocaleString()}
+                    Rs. {(calculateNetBill() - calculateReturns()).toLocaleString()}
                   </span>
+                  {calculateReturns() > 0 && (
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
+                      (Rs. {calculateNetBill().toLocaleString()} - Rs. {calculateReturns().toLocaleString()} returns)
+                    </div>
+                  )}
                 </div>
                 
                 <div style={{ width: '1px', height: '24px', background: 'var(--color-border-default)' }} />
                 
                 {(() => {
-                  const netBill = calculateNetBill();
+                  const netBill = calculateNetBill() - calculateReturns();
                   const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
                   const diff = netBill - entered;
                   
