@@ -102,16 +102,17 @@ export function PurchasesPage() {
         queryClient.invalidateQueries({ queryKey: ['dashboard'] });
         loadData();
       },
-      onError: (err: any) => {
-        const errorMsg = err?.response?.data?.detail || err?.response?.data?.message || 'Failed to cancel purchase confirmation';
+      onError: (err: unknown) => {
+        const e = err as { response?: { data?: { detail?: string, message?: string } } };
+        const errorMsg = e?.response?.data?.detail || e?.response?.data?.message || 'Failed to cancel purchase confirmation';
         message.error(errorMsg);
       }
     }
   });
 
-  const handleCancelPurchase = (id: number) => {
+  const handleCancelPurchase = useCallback((id: number) => {
     cancelPurchaseMutation.mutate({ id });
-  };
+  }, [cancelPurchaseMutation]);
 
   const handleDelete = useCallback(async (id: string) => {
     try {
@@ -247,7 +248,7 @@ export function PurchasesPage() {
         ),
       },
     ],
-    [t, handleConfirmClick, handleDelete, navigate, cancelPurchaseMutation.isPending]
+    [t, handleConfirmClick, handleDelete, handleCancelPurchase, navigate, cancelPurchaseMutation.isPending]
   );
 
 
