@@ -18,6 +18,7 @@ const { Title, Text } = Typography;
 interface LoadingSheetRow {
   id: number;
   repOrderId: number;
+  repOrderNumber?: string;
   repName: string;
   driverName: string;
   loadingDate: string;
@@ -462,7 +463,7 @@ export function LoadingSheetsPage() {
               <Descriptions.Item label="Rep">{selectedSheet.repName || '—'}</Descriptions.Item>
               <Descriptions.Item label="Driver">{selectedSheet.driverName || '—'}</Descriptions.Item>
               <Descriptions.Item label="Loading Date">{selectedSheet.loadingDate}</Descriptions.Item>
-              <Descriptions.Item label="Rep Order">RO-{selectedSheet.repOrderId}</Descriptions.Item>
+              <Descriptions.Item label="Rep Order">{selectedSheet.repOrderNumber || 'RO-' + selectedSheet.repOrderId}</Descriptions.Item>
             </Descriptions>
 
             <Title level={5}>Items to Load</Title>
