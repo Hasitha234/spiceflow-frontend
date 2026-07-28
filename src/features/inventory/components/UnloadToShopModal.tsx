@@ -173,13 +173,24 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     setRecordingShopId(getShopId(shopData));
     form.resetFields();
 
+    const existingDeliveryShop = activeDelivery?.shops?.find(
+      (s: Record<string, unknown>) => (s.shopId || (s.shop as Record<string, unknown>)?.id) === getShopId(shopData)
+    ) as Record<string, unknown>;
+
     const dataObj = (shopData && typeof shopData === 'object' ? shopData : {}) as Record<string, unknown>;
-    const itemsList = Array.isArray(dataObj.items) ? dataObj.items : [];
+    // Merge existing items if available
+    const baseItems = Array.isArray(dataObj.items) ? dataObj.items : [];
+    const itemsList = Array.isArray(existingDeliveryShop?.items) && existingDeliveryShop.items.length > 0 
+      ? existingDeliveryShop.items 
+      : baseItems;
 
     const totalNet = itemsList.reduce((sum: number, item: unknown) => {
       const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
-      return sum + Number(it.netAmount || ((Number(it.quantity || 0)) * (Number(it.rate || 0))));
+      return sum + Number(it.netAmount || ((Number(it.quantityDelivered || it.quantity || 0)) * (Number(it.rate || 0))));
     }, 0);
+
+    const cashPayment = Array.isArray(existingDeliveryShop?.payments) ? existingDeliveryShop.payments.find((p: Record<string, unknown>) => p.paymentMethod === 'CASH') as Record<string, unknown> | undefined : undefined;
+    const chequePayment = Array.isArray(existingDeliveryShop?.payments) ? existingDeliveryShop.payments.find((p: Record<string, unknown>) => p.paymentMethod === 'CHEQUE') as Record<string, unknown> | undefined : undefined;
 
     form.setFieldsValue({
       items: itemsList.map((i: unknown) => {
@@ -190,20 +201,26 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         return {
           productId: Number(rawPid),
           productName: String(rawPname || ''),
-          quantityDelivered: Number(it.quantity || 0),
+          quantityDelivered: Number(it.quantityDelivered !== undefined ? it.quantityDelivered : (it.quantity || 0)),
           unitType: String(it.unitType || 'PCS'),
           rate: Number(it.rate || 0),
           discountAmount: Number(it.discountAmount || 0),
           isFreeItem: Boolean(it.isFreeItem || false),
         };
       }),
-      cashAmount: totalNet,
-      chequeAmount: 0,
-      loanAmount: 0,
-      chequeNo: '',
-      chequeBankName: '',
-      chequeDate: null,
-      returns: [],
+      cashAmount: cashPayment ? Number(cashPayment.amount) : (existingDeliveryShop ? 0 : totalNet),
+      chequeAmount: chequePayment ? Number(chequePayment.amount) : 0,
+      loanAmount: existingDeliveryShop ? Number(existingDeliveryShop.creditAmount || 0) : 0,
+      chequeNo: chequePayment?.chequeNo || '',
+      chequeBankName: chequePayment?.chequeBankName || '',
+      chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
+      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map((r: Record<string, unknown>) => ({
+        productId: r.productId || (r.product as Record<string, unknown>)?.id,
+        quantityReturned: r.quantityReturned,
+        unitType: r.unitType || 'PCS',
+        creditValue: r.creditValue || 0,
+        returnType: r.returnType || 'DAMAGED'
+      })) : [],
     });
   };
 
