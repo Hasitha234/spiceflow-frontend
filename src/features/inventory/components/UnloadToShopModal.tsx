@@ -224,7 +224,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
             creditValue: r.creditValue || 0,
             returnType: r.returnType || 'DAMAGED'
           }))
-        : (Array.isArray(dataObj.returns) ? dataObj.returns.map((r: any) => ({
+        : (Array.isArray(dataObj.returns) ? dataObj.returns.map((r: { productId?: number; product?: { id?: number }; quantityReturned?: number; unitType?: string; creditValue?: number; returnType?: string }) => ({
             productId: r.productId || r.product?.id,
             quantityReturned: r.quantityReturned,
             unitType: r.unitType || 'PCS',
