@@ -187,10 +187,23 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       ? existingDeliveryShop.items 
       : baseItems;
 
-    const totalNet = itemsList.reduce((sum: number, item: unknown) => {
+    const itemsTotal = itemsList.reduce((sum: number, item: unknown) => {
       const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
       return sum + Number(it.netAmount || ((Number(it.quantityDelivered || it.quantity || 0)) * (Number(it.rate || 0))));
     }, 0);
+
+    const dAmount = existingDeliveryShop ? Number(existingDeliveryShop.totalDiscount || 0) - Number(dataObj.skuDiscountAmount || 0) : Number(dataObj.discountAmount || 0);
+    const sAmount = Number(dataObj.skuDiscountAmount || 0);
+
+    const rList = Array.isArray(existingDeliveryShop?.returns) && existingDeliveryShop.returns.length > 0
+      ? existingDeliveryShop.returns
+      : (Array.isArray(dataObj.returns) ? dataObj.returns : []);
+    
+    const rTotal = rList.reduce((sum: number, r: Record<string, unknown>) => sum + Number(r.creditValue || 0), 0);
+    const revGrts = Number(dataObj.reverseGrts || 0);
+    const effReturns = Math.max(rTotal - revGrts, 0);
+
+    const totalNet = itemsTotal - dAmount - sAmount - effReturns;
 
     const cashPayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CASH');
     const chequePayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CHEQUE');
@@ -270,6 +283,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       const allItems = form.getFieldValue('items') || [];
       const allReturns = form.getFieldValue('returns') || [];
       const payload = {
+        notes: '',
         items: allItems.map((i: FormItemData & Record<string, unknown>, index: number) => {
           const validated = (values.items?.[index] || {}) as Record<string, unknown>;
           const rawPid = i.productId !== undefined && !Number.isNaN(Number(i.productId))
