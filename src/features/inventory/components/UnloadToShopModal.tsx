@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col, Select } from 'antd';
-import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Table, Button, Form, InputNumber, Input, DatePicker, Typography, Card, Space, App, Spin, Row, Col, Select, Popconfirm } from 'antd';
+import { CheckCircleOutlined, DollarOutlined, ShopOutlined, CarOutlined, PlusOutlined, DeleteOutlined, UndoOutlined } from '@ant-design/icons';
 import { ResponsiveModal } from '@/components/common';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import { productApi } from '../../../api/inventory';
@@ -351,6 +351,25 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     }
   };
 
+  const handleReverseShop = async (shopData: unknown) => {
+    if (!activeDelivery) return;
+    const sId = getShopId(shopData as ShopRowData);
+    if (!sId) return;
+
+    try {
+      await deliveryApi.reverseShop(activeDelivery.id.toString(), sId);
+      message.success('Shop delivery reversed successfully');
+      
+      // Refresh delivery data
+      const updatedDelivery = await deliveryApi.get(activeDelivery.id.toString());
+      setActiveDelivery(updatedDelivery);
+    } catch (err) {
+      console.error('Record shop delivery failed:', err);
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      const data = e?.response?.data;
+      message.error(data?.detail || data?.message || 'Failed to reverse shop delivery.');
+    }
+  };
 
   const { data: productsData } = useQuery({
     queryKey: ['products', 'all'],
@@ -960,15 +979,31 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                   render: (_, r) => {
                     const isDone = recordedShopIds.has(getShopId(r));
                     return (
-                      <Button
-                        type={isDone ? 'default' : 'primary'}
-                        size="small"
-                        icon={<DollarOutlined />}
-                        onClick={() => handleOpenRecordShop(r)}
-                        className={!isDone ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
-                      >
-                        {isDone ? 'Edit Collection' : 'Unload & Collect'}
-                      </Button>
+                      <Space size="small">
+                        <Button
+                          type={isDone ? 'default' : 'primary'}
+                          size="small"
+                          icon={<DollarOutlined />}
+                          onClick={() => handleOpenRecordShop(r)}
+                          className={!isDone ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                        >
+                          {isDone ? 'Edit Collection' : 'Unload & Collect'}
+                        </Button>
+                        {isDone && (
+                          <Popconfirm
+                            title="Reverse this shop delivery?"
+                            description="This will completely remove the recorded items, returns, and payments, reverting it to PENDING."
+                            onConfirm={() => handleReverseShop(r)}
+                            okText="Yes, Reverse"
+                            cancelText="No"
+                            okButtonProps={{ danger: true }}
+                          >
+                            <Button size="small" danger icon={<UndoOutlined />}>
+                              Reverse
+                            </Button>
+                          </Popconfirm>
+                        )}
+                      </Space>
                     );
                   },
                 },

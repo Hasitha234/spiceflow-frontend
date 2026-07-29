@@ -70,6 +70,8 @@ export const deliveryApi = {
     apiClient.post<Delivery>('/api/v1/sales/deliveries', data).then((r) => r.data),
   recordShop: (deliveryId: string, shopId: string, data: object) =>
     apiClient.post(`/api/v1/sales/deliveries/${deliveryId}/shops/${shopId}`, data).then((r) => r.data),
+  reverseShop: (deliveryId: string, shopId: string) =>
+    apiClient.delete(`/api/v1/sales/deliveries/${deliveryId}/shops/${shopId}`).then((r) => r.data),
   complete: (id: string) =>
     apiClient.post(`/api/v1/sales/deliveries/${id}/complete`).then((r) => r.data),
 };
