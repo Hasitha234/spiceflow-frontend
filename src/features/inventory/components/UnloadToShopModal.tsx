@@ -322,6 +322,10 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       setRecordingShopId(null);
       setActiveShop(null);
     } catch (error: unknown) {
+      // Handle Ant Design form validation errors silently
+      if (error && typeof error === 'object' && 'errorFields' in error) {
+        return;
+      }
       const err = error as {
         response?: {
           data?: {
