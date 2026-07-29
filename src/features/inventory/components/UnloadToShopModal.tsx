@@ -5,7 +5,7 @@ import { ResponsiveModal } from '@/components/common';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import { productApi } from '../../../api/inventory';
 import { useQuery } from '@tanstack/react-query';
-import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
+import type { LoadingSheet, RepOrder, Delivery, RepOrderShop, DeliveryShop } from '../../../types/sales';
 import type { Product } from '../../../types/inventory';
 import dayjs from 'dayjs';
 
@@ -173,13 +173,24 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     setRecordingShopId(getShopId(shopData));
     form.resetFields();
 
+    const existingDeliveryShop = activeDelivery?.shops?.find(
+      (s: DeliveryShop) => s.shopId === getShopId(shopData) || s.shop?.id === getShopId(shopData)
+    );
+
     const dataObj = (shopData && typeof shopData === 'object' ? shopData : {}) as Record<string, unknown>;
-    const itemsList = Array.isArray(dataObj.items) ? dataObj.items : [];
+    // Merge existing items if available
+    const baseItems = Array.isArray(dataObj.items) ? dataObj.items : [];
+    const itemsList = Array.isArray(existingDeliveryShop?.items) && existingDeliveryShop.items.length > 0 
+      ? existingDeliveryShop.items 
+      : baseItems;
 
     const totalNet = itemsList.reduce((sum: number, item: unknown) => {
       const it = (item && typeof item === 'object' ? item : {}) as Record<string, unknown>;
-      return sum + Number(it.netAmount || ((Number(it.quantity || 0)) * (Number(it.rate || 0))));
+      return sum + Number(it.netAmount || ((Number(it.quantityDelivered || it.quantity || 0)) * (Number(it.rate || 0))));
     }, 0);
+
+    const cashPayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CASH');
+    const chequePayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CHEQUE');
 
     form.setFieldsValue({
       items: itemsList.map((i: unknown) => {
@@ -190,20 +201,26 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         return {
           productId: Number(rawPid),
           productName: String(rawPname || ''),
-          quantityDelivered: Number(it.quantity || 0),
+          quantityDelivered: Number(it.quantityDelivered !== undefined ? it.quantityDelivered : (it.quantity || 0)),
           unitType: String(it.unitType || 'PCS'),
           rate: Number(it.rate || 0),
           discountAmount: Number(it.discountAmount || 0),
           isFreeItem: Boolean(it.isFreeItem || false),
         };
       }),
-      cashAmount: totalNet,
-      chequeAmount: 0,
-      loanAmount: 0,
-      chequeNo: '',
-      chequeBankName: '',
-      chequeDate: null,
-      returns: [],
+      cashAmount: cashPayment ? Number(cashPayment.amount) : (existingDeliveryShop ? 0 : totalNet),
+      chequeAmount: chequePayment ? Number(chequePayment.amount) : 0,
+      loanAmount: existingDeliveryShop ? Number(existingDeliveryShop.creditAmount || 0) : 0,
+      chequeNo: chequePayment?.chequeNo || '',
+      chequeBankName: chequePayment?.chequeBankName || '',
+      chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
+      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map(r => ({
+        productId: r.productId || r.product?.id,
+        quantityReturned: r.quantityReturned,
+        unitType: r.unitType || 'PCS',
+        creditValue: r.creditValue || 0,
+        returnType: r.returnType || 'DAMAGED'
+      })) : [],
     });
   };
 
