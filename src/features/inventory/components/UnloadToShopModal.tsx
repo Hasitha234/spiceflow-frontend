@@ -5,7 +5,7 @@ import { ResponsiveModal } from '@/components/common';
 import { deliveryApi, repOrderApi } from '../../../api/sales';
 import { productApi } from '../../../api/inventory';
 import { useQuery } from '@tanstack/react-query';
-import type { LoadingSheet, RepOrder, Delivery, RepOrderShop } from '../../../types/sales';
+import type { LoadingSheet, RepOrder, Delivery, RepOrderShop, DeliveryShop } from '../../../types/sales';
 import type { Product } from '../../../types/inventory';
 import dayjs from 'dayjs';
 
@@ -173,11 +173,9 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     setRecordingShopId(getShopId(shopData));
     form.resetFields();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const existingDeliveryShop = activeDelivery?.shops?.find(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (s: any) => (s.shopId || s.shop?.id) === getShopId(shopData)
-    ) as any;
+      (s: DeliveryShop) => (s as Record<string, unknown>).shopId === getShopId(shopData) || s.shop?.id === getShopId(shopData)
+    );
 
     const dataObj = (shopData && typeof shopData === 'object' ? shopData : {}) as Record<string, unknown>;
     // Merge existing items if available
@@ -191,10 +189,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       return sum + Number(it.netAmount || ((Number(it.quantityDelivered || it.quantity || 0)) * (Number(it.rate || 0))));
     }, 0);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cashPayment = Array.isArray(existingDeliveryShop?.payments) ? existingDeliveryShop.payments.find((p: any) => p.paymentMethod === 'CASH') as any : undefined;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const chequePayment = Array.isArray(existingDeliveryShop?.payments) ? existingDeliveryShop.payments.find((p: any) => p.paymentMethod === 'CHEQUE') as any : undefined;
+    const cashPayment = existingDeliveryShop?.payments?.find((p: Record<string, unknown>) => p.paymentMethod === 'CASH');
+    const chequePayment = existingDeliveryShop?.payments?.find((p: Record<string, unknown>) => p.paymentMethod === 'CHEQUE');
 
     form.setFieldsValue({
       items: itemsList.map((i: unknown) => {
@@ -218,10 +214,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       chequeNo: chequePayment?.chequeNo || '',
       chequeBankName: chequePayment?.chequeBankName || '',
       chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map((r: any) => ({
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        productId: r.productId || (r.product as any)?.id,
+      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map((r: Record<string, unknown>) => ({
+        productId: r.productId || (r.product as Record<string, unknown>)?.id,
         quantityReturned: r.quantityReturned,
         unitType: r.unitType || 'PCS',
         creditValue: r.creditValue || 0,
