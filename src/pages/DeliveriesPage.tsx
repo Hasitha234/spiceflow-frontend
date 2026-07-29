@@ -203,6 +203,14 @@ export function DeliveriesPage() {
       render: (val: string) => val ? dayjs(val).format('YYYY-MM-DD') : '—',
     },
     {
+      title: 'Shop Name', dataIndex: 'targetShopNames', key: 'targetShopNames',
+      render: (val: string) => val || '—',
+    },
+    {
+      title: 'Outlet ID', dataIndex: 'targetOutletIds', key: 'targetOutletIds',
+      render: (val: string) => val || '—',
+    },
+    {
       title: 'Status', dataIndex: 'status', key: 'status',
       render: (status: string) => {
         const color = status === 'COMPLETED' ? 'green' : status === 'IN_PROGRESS' ? 'blue' : 'orange';
