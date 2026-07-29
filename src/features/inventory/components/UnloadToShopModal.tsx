@@ -103,6 +103,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const chequeVal = Form.useWatch('chequeAmount', form) || 0;
   const loanVal = Form.useWatch('loanAmount', form) || 0;
   Form.useWatch('discountAmount', form);
+  Form.useWatch('skuDiscountAmount', form);
+  Form.useWatch('reverseGrts', form);
   Form.useWatch('items', form);
   Form.useWatch('returns', form);
 
@@ -212,7 +214,9 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       cashAmount: cashPayment ? Number(cashPayment.amount) : (existingDeliveryShop ? 0 : totalNet),
       chequeAmount: chequePayment ? Number(chequePayment.amount) : 0,
       loanAmount: existingDeliveryShop ? Number(existingDeliveryShop.creditAmount || 0) : 0,
-      discountAmount: existingDeliveryShop ? Number(existingDeliveryShop.totalDiscount || 0) : Number(dataObj.discountAmount || 0),
+      discountAmount: existingDeliveryShop ? Number(existingDeliveryShop.totalDiscount || 0) - Number(dataObj.skuDiscountAmount || 0) : Number(dataObj.discountAmount || 0),
+      skuDiscountAmount: Number(dataObj.skuDiscountAmount || 0),
+      reverseGrts: Number(dataObj.reverseGrts || 0),
       chequeNo: chequePayment?.chequeNo || '',
       chequeBankName: chequePayment?.chequeBankName || '',
       chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
@@ -291,6 +295,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
         })),
         payments,
         discountAmount: Number(values.discountAmount || 0),
+        skuDiscountAmount: Number(values.skuDiscountAmount || 0),
+        reverseGrts: Number(values.reverseGrts || 0),
       };
 
       await deliveryApi.recordShop(String(activeDelivery.id), getShopId(activeShop), payload);
@@ -341,23 +347,32 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     activeDelivery?.shops?.map(s => getShopId(s as unknown as ShopRowData)) || []
   );
 
-  const calculateNetBill = () => {
+  const calculateItemsTotal = () => {
     const items = form.getFieldValue('items') || [];
-    const invoiceDiscount = Number(form.getFieldValue('discountAmount') || 0);
-    const itemsTotal = items.reduce((sum: number, i: FormItemData) => {
+    return items.reduce((sum: number, i: FormItemData) => {
       const q = Number(i.quantityDelivered || 0);
       const r = Number(i.rate || 0);
       const d = Number(i.discountAmount || 0);
       return sum + (q * r - d);
     }, 0);
-    return itemsTotal - invoiceDiscount;
   };
 
   const calculateReturns = () => {
     const returns = form.getFieldValue('returns') || [];
-    return returns.reduce((sum: number, r: Record<string, unknown>) => {
-      return sum + Number(r.creditValue || 0);
-    }, 0);
+    return returns.reduce((sum: number, r: Record<string, unknown>) => sum + Number(r.creditValue || 0), 0);
+  };
+
+  const calculateEffectiveReturns = () => {
+    const returnsTotal = calculateReturns();
+    const reverseGrts = Number(form.getFieldValue('reverseGrts') || 0);
+    return Math.max(returnsTotal - reverseGrts, 0);
+  };
+
+  const calculateNetBill = () => {
+    const itemsTotal = calculateItemsTotal();
+    const invoiceDiscount = Number(form.getFieldValue('discountAmount') || 0);
+    const skuDiscount = Number(form.getFieldValue('skuDiscountAmount') || 0);
+    return itemsTotal - invoiceDiscount - skuDiscount;
   };
 
   return (
@@ -625,12 +640,22 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
               borderBottom: '1px solid var(--color-border-default)',
               marginTop: '24px'
             }}>
-              3. Overall Invoice Discount
+              3. Overall Adjustments (Discounts & Reverse GRTs)
             </div>
             <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '24px' }}>
               <Row gutter={16}>
                 <Col xs={24} md={8}>
                   <Form.Item name="discountAmount" label="Shop / Invoice Discount (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="skuDiscountAmount" label="SKU Discount Amount (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+                <Col xs={24} md={8}>
+                  <Form.Item name="reverseGrts" label="Reverse GRTs (Rs)">
                     <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
                   </Form.Item>
                 </Col>
@@ -717,11 +742,11 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                 <div>
                   <span style={{ color: 'var(--color-text-secondary)', marginRight: '8px' }}>Total Net Bill:</span>
                   <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-                    Rs. {(calculateNetBill() - calculateReturns()).toLocaleString()}
+                    Rs. {(calculateNetBill() - calculateEffectiveReturns()).toLocaleString()}
                   </span>
-                  {calculateReturns() > 0 && (
+                  {calculateEffectiveReturns() > 0 && (
                     <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '4px' }}>
-                      (Rs. {calculateNetBill().toLocaleString()} - Rs. {calculateReturns().toLocaleString()} returns)
+                      (Rs. {calculateNetBill().toLocaleString()} - Rs. {calculateEffectiveReturns().toLocaleString()} net returns)
                     </div>
                   )}
                 </div>
@@ -729,7 +754,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
                 <div style={{ width: '1px', height: '24px', background: 'var(--color-border-default)' }} />
                 
                 {(() => {
-                  const netBill = calculateNetBill() - calculateReturns();
+                  const netBill = calculateNetBill() - calculateEffectiveReturns();
                   const entered = Number(cashVal || 0) + Number(chequeVal || 0) + Number(loanVal || 0);
                   const diff = netBill - entered;
                   
