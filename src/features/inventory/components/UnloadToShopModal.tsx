@@ -199,7 +199,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       ? existingDeliveryShop.returns
       : (Array.isArray(dataObj.returns) ? dataObj.returns : []);
     
-    const rTotal = rList.reduce((sum: number, r: any) => sum + Number(r.creditValue || 0), 0);
+    const rTotal = rList.reduce((sum: number, r: Record<string, unknown>) => sum + Number(r.creditValue || 0), 0);
     const revGrts = Number(dataObj.reverseGrts || 0);
     const effReturns = Math.max(rTotal - revGrts, 0);
 
