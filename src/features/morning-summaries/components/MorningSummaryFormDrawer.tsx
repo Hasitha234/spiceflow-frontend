@@ -8,6 +8,7 @@ import { EntityFormDrawer } from '@/components/common';
 import { createMorningSummary } from '../api/morningSummaryApi';
 import { morningSummarySchema, type MorningSummaryFormData } from '../schemas/morningSummarySchema';
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
+import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
 
 const { Text, Title } = Typography;
 
@@ -48,7 +49,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
   const calculateEstimate = (index: number) => {
     const item = watchItems?.[index];
     if (!item || !item.productId || !item.quantity) return 0;
-    const product = productsData?.content?.find((p: { id: number; ratePerSoldUnit?: number }) => p.id === item.productId);
+    const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
     if (!product) return 0;
     return (product.ratePerSoldUnit || 0) * item.quantity;
   };
@@ -115,7 +116,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   <Select
                     {...field}
                     placeholder="Select Rep"
-                    options={repsData?.content?.map((rep: { name: string; id: number }) => ({ label: rep.name, value: rep.id }))}
+                    options={repsData?.content?.map((rep: RepResponse) => ({ label: rep.name ?? '', value: rep.id ?? 0 }))}
                   />
                 </Form.Item>
               )}
@@ -130,7 +131,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   <Select
                     {...field}
                     placeholder="Select Driver"
-                    options={driversData?.content?.map((driver: { name: string; id: number }) => ({ label: driver.name, value: driver.id }))}
+                    options={driversData?.content?.map((driver: DriverResponse) => ({ label: driver.name ?? '', value: driver.id ?? 0 }))}
                   />
                 </Form.Item>
               )}
@@ -164,7 +165,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                         showSearch
                         optionFilterProp="label"
                         placeholder="Select Product"
-                        options={productsData?.content?.map((p: { name: string; id: number }) => ({ label: p.name, value: p.id }))}
+                        options={productsData?.content?.map((p: ProductResponse) => ({ label: p.name ?? '', value: p.id ?? 0 }))}
                       />
                     </Form.Item>
                   )}
