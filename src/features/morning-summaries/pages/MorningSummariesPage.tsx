@@ -1,96 +1,129 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { Button, Tag } from 'antd';
+import { PlusOutlined } from '@ant-design/icons';
+import type { ColumnsType } from 'antd/es/table';
+import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
 import { getMorningSummaries } from '../api/morningSummaryApi';
-import { DataTable } from '@/components/common/DataTable';
-import { ColumnDef } from '@tanstack/react-table';
-import { MorningSummary } from '../types';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import type { MorningSummary } from '../types';
 import { MorningSummaryFormDrawer } from '../components/MorningSummaryFormDrawer';
-import { formatCurrency } from '@/lib/utils';
-import { format } from 'date-fns';
+import { useTableState } from '@/hooks/useTableState';
 
-export const MorningSummariesPage: React.FC = () => {
-  const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+export const MorningSummariesPage = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['morningSummaries', page, pageSize],
-    queryFn: () => getMorningSummaries(page, pageSize),
+  const {
+    state: tableState,
+    pageableParams,
+    setPage,
+    setSize,
+    setSort,
+  } = useTableState({
+    defaultSort: 'createdAt',
+    defaultDir: 'desc',
   });
 
-  const columns: ColumnDef<MorningSummary>[] = [
+  const { data, isLoading } = useQuery({
+    queryKey: ['morningSummaries', pageableParams],
+    queryFn: () => getMorningSummaries(tableState.page - 1, tableState.size),
+  });
+
+  const columns: ColumnsType<MorningSummary> = [
     {
-      accessorKey: 'summaryNumber',
-      header: 'Summary No',
-      cell: ({ row }) => <span className="font-semibold text-blue-600">{row.original.summaryNumber}</span>,
+      title: 'Summary No',
+      dataIndex: 'summaryNumber',
+      key: 'summaryNumber',
+      render: (text) => <span className="font-semibold text-blue-600">{text}</span>,
     },
     {
-      accessorKey: 'summaryDate',
-      header: 'Date',
-      cell: ({ row }) => <span>{format(new Date(row.original.summaryDate), 'PP')}</span>,
+      title: 'Date',
+      dataIndex: 'summaryDate',
+      key: 'summaryDate',
+      render: (date) => <span>{new Date(date).toLocaleDateString()}</span>,
     },
     {
-      accessorKey: 'repName',
-      header: 'Rep Name',
+      title: 'Rep Name',
+      dataIndex: 'repName',
+      key: 'repName',
     },
     {
-      accessorKey: 'driverName',
-      header: 'Driver Name',
+      title: 'Driver Name',
+      dataIndex: 'driverName',
+      key: 'driverName',
     },
     {
-      accessorKey: 'finalEstimateValue',
-      header: 'Est. Value',
-      cell: ({ row }) => (
+      title: 'Est. Value',
+      dataIndex: 'finalEstimateValue',
+      key: 'finalEstimateValue',
+      render: (val) => (
         <span className="font-bold text-green-700">
-          {formatCurrency(row.original.finalEstimateValue)}
+          {new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val)}
         </span>
       ),
     },
     {
-      accessorKey: 'status',
-      header: 'Status',
-      cell: ({ row }) => {
-        const status = row.original.status;
-        return (
-          <Badge variant={status === 'SETTLED' ? 'success' : status === 'CANCELLED' ? 'destructive' : 'warning'}>
-            {status}
-          </Badge>
-        );
+      title: 'Status',
+      dataIndex: 'status',
+      key: 'status',
+      render: (status: string) => {
+        let color = 'default';
+        if (status === 'SETTLED') color = 'success';
+        if (status === 'CANCELLED') color = 'error';
+        if (status === 'PENDING') color = 'processing';
+        return <Tag color={color}>{status}</Tag>;
       },
-    }
+    },
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-800">Morning Summaries</h1>
-          <p className="text-slate-500 mt-1">Manage bulk van sales dispatch and loading sheets.</p>
-        </div>
-        <Button onClick={() => setIsDrawerOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Create Summary
-        </Button>
+    <PageLayout>
+      <PageHeader
+        title="Morning Summaries"
+        subtitle="Manage bulk van sales dispatch and load estimates."
+        extra={[
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setDrawerOpen(true)}
+          >
+            Create Summary
+          </Button>,
+        ]}
+      />
+
+      <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex-grow flex flex-col">
+        <DataTable
+          columns={columns}
+          dataSource={data?.content || []}
+          rowKey="id"
+          loading={isLoading}
+          pagination={false}
+          scroll={{ x: 800, y: 'calc(100vh - 350px)' }}
+          onChange={(_, __, sorter) => {
+            const s = Array.isArray(sorter) ? sorter[0] : sorter;
+            if (s && s.field && s.order) {
+              setSort(s.field as string, s.order === 'ascend' ? 'asc' : 'desc');
+            }
+          }}
+        />
+        
+        <ListPageFooter
+          totalCount={data?.totalElements || 0}
+          currentPage={tableState.page}
+          pageSize={tableState.size}
+          itemNameSingular="summary"
+          onPageChange={(page, size) => {
+            setPage(page);
+            setSize(size);
+          }}
+        />
       </div>
 
-      <DataTable
-        columns={columns}
-        data={data?.content || []}
-        isLoading={isLoading}
-        pageCount={data?.totalPages || 0}
-        pageIndex={page}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={setPageSize}
-      />
-
       <MorningSummaryFormDrawer 
-        open={isDrawerOpen} 
-        onClose={() => setIsDrawerOpen(false)} 
+        open={drawerOpen} 
+        onClose={() => setDrawerOpen(false)} 
       />
-    </div>
+    </PageLayout>
   );
 };

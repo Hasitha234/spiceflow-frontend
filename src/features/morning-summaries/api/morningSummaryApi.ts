@@ -1,8 +1,8 @@
-import { api } from '@/lib/api';
-import { MorningSummary, MorningSummaryRequest } from '../types';
+import apiClient from '@/api/client';
+import type { MorningSummary, MorningSummaryRequest } from '../types';
 
 export const getMorningSummaries = async (page = 0, size = 10) => {
-  const response = await api.get<{
+  const response = await apiClient.get<{
     content: MorningSummary[];
     totalElements: number;
     totalPages: number;
@@ -12,11 +12,11 @@ export const getMorningSummaries = async (page = 0, size = 10) => {
 };
 
 export const createMorningSummary = async (data: MorningSummaryRequest) => {
-  const response = await api.post<MorningSummary>('/api/v1/morning-summaries', data);
+  const response = await apiClient.post<MorningSummary>('/api/v1/morning-summaries', data);
   return response.data;
 };
 
 export const getMorningSummaryById = async (id: number) => {
-  const response = await api.get<MorningSummary>(`/api/v1/morning-summaries/${id}`);
+  const response = await apiClient.get<MorningSummary>(`/api/v1/morning-summaries/${id}`);
   return response.data;
 };
