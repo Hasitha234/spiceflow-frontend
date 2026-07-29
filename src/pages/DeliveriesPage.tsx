@@ -291,10 +291,21 @@ export function DeliveriesPage() {
         <Form form={createForm} layout="vertical" style={{ marginTop: '16px' }}>
           <Form.Item name="loadingSheetId" label="Confirmed Loading Sheet" rules={[{ required: true, message: 'Select a loading sheet' }]}>
             <Select size="large" placeholder="Select a CONFIRMED loading sheet" showSearch optionFilterProp="label"
-              options={confirmedSheets.map((s: any) => ({
-                label: `LS-${s.id} — ${s.driverName || 'Driver'} — ${s.repName || 'Rep'} (${dayjs(s.loadingDate).format('YYYY-MM-DD')})`,
-                value: String(s.id),
-              }))} />
+              options={confirmedSheets.map((s: any) => {
+                const shopInfo = s.repOrder?.shops?.map((rs: any) => {
+                  const sName = rs.shopName || rs.shop?.name || '';
+                  const oId = rs.outletId || rs.shop?.outletId || '';
+                  return [sName, oId].filter(Boolean).join('-');
+                }).filter(Boolean).join(' | ');
+
+                const baseLabel = `LS-${s.id} - ${s.driverName || 'Driver'} - ${s.repName || 'Rep'} (${dayjs(s.loadingDate).format('YYYY-MM-DD')})`;
+                const finalLabel = shopInfo ? `${baseLabel} - ${shopInfo}` : baseLabel;
+
+                return {
+                  label: finalLabel,
+                  value: String(s.id),
+                };
+              })} />
           </Form.Item>
           <Form.Item name="deliveryDate" label="Delivery Date" rules={[{ required: true, message: 'Select date' }]} initialValue={dayjs()}>
             <DatePicker size="large" style={{ width: '100%' }} />
