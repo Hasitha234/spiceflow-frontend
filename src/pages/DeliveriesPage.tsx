@@ -300,11 +300,7 @@ export function DeliveriesPage() {
           <Form.Item name="loadingSheetId" label="Confirmed Loading Sheet" rules={[{ required: true, message: 'Select a loading sheet' }]}>
             <Select size="large" placeholder="Select a CONFIRMED loading sheet" showSearch optionFilterProp="label"
               options={confirmedSheets.map((s: any) => {
-                const shopInfo = s.repOrder?.shops?.map((rs: any) => {
-                  const sName = rs.shopName || rs.shop?.name || '';
-                  const oId = rs.outletId || rs.shop?.outletId || '';
-                  return [sName, oId].filter(Boolean).join('-');
-                }).filter(Boolean).join(' | ');
+                const shopInfo = Array.isArray(s.shopNames) ? s.shopNames.join(' | ') : '';
 
                 const baseLabel = `LS-${s.id} - ${s.driverName || 'Driver'} - ${s.repName || 'Rep'} (${dayjs(s.loadingDate).format('YYYY-MM-DD')})`;
                 const finalLabel = shopInfo ? `${baseLabel} - ${shopInfo}` : baseLabel;
