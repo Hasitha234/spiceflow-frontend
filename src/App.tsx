@@ -26,6 +26,7 @@ const SettingsPage = lazyWithRetry(() => import('./pages/SettingsPage').then((m)
 const PurchasesPage = lazyWithRetry(() => import('./pages/purchases/PurchasesPage').then((m) => ({ default: m.PurchasesPage })));
 const CreatePurchasePage = lazyWithRetry(() => import('./pages/purchases/CreatePurchasePage').then((m) => ({ default: m.CreatePurchasePage })));
 const InventoryPage = lazyWithRetry(() => import('./pages/InventoryPage').then((m) => ({ default: m.InventoryPage })));
+const MorningSummariesPage = lazyWithRetry(() => import('./features/morning-summaries/pages/MorningSummariesPage').then((m) => ({ default: m.MorningSummariesPage })));
 const RepOrdersPage = lazyWithRetry(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
 const CreateRepOrderPage = lazyWithRetry(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
 const LoadingSheetsPage = lazyWithRetry(() => import('./pages/LoadingSheetsPage').then((m) => ({ default: m.LoadingSheetsPage })));
@@ -83,6 +84,7 @@ function App() {
               <Route path="purchases/new" element={<CreatePurchasePage />} />
               <Route path="purchases/:id/edit" element={<CreatePurchasePage />} />
               <Route path="inventory" element={<InventoryPage />} />
+              <Route path="morning-summaries" element={<MorningSummariesPage />} />
               <Route path="sales" element={<RepOrdersPage />} />
               <Route path="sales/new" element={<CreateRepOrderPage />} />
               <Route path="sales/edit/:id" element={<CreateRepOrderPage />} />
