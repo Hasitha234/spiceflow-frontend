@@ -1,5 +1,5 @@
 import React from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification } from 'antd';
@@ -33,19 +33,22 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     }
   });
 
-  const { control, handleSubmit, watch, formState: { errors } } = methods;
+  const { control, handleSubmit, formState: { errors } } = methods;
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items"
   });
 
-  const watchItems = watch("items");
+  const watchItems = useWatch({
+    control,
+    name: "items"
+  });
 
   const calculateEstimate = (index: number) => {
     const item = watchItems?.[index];
     if (!item || !item.productId || !item.quantity) return 0;
-    const product = productsData?.content?.find((p: any) => p.id === item.productId);
+    const product = productsData?.content?.find((p: { id: number; ratePerSoldUnit?: number }) => p.id === item.productId);
     if (!product) return 0;
     return (product.ratePerSoldUnit || 0) * item.quantity;
   };
@@ -112,7 +115,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   <Select
                     {...field}
                     placeholder="Select Rep"
-                    options={repsData?.content?.map((rep: any) => ({ label: rep.name, value: rep.id }))}
+                    options={repsData?.content?.map((rep: { name: string; id: number }) => ({ label: rep.name, value: rep.id }))}
                   />
                 </Form.Item>
               )}
@@ -127,7 +130,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   <Select
                     {...field}
                     placeholder="Select Driver"
-                    options={driversData?.content?.map((driver: any) => ({ label: driver.name, value: driver.id }))}
+                    options={driversData?.content?.map((driver: { name: string; id: number }) => ({ label: driver.name, value: driver.id }))}
                   />
                 </Form.Item>
               )}
@@ -161,7 +164,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                         showSearch
                         optionFilterProp="label"
                         placeholder="Select Product"
-                        options={productsData?.content?.map((p: any) => ({ label: p.name, value: p.id }))}
+                        options={productsData?.content?.map((p: { name: string; id: number }) => ({ label: p.name, value: p.id }))}
                       />
                     </Form.Item>
                   )}
