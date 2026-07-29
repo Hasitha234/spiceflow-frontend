@@ -102,6 +102,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
   const cashVal = Form.useWatch('cashAmount', form) || 0;
   const chequeVal = Form.useWatch('chequeAmount', form) || 0;
   const loanVal = Form.useWatch('loanAmount', form) || 0;
+  Form.useWatch('discountAmount', form);
   Form.useWatch('items', form);
   Form.useWatch('returns', form);
 
@@ -211,16 +212,25 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       cashAmount: cashPayment ? Number(cashPayment.amount) : (existingDeliveryShop ? 0 : totalNet),
       chequeAmount: chequePayment ? Number(chequePayment.amount) : 0,
       loanAmount: existingDeliveryShop ? Number(existingDeliveryShop.creditAmount || 0) : 0,
+      discountAmount: existingDeliveryShop ? Number(existingDeliveryShop.totalDiscount || 0) : Number(dataObj.discountAmount || 0),
       chequeNo: chequePayment?.chequeNo || '',
       chequeBankName: chequePayment?.chequeBankName || '',
       chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
-      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map(r => ({
-        productId: r.productId || r.product?.id,
-        quantityReturned: r.quantityReturned,
-        unitType: r.unitType || 'PCS',
-        creditValue: r.creditValue || 0,
-        returnType: r.returnType || 'DAMAGED'
-      })) : [],
+      returns: Array.isArray(existingDeliveryShop?.returns) && existingDeliveryShop.returns.length > 0
+        ? existingDeliveryShop.returns.map(r => ({
+            productId: r.productId || r.product?.id,
+            quantityReturned: r.quantityReturned,
+            unitType: r.unitType || 'PCS',
+            creditValue: r.creditValue || 0,
+            returnType: r.returnType || 'DAMAGED'
+          }))
+        : (Array.isArray(dataObj.returns) ? dataObj.returns.map((r: any) => ({
+            productId: r.productId || r.product?.id,
+            quantityReturned: r.quantityReturned,
+            unitType: r.unitType || 'PCS',
+            creditValue: r.creditValue || 0,
+            returnType: r.returnType || 'DAMAGED'
+          })) : []),
     });
   };
 
@@ -280,6 +290,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
           returnType: r.returnType || 'DAMAGED'
         })),
         payments,
+        discountAmount: Number(values.discountAmount || 0),
       };
 
       await deliveryApi.recordShop(String(activeDelivery.id), getShopId(activeShop), payload);
@@ -332,12 +343,14 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
 
   const calculateNetBill = () => {
     const items = form.getFieldValue('items') || [];
-    return items.reduce((sum: number, i: FormItemData) => {
+    const invoiceDiscount = Number(form.getFieldValue('discountAmount') || 0);
+    const itemsTotal = items.reduce((sum: number, i: FormItemData) => {
       const q = Number(i.quantityDelivered || 0);
       const r = Number(i.rate || 0);
       const d = Number(i.discountAmount || 0);
       return sum + (q * r - d);
     }, 0);
+    return itemsTotal - invoiceDiscount;
   };
 
   const calculateReturns = () => {
@@ -609,9 +622,30 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
               color: 'var(--color-text-primary)',
               marginBottom: '16px',
               paddingBottom: '8px',
+              borderBottom: '1px solid var(--color-border-default)',
+              marginTop: '24px'
+            }}>
+              3. Overall Invoice Discount
+            </div>
+            <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '24px' }}>
+              <Row gutter={16}>
+                <Col xs={24} md={8}>
+                  <Form.Item name="discountAmount" label="Shop / Invoice Discount (Rs)">
+                    <InputNumber min={0} className="w-full" size="large" style={{ fontVariantNumeric: 'tabular-nums' }} />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'var(--color-text-primary)',
+              marginBottom: '16px',
+              paddingBottom: '8px',
               borderBottom: '1px solid var(--color-border-default)'
             }}>
-              3. Payment Collection Breakdown (Cash / Cheque / Loan)
+              4. Payment Collection Breakdown (Cash / Cheque / Loan)
             </div>
             <Card styles={{ body: { padding: '20px' } }} style={{ border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', marginBottom: '16px' }}>
               <Row gutter={16}>
