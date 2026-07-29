@@ -236,7 +236,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       returns: Array.isArray(existingDeliveryShop?.returns) && existingDeliveryShop.returns.length > 0
         ? existingDeliveryShop.returns.map(r => ({
             productId: r.productId || r.product?.id,
-            quantityReturned: r.quantityReturned || r.quantity,
+            quantityReturned: r.quantityReturned || (r as any).quantity,
             unitType: r.unitType || 'PCS',
             creditValue: r.creditValue || 0,
             returnType: r.returnType || 'DAMAGED'
