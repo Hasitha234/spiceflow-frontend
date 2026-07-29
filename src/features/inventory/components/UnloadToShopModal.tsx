@@ -363,9 +363,10 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       // Refresh delivery data
       const updatedDelivery = await deliveryApi.get(activeDelivery.id.toString());
       setActiveDelivery(updatedDelivery);
-    } catch (err: any) {
+    } catch (err) {
       console.error('Record shop delivery failed:', err);
-      const data = err?.response?.data;
+      const e = err as { response?: { data?: { detail?: string; message?: string } } };
+      const data = e?.response?.data;
       message.error(data?.detail || data?.message || 'Failed to reverse shop delivery.');
     }
   };
