@@ -6,6 +6,7 @@ import { shopMetadata } from '../features/shops/metadata';
 import { repMetadata } from '../features/reps/metadata';
 import { driverMetadata } from '../features/drivers/metadata';
 import { purchaseOrderMetadata } from '../features/purchase-orders/metadata';
+import { morningSummaryMetadata } from '../features/morning-summaries/metadata';
 import { lazyWithRetry } from '../utils/lazyWithRetry';
 
 const ProductListPage = lazyWithRetry(() => import('../features/products').then((m) => ({ default: m.ProductListPage })));
@@ -14,6 +15,7 @@ const ShopListPage = lazyWithRetry(() => import('../features/shops').then((m) =>
 const RepListPage = lazyWithRetry(() => import('../features/reps').then((m) => ({ default: m.RepListPage })));
 const DriverListPage = lazyWithRetry(() => import('../features/drivers').then((m) => ({ default: m.DriverListPage })));
 const PurchasingDashboardPage = lazyWithRetry(() => import('../features/purchase-orders').then((m) => ({ default: m.PurchasingDashboardPage })));
+const MorningSummariesPage = lazyWithRetry(() => import('../features/morning-summaries').then((m) => ({ default: m.MorningSummariesPage })));
 
 export interface FeatureRouteConfig {
   metadata: FeatureMetadata;
@@ -45,5 +47,9 @@ export const featureRoutes: FeatureRouteConfig[] = [
   {
     metadata: purchaseOrderMetadata,
     element: PurchasingDashboardPage,
+  },
+  {
+    metadata: morningSummaryMetadata,
+    element: MorningSummariesPage,
   },
 ];
