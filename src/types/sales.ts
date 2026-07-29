@@ -112,6 +112,9 @@ export interface DeliveryPayment {
   amount: number;
   referenceNo?: string;
   notes?: string;
+  chequeNo?: string;
+  chequeBankName?: string;
+  chequeDate?: string;
 }
 
 export interface DeliveryShopItem {
@@ -122,13 +125,18 @@ export interface DeliveryShopItem {
 
 export interface DeliveryShopReturn {
   id: string;
-  product: Product;
+  productId?: string | number;
+  product?: Product;
   quantityReturned: number;
+  unitType?: string;
+  creditValue?: number;
+  returnType?: string;
 }
 
 export interface DeliveryShop {
   id: string;
-  shop: Shop;
+  shopId?: string | number;
+  shop?: Shop;
   grossBillAmount: number;
   totalDiscount: number;
   returnsDeducted: number;

@@ -174,7 +174,7 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
     form.resetFields();
 
     const existingDeliveryShop = activeDelivery?.shops?.find(
-      (s: DeliveryShop) => (s as Record<string, unknown>).shopId === getShopId(shopData) || s.shop?.id === getShopId(shopData)
+      (s: DeliveryShop) => s.shopId === getShopId(shopData) || s.shop?.id === getShopId(shopData)
     );
 
     const dataObj = (shopData && typeof shopData === 'object' ? shopData : {}) as Record<string, unknown>;
@@ -189,8 +189,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       return sum + Number(it.netAmount || ((Number(it.quantityDelivered || it.quantity || 0)) * (Number(it.rate || 0))));
     }, 0);
 
-    const cashPayment = existingDeliveryShop?.payments?.find((p: Record<string, unknown>) => p.paymentMethod === 'CASH');
-    const chequePayment = existingDeliveryShop?.payments?.find((p: Record<string, unknown>) => p.paymentMethod === 'CHEQUE');
+    const cashPayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CASH');
+    const chequePayment = existingDeliveryShop?.payments?.find(p => p.paymentMethod === 'CHEQUE');
 
     form.setFieldsValue({
       items: itemsList.map((i: unknown) => {
@@ -214,8 +214,8 @@ export const UnloadToShopModal: React.FC<UnloadToShopModalProps> = ({
       chequeNo: chequePayment?.chequeNo || '',
       chequeBankName: chequePayment?.chequeBankName || '',
       chequeDate: chequePayment?.chequeDate ? dayjs(String(chequePayment.chequeDate)) : null,
-      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map((r: Record<string, unknown>) => ({
-        productId: r.productId || (r.product as Record<string, unknown>)?.id,
+      returns: Array.isArray(existingDeliveryShop?.returns) ? existingDeliveryShop.returns.map(r => ({
+        productId: r.productId || r.product?.id,
         quantityReturned: r.quantityReturned,
         unitType: r.unitType || 'PCS',
         creditValue: r.creditValue || 0,
