@@ -153,6 +153,8 @@ export interface Delivery {
   loadingSheet: LoadingSheet;
   status: 'IN_PROGRESS' | 'COMPLETED';
   shops: DeliveryShop[];
+  targetShopNames?: string;
+  targetOutletIds?: string;
   createdAt: string;
 }
 
