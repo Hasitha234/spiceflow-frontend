@@ -32,7 +32,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       repId: undefined,
       driverId: undefined,
       summaryDate: dayjs().format('YYYY-MM-DD'),
-      items: [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+      items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
     }
   });
 
@@ -46,7 +46,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         const parsed = JSON.parse(savedDraft);
         // Ensure items array is never empty from a bad draft
         if (!parsed.items || parsed.items.length === 0) {
-          parsed.items = [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
+          parsed.items = [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
         }
         reset(parsed);
       } catch (e) {
@@ -91,7 +91,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         repId: undefined,
         driverId: undefined,
         summaryDate: dayjs().format('YYYY-MM-DD'),
-        items: [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+        items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
       });
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
       notification.success({ message: 'Morning Summary created successfully.' });
@@ -223,7 +223,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   control={control}
                   render={({ field: qField }) => (
                     <Form.Item label="Qty" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.quantity ? 'error' : ''} help={errors.items?.[index]?.quantity?.message}>
-                      <InputNumber {...qField} style={{ width: '100%' }} min={1} onFocus={(e) => e.target.select()} />
+                      <InputNumber {...qField} style={{ width: '100%' }} min={0} onFocus={(e) => e.target.select()} />
                     </Form.Item>
                   )}
                 />
@@ -281,7 +281,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         ))}
 
         <div className="mb-4">
-          <Button type="dashed" block icon={<PlusOutlined />} onClick={() => append({ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 })}>
+          <Button type="dashed" block icon={<PlusOutlined />} onClick={() => append({ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 })}>
             Add Item
           </Button>
         </div>
