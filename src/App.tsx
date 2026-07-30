@@ -8,6 +8,7 @@ import { AppLayout } from './components/layout/AppLayout';
 import { PrivateRoute } from './components/layout/PrivateRoute';
 
 import { TenantIndexRedirect } from './components/routing/TenantIndexRedirect';
+import { BillsPage } from './features/bills';
 import { featureRoutes } from './routes/featureRoutes';
 import { lazyWithRetry } from './utils/lazyWithRetry';
 
@@ -101,6 +102,7 @@ function App() {
               <Route path="settings/warehouses" element={<WarehousesPage />} />
               <Route path="settings/categories" element={<CategoriesPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="bills" element={<BillsPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/login" replace />} />

@@ -38,6 +38,7 @@ const allMenuItems = [
       { key: '/purchases', translateKey: 'nav.purchases', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/morning-summaries', translateKey: 'nav.morningSummaries', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/cancel-summaries', translateKey: 'nav.cancelSummaries', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
+      { key: '/bills', translateKey: 'nav.bills', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/sales', translateKey: 'nav.orders', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/loading', translateKey: 'nav.loading', roles: ['TENANT_OWNER', 'DATA_ENTRY', 'DRIVER'] },
       { key: '/deliveries', translateKey: 'nav.deliveries', roles: ['TENANT_OWNER', 'DATA_ENTRY', 'DRIVER'] },
