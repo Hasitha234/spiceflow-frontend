@@ -107,7 +107,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
       <Row gutter={16}>
         <Col xs={24} md={12}>
           <Form.Item
-            label="Unit Price (LKR)"
+            label="Unit Price / Cost (LKR)"
             htmlFor="basePrice"
             validateStatus={errors.basePrice ? 'error' : ''}
             help={errors.basePrice?.message}
@@ -120,6 +120,31 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                 <InputNumber onFocus={(e) => e.target.select()}
                   {...field}
                   id="basePrice"
+                  min={0}
+                  step={0.01}
+                  precision={2}
+                  style={{ width: '100%' }}
+                  placeholder="0.00"
+                />
+              )}
+            />
+          </Form.Item>
+        </Col>
+        <Col xs={24} md={12}>
+          <Form.Item
+            label="Selling Price / Rate (LKR)"
+            htmlFor="ratePerSoldUnit"
+            validateStatus={errors.ratePerSoldUnit ? 'error' : ''}
+            help={errors.ratePerSoldUnit?.message}
+            required
+          >
+            <Controller
+              name="ratePerSoldUnit"
+              control={control}
+              render={({ field }) => (
+                <InputNumber onFocus={(e) => e.target.select()}
+                  {...field}
+                  id="ratePerSoldUnit"
                   min={0}
                   step={0.01}
                   precision={2}
