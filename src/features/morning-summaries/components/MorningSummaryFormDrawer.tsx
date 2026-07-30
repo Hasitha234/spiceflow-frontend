@@ -172,7 +172,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
               <Col span={1} className="pb-2">
                 <Text strong>{index + 1}.</Text>
               </Col>
-              <Col span={5}>
+              <Col span={7}>
                 <Controller
                   name={`items.${index}.productId`}
                   control={control}
@@ -183,6 +183,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                         showSearch
                         optionFilterProp="label"
                         placeholder="Select Product"
+                        popupMatchSelectWidth={false}
                         options={productsData?.content?.map((p: ProductResponse) => ({ label: p.name ?? '', value: p.id ?? 0 }))}
                       />
                     </Form.Item>
@@ -200,7 +201,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   )}
                 />
               </Col>
-              <Col span={5}>
+              <Col span={4}>
                 <Controller
                   name={`items.${index}.expectedReturnAmount`}
                   control={control}
@@ -211,7 +212,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   )}
                 />
               </Col>
-              <Col span={5}>
+              <Col span={4}>
                 <Controller
                   name={`items.${index}.expectedReturnPrice`}
                   control={control}
