@@ -25,6 +25,7 @@ export interface MorningSummary {
 export interface MorningSummaryRequest {
   repId: number;
   driverId: number;
+  summaryDate: string;
   items: MorningSummaryItemRequest[];
 }
 
