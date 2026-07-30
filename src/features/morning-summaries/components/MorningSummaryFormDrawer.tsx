@@ -2,13 +2,14 @@ import React from 'react';
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification } from 'antd';
+import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { EntityFormDrawer } from '@/components/common';
 import { createMorningSummary } from '../api/morningSummaryApi';
 import { morningSummarySchema, type MorningSummaryFormData } from '../schemas/morningSummarySchema';
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
 import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
+import dayjs from 'dayjs';
 
 const { Text, Title } = Typography;
 
@@ -30,6 +31,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     defaultValues: {
       repId: undefined,
       driverId: undefined,
+      summaryDate: dayjs().format('YYYY-MM-DD'),
       items: [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
     }
   });
@@ -74,6 +76,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     mutation.mutate({
       repId: data.repId,
       driverId: data.driverId,
+      summaryDate: data.summaryDate,
       items: data.items.map(item => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -107,7 +110,22 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     >
       <Form layout="vertical" className="space-y-4">
         <Row gutter={16}>
-          <Col span={12}>
+          <Col span={8}>
+            <Controller
+              name="summaryDate"
+              control={control}
+              render={({ field }) => (
+                <Form.Item label="Date" validateStatus={errors.summaryDate ? 'error' : ''} help={errors.summaryDate?.message}>
+                  <DatePicker
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(date) => field.onChange(date ? date.format('YYYY-MM-DD') : '')}
+                    style={{ width: '100%' }}
+                  />
+                </Form.Item>
+              )}
+            />
+          </Col>
+          <Col span={8}>
             <Controller
               name="repId"
               control={control}
@@ -122,7 +140,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
               )}
             />
           </Col>
-          <Col span={12}>
+          <Col span={8}>
             <Controller
               name="driverId"
               control={control}

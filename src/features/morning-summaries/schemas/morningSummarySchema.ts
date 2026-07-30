@@ -10,6 +10,7 @@ export const morningSummaryItemSchema = z.object({
 export const morningSummarySchema = z.object({
   repId: z.number().min(1, 'Rep is required'),
   driverId: z.number().min(1, 'Driver is required'),
+  summaryDate: z.string().min(1, 'Date is required'),
   items: z.array(morningSummaryItemSchema).min(1, 'At least one item is required'),
 });
 
