@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Modal, Row, Col, Typography, notification, DatePicker } from 'antd';
 import { collectBill } from '@/api/generated';
 import { billCollectionSchema, type BillCollectionFormData } from '../schemas/billSchema';
-import type { BillResponse } from '@/api/generated';
+import type { BillResponse, BillCollectionRequest } from '@/api/generated';
 import dayjs from 'dayjs';
 
 const { Text, Title } = Typography;
@@ -56,7 +56,7 @@ export const BillCollectionModal: React.FC<BillCollectionModalProps> = ({ open, 
   }, [watchFields]);
 
   const collectMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: BillCollectionFormData }) => collectBill(id, data),
+    mutationFn: ({ id, data }: { id: number; data: BillCollectionRequest }) => collectBill(id, data),
     onSuccess: () => {
       notification.success({ message: 'Success', description: 'Bill collected successfully' });
       queryClient.invalidateQueries({ queryKey: ['getBills'] });
@@ -76,15 +76,15 @@ export const BillCollectionModal: React.FC<BillCollectionModalProps> = ({ open, 
     if (!bill) return;
 
     // Validate totals strictly
-    if (Math.abs(totalEntered - bill.finalTotal) > 0.01) {
+    if (Math.abs(totalEntered - (bill.finalTotal || 0)) > 0.01) {
       notification.error({ 
         message: 'Mismatch Error', 
-        description: `Total collected (Rs ${totalEntered.toFixed(2)}) must exactly equal the Bill Final Total (Rs ${bill.finalTotal.toFixed(2)}).` 
+        description: `Total collected (Rs ${totalEntered.toFixed(2)}) must exactly equal the Bill Final Total (Rs ${(bill.finalTotal || 0).toFixed(2)}).` 
       });
       return;
     }
 
-    collectMutation.mutate({ id: bill.id, data });
+    collectMutation.mutate({ id: bill.id as number, data: { ...data, loanDueDate: data.loanDueDate || undefined } });
   };
 
   if (!bill) return null;
@@ -101,7 +101,7 @@ export const BillCollectionModal: React.FC<BillCollectionModalProps> = ({ open, 
       <div style={{ marginBottom: '24px', padding: '16px', background: '#e6f7ff', borderRadius: '8px', border: '1px solid #91d5ff' }}>
         <Row justify="space-between" align="middle">
           <Col><Title level={4} style={{ margin: 0, color: '#0050b3' }}>Final Total to Collect</Title></Col>
-          <Col><Title level={4} style={{ margin: 0, color: '#0050b3' }}>Rs {bill.finalTotal.toFixed(2)}</Title></Col>
+          <Col><Title level={4} style={{ margin: 0, color: '#0050b3' }}>Rs {(bill.finalTotal || 0).toFixed(2)}</Title></Col>
         </Row>
       </div>
 
@@ -184,7 +184,7 @@ export const BillCollectionModal: React.FC<BillCollectionModalProps> = ({ open, 
         <Row justify="space-between" align="middle">
           <Col><Text strong>Total Entered:</Text></Col>
           <Col>
-            <Text strong style={{ color: Math.abs(totalEntered - bill.finalTotal) > 0.01 ? '#ff4d4f' : '#52c41a' }}>
+            <Text strong style={{ color: Math.abs(totalEntered - (bill.finalTotal || 0)) > 0.01 ? '#ff4d4f' : '#52c41a' }}>
               Rs {totalEntered.toFixed(2)}
             </Text>
           </Col>

@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Row, Col, Typography, Spin, notification, DatePicker } from 'antd';
 import { EntityFormDrawer } from '@/components/common';
 import { createBill } from '@/api/generated';
+import type { BillRequest } from '@/api/generated';
 import { billSchema, type BillFormData } from '../schemas/billSchema';
 import { useGetReps, useGetDrivers, useGetShops } from '@/api/generated';
 import type { RepResponse, DriverResponse, ShopResponse } from '@/api/generated';
@@ -76,7 +77,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
   }, [methods]);
 
   const createMutation = useMutation({
-    mutationFn: createBill,
+    mutationFn: (data: BillRequest) => createBill(data),
     onSuccess: () => {
       notification.success({ message: 'Success', description: 'Bill created successfully' });
       localStorage.removeItem('bill_draft');
@@ -98,7 +99,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       notification.error({ message: 'Error', description: 'Final total cannot be negative.' });
       return;
     }
-    createMutation.mutate({ data });
+    createMutation.mutate({ ...data, driverId: data.driverId || undefined });
   };
 
   const isDataLoading = repsLoading || driversLoading || shopsLoading;
@@ -109,8 +110,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
-      isLoading={createMutation.isPending || isDataLoading}
-      width={600}
+      loading={createMutation.isPending || isDataLoading}
     >
       <Spin spinning={isDataLoading}>
         <Row gutter={[16, 16]}>

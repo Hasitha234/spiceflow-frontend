@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Typography, Button, Table, Space, Tag, Modal, notification, Row, Col, Input, DatePicker, Select } from 'antd';
 import { PlusOutlined, DeleteOutlined, CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,9 @@ export function BillsPage() {
       shopId: filters.shopId,
       status: filters.status,
       search: filters.search,
-      pageable: { page: pagination.current - 1, size: pagination.pageSize, sort: ['createdAt,desc'] }
+      page: pagination.current - 1,
+      size: pagination.pageSize,
+      sort: ['createdAt,desc']
     }),
   });
 
@@ -55,7 +57,8 @@ export function BillsPage() {
     },
   });
 
-  const showCancelConfirm = (id: number, billNumber: string) => {
+  const showCancelConfirm = (id: number | undefined, billNumber: string | undefined) => {
+    if (!id || !billNumber) return;
     Modal.confirm({
       title: 'Are you sure you want to cancel this bill?',
       icon: <ExclamationCircleOutlined />,
@@ -233,7 +236,7 @@ export function BillsPage() {
         pagination={{
           current: pagination.current,
           pageSize: pagination.pageSize,
-          total: data?.page?.totalElements,
+          total: data?.totalElements || 0,
           showSizeChanger: true,
           onChange: (page, pageSize) => setPagination({ current: page, pageSize }),
         }}
