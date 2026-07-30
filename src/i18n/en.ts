@@ -42,6 +42,7 @@ const en = {
     monthSummary: 'Month Summary',
     inventory: 'Inventory',
     morningSummaries: 'Morning Summaries',
+    cancelSummaries: 'Cancel Summaries',
     orders: 'Rep Orders',
     loading: 'Loading Sheets',
     deliveries: 'Deliveries',
