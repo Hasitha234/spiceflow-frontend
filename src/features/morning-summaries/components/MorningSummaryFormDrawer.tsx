@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
@@ -61,7 +61,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       localStorage.setItem('morning_summary_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods.watch]);
+  }, [methods]);
 
   const { fields, append, remove } = useFieldArray({
     control,
