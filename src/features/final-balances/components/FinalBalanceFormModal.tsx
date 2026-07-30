@@ -7,7 +7,7 @@ import {
   useSaveFinalBalance 
 } from '../../../api/generated/final-balances/final-balances';
 import { useGetReps, useGetDrivers } from '../../../api/generated/sales-master-data/sales-master-data';
-import type { FinalBalanceCalculationResponse, FinalBalanceRequest } from '../../../api/generated/model';
+import type { FinalBalanceCalculationResponse, FinalBalanceRequest, UserResponse } from '../../../api/generated/model';
 
 const { TextArea } = Input;
 
@@ -40,8 +40,9 @@ export function FinalBalanceFormModal({ open, onClose, onSuccess }: FinalBalance
         setCalculation(data);
         message.success('Calculation completed');
       },
-      onError: (err: any) => {
-        message.error(err.response?.data?.message || 'Failed to calculate balance');
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { message?: string } } };
+        message.error(error.response?.data?.message || 'Failed to calculate balance');
         setCalculation(null);
       }
     }
@@ -54,8 +55,9 @@ export function FinalBalanceFormModal({ open, onClose, onSuccess }: FinalBalance
         form.resetFields();
         setCalculation(null);
       },
-      onError: (err: any) => {
-        message.error(err.response?.data?.message || 'Failed to save final balance');
+      onError: (err: unknown) => {
+        const error = err as { response?: { data?: { message?: string } } };
+        message.error(error.response?.data?.message || 'Failed to save final balance');
       }
     }
   });
@@ -136,7 +138,7 @@ export function FinalBalanceFormModal({ open, onClose, onSuccess }: FinalBalance
             <Select
               placeholder="Select Rep"
               loading={isLoadingReps}
-              options={reps.map((r: any) => ({ label: r.name, value: r.id }))}
+              options={reps.map((r: UserResponse) => ({ label: r.name, value: r.id }))}
               onChange={() => setCalculation(null)}
             />
           </Form.Item>
