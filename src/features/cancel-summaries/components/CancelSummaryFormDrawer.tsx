@@ -1,11 +1,11 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { EntityFormDrawer } from '@/components/common';
-import { createCancelSummary } from '@/api/generated';
+import { useCreateCancelSummary } from '@/api/generated';
 import { cancelSummarySchema, type CancelSummaryFormData } from '../schemas/cancelSummarySchema';
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
 import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
@@ -79,9 +79,9 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     return watchItems?.reduce((total, _, index) => total + calculateEstimate(index), 0) || 0;
   };
 
-  const mutation = useMutation({
-    mutationFn: createCancelSummary,
-    onSuccess: () => {
+  const mutation = useCreateCancelSummary({
+    mutation: {
+      onSuccess: () => {
       localStorage.removeItem('cancel_summary_draft');
       reset({
         repId: undefined,
@@ -95,6 +95,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     },
     onError: () => {
       notification.error({ message: 'Failed to create Cancel Summary.' });
+    }
     }
   });
 

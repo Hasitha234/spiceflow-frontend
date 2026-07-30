@@ -25,7 +25,7 @@ export const CancelSummariesPage = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ['cancelSummaries', pageableParams],
-    queryFn: () => getCancelSummaries({ pageable: { page: tableState.page - 1, size: tableState.size, sort: [`${tableState.sort},${tableState.dir}`] } }),
+    queryFn: () => getCancelSummaries({ page: tableState.page - 1, size: tableState.size, sort: [`${tableState.sort},${tableState.dir}`] }),
   });
 
   const columns: ColumnsType<CancelSummaryResponse> = [
