@@ -234,7 +234,23 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   control={control}
                   render={({ field: eraField }) => (
                     <Form.Item label="Ret Qty (Exp)" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.expectedReturnAmount ? 'error' : ''} help={errors.items?.[index]?.expectedReturnAmount?.message}>
-                      <InputNumber {...eraField} style={{ width: '100%' }} min={0} onFocus={(e) => e.target.select()} />
+                      <InputNumber 
+                        {...eraField} 
+                        style={{ width: '100%' }} 
+                        min={0} 
+                        onFocus={(e) => e.target.select()}
+                        onChange={(val) => {
+                          eraField.onChange(val);
+                          const item = watchItems?.[index];
+                          if (item && item.productId) {
+                            const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
+                            if (product) {
+                              const price = product.ratePerSoldUnit || product.basePrice || 0;
+                              methods.setValue(`items.${index}.expectedReturnPrice`, (val || 0) * price, { shouldDirty: true });
+                            }
+                          }
+                        }}
+                      />
                     </Form.Item>
                   )}
                 />
