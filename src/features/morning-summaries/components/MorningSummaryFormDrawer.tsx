@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -36,7 +36,32 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     }
   });
 
-  const { control, handleSubmit, formState: { errors } } = methods;
+  const { control, handleSubmit, formState: { errors }, reset } = methods;
+
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem('morning_summary_draft');
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        // Ensure items array is never empty from a bad draft
+        if (!parsed.items || parsed.items.length === 0) {
+          parsed.items = [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
+        }
+        reset(parsed);
+      } catch (e) {
+        console.error('Failed to parse draft', e);
+      }
+    }
+  }, [reset]);
+
+  // Save draft on change
+  useEffect(() => {
+    const subscription = methods.watch((value) => {
+      localStorage.setItem('morning_summary_draft', JSON.stringify(value));
+    });
+    return () => subscription.unsubscribe();
+  }, [methods.watch]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -63,6 +88,13 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
   const mutation = useMutation({
     mutationFn: createMorningSummary,
     onSuccess: () => {
+      localStorage.removeItem('morning_summary_draft');
+      reset({
+        repId: undefined,
+        driverId: undefined,
+        summaryDate: dayjs().format('YYYY-MM-DD'),
+        items: [{ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+      });
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
       notification.success({ message: 'Morning Summary created successfully.' });
       onClose();
