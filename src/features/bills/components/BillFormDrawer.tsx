@@ -68,11 +68,12 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
 
   // Save draft on change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('bill_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods.watch]);
+  }, [methods]);
 
   const createMutation = useMutation({
     mutationFn: createBill,
@@ -83,6 +84,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       reset();
       onClose();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       notification.error({
         message: 'Error',

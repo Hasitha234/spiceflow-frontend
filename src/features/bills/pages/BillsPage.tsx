@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Typography, Button, Table, Space, Tag, Modal, notification, Row, Col, Input, DatePicker, Select } from 'antd';
 import { PlusOutlined, DeleteOutlined, CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -7,9 +7,9 @@ import type { BillResponse } from '@/api/generated';
 import { PageHeader } from '@/components/common';
 import { BillFormDrawer } from '../components/BillFormDrawer';
 import { BillCollectionModal } from '../components/BillCollectionModal';
-import dayjs from 'dayjs';
 
-const { Title, Text } = Typography;
+
+const { Text } = Typography;
 
 export function BillsPage() {
   const queryClient = useQueryClient();
@@ -46,6 +46,7 @@ export function BillsPage() {
       notification.success({ message: 'Success', description: 'Bill cancelled successfully' });
       queryClient.invalidateQueries({ queryKey: ['getBills'] });
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       notification.error({
         message: 'Error',
@@ -125,6 +126,7 @@ export function BillsPage() {
     {
       title: 'Action',
       key: 'action',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       render: (_: any, record: BillResponse) => (
         <Space size="middle">
           {record.status === 'PENDING' && (

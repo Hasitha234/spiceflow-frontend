@@ -57,6 +57,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
 
   // Save draft on change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('morning_summary_draft', JSON.stringify(value));
     });

@@ -63,6 +63,7 @@ export const BillCollectionModal: React.FC<BillCollectionModalProps> = ({ open, 
       reset();
       onClose();
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError: (error: any) => {
       notification.error({
         message: 'Error',
