@@ -2,7 +2,7 @@ import { defineConfig } from 'orval';
 
 export default defineConfig({
   spiceflow: {
-    input: './openapi.yaml',
+    input: './openapi.json',
     output: {
       mode: 'tags-split',
       target: 'src/api/generated/endpoints.ts',

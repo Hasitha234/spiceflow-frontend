@@ -41,6 +41,8 @@ const si = {
     daySummary: 'දෛනික සාරාංශය',
     monthSummary: 'මාසික සාරාංශය',
     inventory: 'තොගය',
+    morningSummaries: 'උදෑසන සාරාංශ',
+    cancelSummaries: 'අවලංගු සාරාංශ',
     orders: 'ලේඛකාධිකාරි ඇණවුම්',
     loading: 'පැටවීමේ පත්‍ර',
     deliveries: 'බෙදා හැරීම්',
