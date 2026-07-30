@@ -53,6 +53,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
   }, [reset]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('cancel_summary_draft', JSON.stringify(value));
     });
