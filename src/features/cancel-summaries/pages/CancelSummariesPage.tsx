@@ -25,7 +25,7 @@ export const CancelSummariesPage = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ['cancelSummaries', pageableParams],
-    queryFn: () => getCancelSummaries({ page: tableState.page - 1, size: tableState.size, sort: [`${tableState.sort},${tableState.dir}`] }),
+    queryFn: () => getCancelSummaries({ page: tableState.page, size: tableState.size, sort: [`${tableState.sort},${tableState.dir}`] }),
   });
 
   const columns: ColumnsType<CancelSummaryResponse> = [
@@ -110,11 +110,11 @@ export const CancelSummariesPage = () => {
         
         <ListPageFooter
           totalCount={data?.totalElements || 0}
-          currentPage={tableState.page}
+          currentPage={tableState.page + 1}
           pageSize={tableState.size}
           itemNameSingular="summary"
           onPageChange={(page, size) => {
-            setPage(page);
+            setPage(page - 1);
             setSize(size);
           }}
         />

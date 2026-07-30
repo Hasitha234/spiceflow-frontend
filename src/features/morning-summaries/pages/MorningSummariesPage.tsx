@@ -25,7 +25,7 @@ export const MorningSummariesPage = () => {
 
   const { data, isLoading } = useQuery({
     queryKey: ['morningSummaries', pageableParams],
-    queryFn: () => getMorningSummaries(tableState.page - 1, tableState.size),
+    queryFn: () => getMorningSummaries(tableState.page, tableState.size),
   });
 
   const columns: ColumnsType<MorningSummary> = [
@@ -110,11 +110,11 @@ export const MorningSummariesPage = () => {
         
         <ListPageFooter
           totalCount={data?.totalElements || 0}
-          currentPage={tableState.page}
+          currentPage={tableState.page + 1}
           pageSize={tableState.size}
           itemNameSingular="summary"
           onPageChange={(page, size) => {
-            setPage(page);
+            setPage(page - 1);
             setSize(size);
           }}
         />
