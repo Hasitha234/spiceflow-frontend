@@ -192,9 +192,6 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         <Divider />
         <div className="flex justify-between items-center mb-4">
           <Title level={5} style={{ margin: 0 }}>Line Items</Title>
-          <Button type="dashed" icon={<PlusOutlined />} onClick={() => append({ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 })}>
-            Add Item
-          </Button>
         </div>
         {errors.items?.message && <Text type="danger" className="mb-2 block">{errors.items.message}</Text>}
 
@@ -268,6 +265,12 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
             </Row>
           </div>
         ))}
+
+        <div className="mb-4">
+          <Button type="dashed" block icon={<PlusOutlined />} onClick={() => append({ productId: 0, quantity: 1, expectedReturnAmount: 0, expectedReturnPrice: 0 })}>
+            Add Item
+          </Button>
+        </div>
 
         <div className="mt-8 flex justify-end">
           <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 min-w-[300px] text-right">
