@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
@@ -61,24 +61,22 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       localStorage.setItem('morning_summary_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods.watch]);
+  }, [methods]);
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items"
   });
 
-  const watchItems = useWatch({
-    control,
-    name: "items"
-  });
+  const watchItems = methods.watch("items");
 
   const calculateEstimate = (index: number) => {
     const item = watchItems?.[index];
     if (!item || !item.productId || !item.quantity) return 0;
     const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
     if (!product) return 0;
-    return (product.ratePerSoldUnit || 0) * item.quantity;
+    const price = product.ratePerSoldUnit || product.basePrice || 0;
+    return price * item.quantity;
   };
 
   const calculateTotalEstimate = () => {
@@ -225,7 +223,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   control={control}
                   render={({ field: qField }) => (
                     <Form.Item label="Qty" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.quantity ? 'error' : ''} help={errors.items?.[index]?.quantity?.message}>
-                      <InputNumber {...qField} style={{ width: '100%' }} min={1} />
+                      <InputNumber {...qField} style={{ width: '100%' }} min={1} onFocus={(e) => e.target.select()} />
                     </Form.Item>
                   )}
                 />
@@ -236,7 +234,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   control={control}
                   render={({ field: eraField }) => (
                     <Form.Item label="Ret Qty (Exp)" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.expectedReturnAmount ? 'error' : ''} help={errors.items?.[index]?.expectedReturnAmount?.message}>
-                      <InputNumber {...eraField} style={{ width: '100%' }} min={0} />
+                      <InputNumber {...eraField} style={{ width: '100%' }} min={0} onFocus={(e) => e.target.select()} />
                     </Form.Item>
                   )}
                 />
@@ -247,7 +245,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                   control={control}
                   render={({ field: erpField }) => (
                     <Form.Item label="Ret Value (Exp)" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.expectedReturnPrice ? 'error' : ''} help={errors.items?.[index]?.expectedReturnPrice?.message}>
-                      <InputNumber {...erpField} style={{ width: '100%' }} min={0} prefix="Rs." />
+                      <InputNumber {...erpField} style={{ width: '100%' }} min={0} prefix="Rs." onFocus={(e) => e.target.select()} />
                     </Form.Item>
                   )}
                 />
