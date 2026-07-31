@@ -94,7 +94,7 @@ export const MorningSummariesPage = () => {
                 setDeductModalOpen(true);
               }}
             >
-              Deduct
+              Proceed
             </Button>
           );
         }
@@ -107,7 +107,7 @@ export const MorningSummariesPage = () => {
               onClick={() => {
                 Modal.confirm({
                   title: 'Undo Deduction',
-                  content: `Are you sure you want to reverse this deduction and return stock to ${record.deductedWarehouseName || 'the warehouse'}?`,
+                  content: `Are you sure you want to reverse this summary and return stock to ${record.deductedWarehouseName || 'the warehouse'} and subtract from ${record.returnWarehouseName || 'the return warehouse'}?`,
                   onOk: () => undoMutation.mutate(record.id),
                 });
               }}

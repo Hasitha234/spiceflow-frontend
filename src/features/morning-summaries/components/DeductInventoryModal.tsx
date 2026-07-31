@@ -20,6 +20,7 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
   summary,
 }) => {
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<number | undefined>();
+  const [selectedReturnWarehouseId, setSelectedReturnWarehouseId] = useState<number | undefined>();
   const queryClient = useQueryClient();
 
   const { data: warehousesData, isLoading: warehousesLoading } = useGetAllWarehouses({
@@ -27,28 +28,28 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
   });
 
   const { data: preCheckData, isLoading: preCheckLoading, error: preCheckError } = useQuery({
-    queryKey: ['deductPreCheck', summary?.id, selectedWarehouseId],
+    queryKey: ['deductPreCheck', summary?.id, selectedWarehouseId, selectedReturnWarehouseId],
     queryFn: () => {
-      if (!summary?.id || !selectedWarehouseId) return null;
-      return preCheckDeduction(summary.id, selectedWarehouseId);
+      if (!summary?.id || !selectedWarehouseId || !selectedReturnWarehouseId) return null;
+      return preCheckDeduction(summary.id, selectedWarehouseId, selectedReturnWarehouseId);
     },
-    enabled: !!summary?.id && !!selectedWarehouseId,
+    enabled: !!summary?.id && !!selectedWarehouseId && !!selectedReturnWarehouseId,
   });
 
   const deductMutation = useMutation({
     mutationFn: () => {
-      if (!summary?.id || !selectedWarehouseId) throw new Error('Missing parameters');
-      return deductFromInventory(summary.id, selectedWarehouseId);
+      if (!summary?.id || !selectedWarehouseId || !selectedReturnWarehouseId) throw new Error('Missing parameters');
+      return deductFromInventory(summary.id, selectedWarehouseId, selectedReturnWarehouseId);
     },
     onSuccess: () => {
-      notification.success({ message: 'Inventory deducted successfully.' });
+      notification.success({ message: 'Summary processed successfully.' });
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
       onClose();
     },
     onError: (err: unknown) => {
       const error = err as { response?: { data?: { message?: string } }, message?: string };
       notification.error({
-        message: 'Deduction failed',
+        message: 'Proceed failed',
         description: error?.response?.data?.message || error?.message || 'Unknown error occurred',
       });
     },
@@ -61,9 +62,14 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
       key: 'productName',
     },
     {
-      title: 'Required Qty',
+      title: 'Loading Qty',
       dataIndex: 'requiredQuantity',
       key: 'requiredQuantity',
+    },
+    {
+      title: 'Return Qty (Exp)',
+      dataIndex: 'expectedReturnQuantity',
+      key: 'expectedReturnQuantity',
     },
     {
       title: 'Available Qty',
@@ -85,12 +91,13 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
 
   const handleClose = () => {
     setSelectedWarehouseId(undefined);
+    setSelectedReturnWarehouseId(undefined);
     onClose();
   };
 
   return (
     <Modal
-      title={`Deduct Inventory - Summary ${summary?.summaryNumber}`}
+      title={`Proceed Summary - ${summary?.summaryNumber}`}
       open={open}
       onCancel={handleClose}
       footer={[
@@ -100,21 +107,20 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
         <Button
           key="deduct"
           type="primary"
-          danger
           loading={deductMutation.isPending}
-          disabled={!selectedWarehouseId || !preCheckData?.canDeduct}
+          disabled={!selectedWarehouseId || !selectedReturnWarehouseId || !preCheckData?.canDeduct}
           onClick={() => deductMutation.mutate()}
         >
-          Confirm Deduction
+          Confirm & Proceed
         </Button>,
       ]}
       width={700}
     >
       <div className="mb-4">
-        <Text strong className="block mb-2">Select Warehouse to Deduct From:</Text>
+        <Text strong className="block mb-2">Select Loading Warehouse (To Deduct From):</Text>
         <Select
           style={{ width: '100%' }}
-          placeholder="Select Warehouse"
+          placeholder="Select Loading Warehouse"
           loading={warehousesLoading}
           value={selectedWarehouseId}
           onChange={setSelectedWarehouseId}
@@ -125,7 +131,22 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
         />
       </div>
 
-      {selectedWarehouseId && (
+      <div className="mb-4">
+        <Text strong className="block mb-2">Select Return Warehouse (To Add To):</Text>
+        <Select
+          style={{ width: '100%' }}
+          placeholder="Select Return Warehouse"
+          loading={warehousesLoading}
+          value={selectedReturnWarehouseId}
+          onChange={setSelectedReturnWarehouseId}
+          options={warehousesData?.content?.filter((w: WarehouseResponse) => w.storeType !== 'MAIN').map((w: WarehouseResponse) => ({
+            label: w.name ?? '',
+            value: w.id ?? 0,
+          }))}
+        />
+      </div>
+
+      {selectedWarehouseId && selectedReturnWarehouseId && (
         <div className="mt-4">
           <Text strong className="block mb-2">Inventory Check Results:</Text>
           <Table
