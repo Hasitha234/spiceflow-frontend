@@ -76,7 +76,8 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     if (!item || !item.productId || !item.quantity) return 0;
     const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
     if (!product) return 0;
-    const price = product.ratePerSoldUnit || product.basePrice || 0;
+    const rawPrice = product.ratePerSoldUnit;
+    const price = (rawPrice != null && rawPrice > 0) ? rawPrice : (product.basePrice || 0);
     return price * item.quantity;
   };
 
@@ -246,7 +247,8 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
                           if (item && item.productId) {
                             const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
                             if (product) {
-                              const price = product.ratePerSoldUnit || product.basePrice || 0;
+                              const rpRaw = product.ratePerSoldUnit;
+                              const price = (rpRaw != null && rpRaw > 0) ? rpRaw : (product.basePrice || 0);
                               methods.setValue(`items.${index}.expectedReturnPrice`, (val || 0) * price, { shouldDirty: true });
                             }
                           }
