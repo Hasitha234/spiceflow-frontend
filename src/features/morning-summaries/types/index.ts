@@ -19,6 +19,8 @@ export interface MorningSummary {
   repName: string;
   driverId: number;
   driverName: string;
+  deductedWarehouseId?: number | null;
+  deductedWarehouseName?: string | null;
   items: MorningSummaryItem[];
 }
 
@@ -34,4 +36,17 @@ export interface MorningSummaryItemRequest {
   quantity: number;
   expectedReturnAmount?: number;
   expectedReturnPrice?: number;
+}
+
+export interface ItemAvailability {
+  productId: number;
+  productName: string;
+  requiredQuantity: number;
+  availableQuantity: number;
+  sufficient: boolean;
+}
+
+export interface DeductPreCheckResponse {
+  canDeduct: boolean;
+  items: ItemAvailability[];
 }
