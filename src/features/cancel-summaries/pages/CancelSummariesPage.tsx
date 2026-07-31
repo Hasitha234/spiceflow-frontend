@@ -1,16 +1,21 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Button, Tag } from 'antd';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Button, Tag, Modal } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
 import { getCancelSummaries } from '@/api/generated';
 import type { CancelSummaryResponse } from '@/api/generated';
 import { CancelSummaryFormDrawer } from '../components/CancelSummaryFormDrawer';
+import { ReturnToWarehouseModal } from '../components/ReturnToWarehouseModal';
+import { undoProceedCancelSummary } from '../api/cancelSummaryApi';
 import { useTableState } from '@/hooks/useTableState';
 
 export const CancelSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [proceedModalOpen, setProceedModalOpen] = useState(false);
+  const [selectedSummary, setSelectedSummary] = useState<CancelSummaryResponse | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     state: tableState,
@@ -73,7 +78,56 @@ export const CancelSummariesPage = () => {
         return <Tag color={color}>{status}</Tag>;
       },
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: (_, record) => {
+        if (record.status === 'PENDING') {
+          return (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => {
+                setSelectedSummary(record);
+                setProceedModalOpen(true);
+              }}
+            >
+              Proceed
+            </Button>
+          );
+        }
+        if (record.status === 'SETTLED') {
+          return (
+            <Button
+              danger
+              size="small"
+              loading={undoMutation.isPending && undoMutation.variables === record.id}
+              onClick={() => {
+                if (record.id) {
+                  Modal.confirm({
+                    title: 'Undo Proceed',
+                    content: `Are you sure you want to reverse this summary and remove stock from ${record.returnWarehouseName || 'the warehouse'}?`,
+                    onOk: () => undoMutation.mutate(record.id as number),
+                  });
+                }
+              }}
+            >
+              Undo
+            </Button>
+          );
+        }
+        return null;
+      },
+    },
   ];
+
+  const undoMutation = useMutation({
+    mutationFn: (id: number) => undoProceedCancelSummary(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
+    },
+  });
 
   return (
     <PageLayout>
@@ -123,6 +177,15 @@ export const CancelSummariesPage = () => {
       <CancelSummaryFormDrawer 
         open={drawerOpen} 
         onClose={() => setDrawerOpen(false)} 
+      />
+
+      <ReturnToWarehouseModal
+        open={proceedModalOpen}
+        onClose={() => {
+          setProceedModalOpen(false);
+          setSelectedSummary(null);
+        }}
+        summary={selectedSummary}
       />
     </PageLayout>
   );
