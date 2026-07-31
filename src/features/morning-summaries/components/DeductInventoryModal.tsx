@@ -45,10 +45,11 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
       onClose();
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
+      const error = err as { response?: { data?: { message?: string } }, message?: string };
       notification.error({
         message: 'Deduction failed',
-        description: err?.response?.data?.message || err.message,
+        description: error?.response?.data?.message || error?.message || 'Unknown error occurred',
       });
     },
   });
@@ -72,7 +73,7 @@ export const DeductInventoryModal: React.FC<DeductInventoryModalProps> = ({
     {
       title: 'Status',
       key: 'status',
-      render: (_: any, record: ItemAvailability) => {
+      render: (_: unknown, record: ItemAvailability) => {
         if (record.sufficient) {
           return <Tag color="success">✅ Sufficient</Tag>;
         }
