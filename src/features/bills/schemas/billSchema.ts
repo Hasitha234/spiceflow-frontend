@@ -5,11 +5,11 @@ export const billSchema = z.object({
   repId: z.number().min(1, 'Rep is required'),
   driverId: z.number().nullable().optional(),
   shopId: z.number().min(1, 'Shop is required'),
-  netTotal: z.number().min(0, 'Must be positive'),
-  reverseGrts: z.number().min(0, 'Must be positive'),
-  freeItemsValue: z.number().min(0, 'Must be positive'),
-  discount: z.number().min(0, 'Must be positive'),
-  skuDiscount: z.number().min(0, 'Must be positive'),
+  netTotal: z.coerce.number().min(0, 'Must be positive'),
+  reverseGrts: z.coerce.number().min(0, 'Must be positive'),
+  freeItemsValue: z.coerce.number().min(0, 'Must be positive'),
+  discount: z.coerce.number().min(0, 'Must be positive'),
+  skuDiscount: z.coerce.number().min(0, 'Must be positive'),
 });
 
 export type BillFormData = z.infer<typeof billSchema>;

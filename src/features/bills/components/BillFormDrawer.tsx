@@ -33,11 +33,11 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       driverId: undefined,
       shopId: undefined,
       billDate: dayjs().format('YYYY-MM-DD'),
-      netTotal: 0,
-      reverseGrts: 0,
-      freeItemsValue: 0,
-      discount: 0,
-      skuDiscount: 0,
+      netTotal: undefined,
+      reverseGrts: undefined,
+      freeItemsValue: undefined,
+      discount: undefined,
+      skuDiscount: undefined,
     }
   });
 
@@ -81,7 +81,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
     onSuccess: () => {
       notification.success({ message: 'Success', description: 'Bill created successfully' });
       localStorage.removeItem('bill_draft');
-      queryClient.invalidateQueries({ queryKey: ['getBills'] });
+      // Force an immediate refetch of all active bill queries
+      queryClient.invalidateQueries({ queryKey: ['getBills'], refetchType: 'all' });
       reset();
       onClose();
     },
