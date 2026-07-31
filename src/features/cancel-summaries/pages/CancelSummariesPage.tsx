@@ -19,7 +19,7 @@ export const CancelSummariesPage = () => {
     setSize,
     setSort,
   } = useTableState({
-    defaultSort: 'createdAt',
+    defaultSort: 'id',
     defaultDir: 'desc',
   });
 
