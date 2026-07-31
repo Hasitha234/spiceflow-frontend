@@ -33,11 +33,11 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       driverId: undefined,
       shopId: undefined,
       billDate: dayjs().format('YYYY-MM-DD'),
-      netTotal: undefined,
-      reverseGrts: undefined,
-      freeItemsValue: undefined,
-      discount: undefined,
-      skuDiscount: undefined,
+      netTotal: null as unknown as number,
+      reverseGrts: null as unknown as number,
+      freeItemsValue: null as unknown as number,
+      discount: null as unknown as number,
+      skuDiscount: null as unknown as number,
     }
   });
 
