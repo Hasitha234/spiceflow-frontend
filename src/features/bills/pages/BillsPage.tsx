@@ -38,7 +38,7 @@ export function BillsPage() {
       search: filters.search,
       page: pagination.current - 1,
       size: pagination.pageSize,
-      sort: ['createdAt,desc']
+      sort: ['id,desc']
     }),
   });
 
