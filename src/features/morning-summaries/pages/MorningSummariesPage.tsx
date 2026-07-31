@@ -1,16 +1,22 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Tag } from 'antd';
+import { Button, Tag, Modal } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
 import { getMorningSummaries } from '../api/morningSummaryApi';
 import type { MorningSummary } from '../types';
 import { MorningSummaryFormDrawer } from '../components/MorningSummaryFormDrawer';
+import { DeductInventoryModal } from '../components/DeductInventoryModal';
 import { useTableState } from '@/hooks/useTableState';
+import { undoDeduction } from '../api/morningSummaryApi';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 export const MorningSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [deductModalOpen, setDeductModalOpen] = useState(false);
+  const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
+  const queryClient = useQueryClient();
 
   const {
     state: tableState,
@@ -73,7 +79,54 @@ export const MorningSummariesPage = () => {
         return <Tag color={color}>{status}</Tag>;
       },
     },
+    {
+      title: 'Actions',
+      key: 'actions',
+      width: 120,
+      render: (_, record) => {
+        if (record.status === 'PENDING') {
+          return (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => {
+                setSelectedSummary(record);
+                setDeductModalOpen(true);
+              }}
+            >
+              Deduct
+            </Button>
+          );
+        }
+        if (record.status === 'SETTLED') {
+          return (
+            <Button
+              danger
+              size="small"
+              loading={undoMutation.isPending && undoMutation.variables === record.id}
+              onClick={() => {
+                Modal.confirm({
+                  title: 'Undo Deduction',
+                  content: `Are you sure you want to reverse this deduction and return stock to ${record.deductedWarehouseName || 'the warehouse'}?`,
+                  onOk: () => undoMutation.mutate(record.id),
+                });
+              }}
+            >
+              Undo
+            </Button>
+          );
+        }
+        return null;
+      },
+    },
   ];
+
+  const undoMutation = useMutation({
+    mutationFn: (id: number) => undoDeduction(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
+    },
+  });
 
   return (
     <PageLayout>
@@ -123,6 +176,15 @@ export const MorningSummariesPage = () => {
       <MorningSummaryFormDrawer 
         open={drawerOpen} 
         onClose={() => setDrawerOpen(false)} 
+      />
+
+      <DeductInventoryModal
+        open={deductModalOpen}
+        onClose={() => {
+          setDeductModalOpen(false);
+          setSelectedSummary(null);
+        }}
+        summary={selectedSummary}
       />
     </PageLayout>
   );

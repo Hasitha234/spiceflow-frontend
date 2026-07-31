@@ -20,3 +20,16 @@ export const getMorningSummaryById = async (id: number) => {
   const response = await apiClient.get<MorningSummary>(`/api/v1/morning-summaries/${id}`);
   return response.data;
 };
+
+export const preCheckDeduction = async (id: number, warehouseId: number) => {
+  const response = await apiClient.post<import('../types').DeductPreCheckResponse>(`/api/v1/morning-summaries/${id}/pre-check-deduction`, { warehouseId });
+  return response.data;
+};
+
+export const deductFromInventory = async (id: number, warehouseId: number) => {
+  await apiClient.post(`/api/v1/morning-summaries/${id}/deduct`, { warehouseId });
+};
+
+export const undoDeduction = async (id: number) => {
+  await apiClient.post(`/api/v1/morning-summaries/${id}/undo-deduct`);
+};
