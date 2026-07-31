@@ -21,13 +21,13 @@ export const getMorningSummaryById = async (id: number) => {
   return response.data;
 };
 
-export const preCheckDeduction = async (id: number, warehouseId: number) => {
-  const response = await apiClient.post<import('../types').DeductPreCheckResponse>(`/api/v1/morning-summaries/${id}/pre-check-deduction`, { warehouseId });
+export const preCheckDeduction = async (id: number, warehouseId: number, returnWarehouseId: number) => {
+  const response = await apiClient.post<import('../types').DeductPreCheckResponse>(`/api/v1/morning-summaries/${id}/pre-check-deduction`, { warehouseId, returnWarehouseId });
   return response.data;
 };
 
-export const deductFromInventory = async (id: number, warehouseId: number) => {
-  await apiClient.post(`/api/v1/morning-summaries/${id}/deduct`, { warehouseId });
+export const deductFromInventory = async (id: number, warehouseId: number, returnWarehouseId: number) => {
+  await apiClient.post(`/api/v1/morning-summaries/${id}/deduct`, { warehouseId, returnWarehouseId });
 };
 
 export const undoDeduction = async (id: number) => {
