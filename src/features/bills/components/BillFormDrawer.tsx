@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,15 +33,21 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       driverId: undefined,
       shopId: undefined,
       billDate: dayjs().format('YYYY-MM-DD'),
-      netTotal: null as unknown as number,
-      reverseGrts: null as unknown as number,
-      freeItemsValue: null as unknown as number,
-      discount: null as unknown as number,
-      skuDiscount: null as unknown as number,
+      netTotal: 0,
+      reverseGrts: 0,
+      freeItemsValue: 0,
+      discount: 0,
+      skuDiscount: 0,
     }
   });
 
   const { control, handleSubmit, formState: { errors }, reset } = methods;
+
+  // Auto-select InputNumber content on focus for rapid data entry
+  const handleNumberFocus = useCallback((e: React.FocusEvent<HTMLInputElement>) => {
+    // Small delay to ensure the input value is rendered before selecting
+    requestAnimationFrame(() => e.target.select());
+  }, []);
 
   // Watch fields to calculate final total
   const watchFields = useWatch({
@@ -219,6 +225,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                     min={0}
                     precision={2}
                     prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
                   />
                 )}
               />
@@ -236,6 +244,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                     min={0}
                     precision={2}
                     prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
                   />
                 )}
               />
@@ -253,6 +263,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                     min={0}
                     precision={2}
                     prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
                   />
                 )}
               />
@@ -270,6 +282,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                     min={0}
                     precision={2}
                     prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
                   />
                 )}
               />
@@ -287,6 +301,8 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                     min={0}
                     precision={2}
                     prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
                   />
                 )}
               />
