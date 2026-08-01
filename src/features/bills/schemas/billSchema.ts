@@ -6,7 +6,7 @@ export const billSchema = z.object({
   driverId: z.number().nullable().optional(),
   shopId: z.number().min(1, 'Shop is required'),
   netTotal: z.number().min(0, 'Must be positive'),
-  reverseGrts: z.number().min(0, 'Must be positive'),
+  reverseGrts: z.number().min(0, 'Must be positive').nullable().optional().default(0),
   freeItemsValue: z.number().min(0, 'Must be positive'),
   discount: z.number().min(0, 'Must be positive'),
   skuDiscount: z.number().min(0, 'Must be positive'),
