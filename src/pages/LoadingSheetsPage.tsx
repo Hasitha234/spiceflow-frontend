@@ -68,9 +68,9 @@ export function LoadingSheetsPage() {
   const openCreate = async () => {
     try {
       const [ordersRes, driversRes, warehouseRes] = await Promise.all([
-        repOrderApi.list({ page: 0, size: 200 }),
-        driverApi.list({ page: 0, size: 200 }),
-        apiClient.get('/api/v1/warehouses?size=200'),
+        repOrderApi.list({ page: 0, size: 2000 }),
+        driverApi.list({ page: 0, size: 2000 }),
+        apiClient.get('/api/v1/warehouses?size=2000'),
       ]);
       setRepOrders((ordersRes?.content || []).filter((o: any) => o.loadingStatus === 'DRAFT'));
       setDrivers(driversRes?.content || []);

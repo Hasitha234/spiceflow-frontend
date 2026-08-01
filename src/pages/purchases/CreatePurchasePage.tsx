@@ -120,12 +120,12 @@ export function CreatePurchasePage() {
   const vatAmount = useWatch({ control, name: 'vatAmount' }) || 0;
 
   useEffect(() => {
-    supplierApi.list({ page: 0, size: 500 }).then((res) => {
+    supplierApi.list({ page: 0, size: 2000 }).then((res) => {
       setSuppliers(res?.content || []);
     }).catch(() => {
       message.error('Failed to load suppliers');
     });
-    warehouseApi.list({ page: 0, size: 500 }).then((res) => {
+    warehouseApi.list({ page: 0, size: 2000 }).then((res) => {
       setWarehouses(res?.content || []);
     }).catch(() => {
       message.error('Failed to load warehouses');
@@ -136,7 +136,7 @@ export function CreatePurchasePage() {
     if (selectedSupplierId) {
       setCatalogStatus('loading');
       productApi
-        .list({ supplierId: selectedSupplierId, page: 0, size: 500 })
+        .list({ supplierId: selectedSupplierId, page: 0, size: 2000 })
         .then((res) => {
           setSupplierProducts(res?.content || []);
           setCatalogStatus('success');

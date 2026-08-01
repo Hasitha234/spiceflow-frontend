@@ -52,7 +52,7 @@ export function DeliveriesPage() {
 
   const openCreate = async () => {
     try {
-      const res = await loadingSheetApi.list({ page: 0, size: 200 });
+      const res = await loadingSheetApi.list({ page: 0, size: 2000 });
       setConfirmedSheets((res?.content || []).filter((s: any) => s.status === 'CONFIRMED'));
       createForm.resetFields();
       setCreateOpen(true);

@@ -25,8 +25,8 @@ export function BillsPage() {
     search: undefined as string | undefined,
   });
 
-  const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 200 } });
-  const { data: shopsData, isLoading: shopsLoading } = useGetShops({ pageable: { page: 0, size: 200 } });
+  const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 2000 } });
+  const { data: shopsData, isLoading: shopsLoading } = useGetShops({ pageable: { page: 0, size: 2000 } });
 
   const { data, isLoading } = useQuery({
     queryKey: ['getBills', pagination.current, pagination.pageSize, filters],
