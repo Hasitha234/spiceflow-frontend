@@ -194,16 +194,19 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
                   <Select
                     {...field}
                     showSearch
-                    optionFilterProp="children"
                     placeholder="Select Shop"
                     loading={shopsLoading}
-                  >
-                    {shopsData?.content?.map((shop: ShopResponse) => (
-                      <Select.Option key={shop.id} value={shop.id}>
-                        {shop.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
+                    filterOption={(input, option) => {
+                      const label = String(option?.label ?? '');
+                      return label.toLowerCase().includes(input.toLowerCase());
+                    }}
+                    options={shopsData?.content?.map((shop: ShopResponse) => ({
+                      value: shop.id,
+                      label: shop.outletId
+                        ? `${shop.name} (${shop.outletId})`
+                        : shop.name ?? '',
+                    }))}
+                  />
                 )}
               />
             </Form.Item>
