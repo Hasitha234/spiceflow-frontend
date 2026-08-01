@@ -38,6 +38,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
       freeItemsValue: 0,
       discount: 0,
       skuDiscount: 0,
+      returnAmount: 0,
     }
   });
 
@@ -52,12 +53,12 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
   // Watch fields to calculate final total
   const watchFields = useWatch({
     control,
-    name: ['netTotal', 'reverseGrts', 'discount', 'skuDiscount']
+    name: ['netTotal', 'reverseGrts', 'discount', 'skuDiscount', 'returnAmount']
   });
 
   const finalTotal = useMemo(() => {
-    const [netTotal, reverseGrts, discount, skuDiscount] = watchFields;
-    return (netTotal || 0) + (reverseGrts || 0) - (discount || 0) - (skuDiscount || 0);
+    const [netTotal, reverseGrts, discount, skuDiscount, returnAmount] = watchFields;
+    return (netTotal || 0) + (reverseGrts || 0) - (discount || 0) - (skuDiscount || 0) - (returnAmount || 0);
   }, [watchFields]);
 
   // Load draft on mount
@@ -311,6 +312,25 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
               />
             </Form.Item>
           </Col>
+          <Col span={12}>
+            <Form.Item label="Return Amount" validateStatus={errors.returnAmount ? 'error' : ''} help={errors.returnAmount?.message}>
+              <Controller
+                name="returnAmount"
+                control={control}
+                render={({ field }) => (
+                  <InputNumber
+                    {...field}
+                    style={{ width: '100%' }}
+                    min={0}
+                    precision={2}
+                    prefix="Rs"
+                    placeholder="Enter amount"
+                    onFocus={handleNumberFocus}
+                  />
+                )}
+              />
+            </Form.Item>
+          </Col>
         </Row>
         
         <div style={{ marginTop: '24px', padding: '16px', background: '#fafafa', borderRadius: '8px', border: '1px solid #e8e8e8' }}>
@@ -319,7 +339,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
             <Col><Title level={4} style={{ margin: 0, color: finalTotal < 0 ? '#ff4d4f' : '#1890ff' }}>Rs {finalTotal.toFixed(2)}</Title></Col>
           </Row>
           <Row justify="space-between" align="middle" style={{ marginTop: '8px' }}>
-            <Col><Text type="secondary">Formula: Net Total + Reverse GRTs - Discount - SKU Discount</Text></Col>
+            <Col><Text type="secondary">Formula: Net Total + Reverse GRTs - Discount - SKU Discount - Return Amount</Text></Col>
           </Row>
         </div>
       </Spin>
