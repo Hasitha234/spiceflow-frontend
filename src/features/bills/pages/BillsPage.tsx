@@ -206,12 +206,19 @@ export function BillsPage() {
               style={{ width: '100%' }}
               allowClear
               showSearch
-              optionFilterProp="children"
               loading={shopsLoading}
               onChange={val => setFilters(prev => ({ ...prev, shopId: val || undefined }))}
-            >
-              {shopsData?.content?.map(shop => <Select.Option key={shop.id} value={shop.id}>{shop.name}</Select.Option>)}
-            </Select>
+              filterOption={(input, option) => {
+                const label = String(option?.label ?? '');
+                return label.toLowerCase().includes(input.toLowerCase());
+              }}
+              options={shopsData?.content?.map(shop => ({
+                value: shop.id,
+                label: shop.outletId
+                  ? `${shop.name} (${shop.outletId})`
+                  : shop.name ?? '',
+              }))}
+            />
           </Col>
           <Col span={4}>
             <Select
