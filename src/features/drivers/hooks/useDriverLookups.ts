@@ -7,7 +7,7 @@ import { useGetAllWarehouses } from '@/api/generated';
  */
 export function useDriverLookups() {
   const warehousesQuery = useGetAllWarehouses(
-    { pageable: { page: 0, size: 200 } },
+    { pageable: { page: 0, size: 2000 } },
   );
 
   const warehouseOptions = (warehousesQuery.data?.content ?? []).map((w) => ({

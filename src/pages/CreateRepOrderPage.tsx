@@ -135,11 +135,11 @@ export function CreateRepOrderPage() {
 
   useEffect(() => {
     // Fetch dropdown data (Reps, Shops, Products, Suppliers, Warehouses)
-    apiClient.get('/api/v1/sales/master-data/reps?size=500').then(res => setReps(res.data?.content || []));
-    apiClient.get('/api/v1/sales/master-data/shops?size=500').then(res => setShopsList(res.data?.content || []));
-    apiClient.get('/api/v1/products?size=500').then(res => setProducts(res.data?.content || []));
-    apiClient.get('/api/v1/suppliers?size=500').then(res => setSuppliers(res.data?.content || []));
-    apiClient.get('/api/v1/warehouses?size=500').then(res => setWarehouses(res.data?.content || []));
+    apiClient.get('/api/v1/sales/master-data/reps?size=2000&sort=id,desc').then(res => setReps(res.data?.content || []));
+    apiClient.get('/api/v1/sales/master-data/shops?size=2000&sort=id,desc').then(res => setShopsList(res.data?.content || []));
+    apiClient.get('/api/v1/products?size=2000&sort=id,desc').then(res => setProducts(res.data?.content || []));
+    apiClient.get('/api/v1/suppliers?size=2000&sort=id,desc').then(res => setSuppliers(res.data?.content || []));
+    apiClient.get('/api/v1/warehouses?size=2000&sort=id,desc').then(res => setWarehouses(res.data?.content || []));
 
     if (isEditMode) {
       repOrderApi.get(String(id)).then(res => {

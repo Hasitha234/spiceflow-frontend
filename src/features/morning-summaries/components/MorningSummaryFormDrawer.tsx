@@ -22,9 +22,9 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
   const queryClient = useQueryClient();
 
   // Use the Orval generated hooks
-  const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 200 } });
-  const { data: driversData, isLoading: driversLoading } = useGetDrivers({ pageable: { page: 0, size: 200 } });
-  const { data: productsData, isLoading: productsLoading } = useGetProducts({ pageable: { page: 0, size: 200 } });
+  const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 2000 } });
+  const { data: driversData, isLoading: driversLoading } = useGetDrivers({ pageable: { page: 0, size: 2000 } });
+  const { data: productsData, isLoading: productsLoading } = useGetProducts({ pageable: { page: 0, size: 2000 } });
 
   const methods = useForm<MorningSummaryFormData>({
     resolver: zodResolver(morningSummarySchema),

@@ -25,7 +25,7 @@ export const VehicleLoadingSheetsTab: React.FC<VehicleLoadingSheetsTabProps> = (
   const fetchLoadingSheets = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await loadingSheetApi.list({ size: 200 });
+      const res = await loadingSheetApi.list({ size: 2000 });
       const list = res?.content || [];
 
       // Filter sheets belonging to this vehicle/driver name matching

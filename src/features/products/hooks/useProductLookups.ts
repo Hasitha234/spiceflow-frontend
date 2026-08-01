@@ -7,11 +7,11 @@ import { useGetCategories, useGetSuppliers } from '@/api/generated';
  */
 export function useProductLookups() {
   const categoriesQuery = useGetCategories(
-    { pageable: { page: 0, size: 200 } },
+    { pageable: { page: 0, size: 2000 } },
   );
 
   const suppliersQuery = useGetSuppliers(
-    { pageable: { page: 0, size: 200 } },
+    { pageable: { page: 0, size: 2000 } },
   );
 
   const categoryOptions = (categoriesQuery.data?.content ?? []).map((c) => ({

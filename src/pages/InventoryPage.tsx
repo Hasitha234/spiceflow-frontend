@@ -49,7 +49,7 @@ function WarehouseGrid({ onSelect, t }: { onSelect: (id: string) => void; t: TFu
         await Promise.all(
           whList.map(async (wh) => {
             try {
-              const itemsRes = await inventoryItemApi.list({ warehouseId: wh.id, size: 500 });
+              const itemsRes = await inventoryItemApi.list({ warehouseId: wh.id, size: 2000 });
               const data = itemsRes?.content || [];
               newSummaryMap[wh.id] = {
                 products: data.length,
@@ -230,7 +230,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     try {
       const [whRes, itemsRes, allWhRes, productsRes] = await Promise.all([
         warehouseApi.get(warehouseId),
-        inventoryItemApi.list({ warehouseId, size: 500, sort: 'updatedAt,desc' }),
+        inventoryItemApi.list({ warehouseId, size: 2000, sort: 'updatedAt,desc' }),
         warehouseApi.list({ size: 100 }),
         productApi.list({ size: 1000 }),
       ]);
