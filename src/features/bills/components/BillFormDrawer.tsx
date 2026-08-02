@@ -163,6 +163,9 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, b
       ...data,
       driverId: data.driverId || undefined,
       reverseGrts: data.reverseGrts ?? 0,
+      freeItemsValue: data.freeItemsValue ?? 0,
+      discount: data.discount ?? 0,
+      skuDiscount: data.skuDiscount ?? 0,
       returnAmount: data.returnAmount ?? 0,
     };
 
