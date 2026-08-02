@@ -1,7 +1,7 @@
 export const emptyLineItem = {
   productId: '',
-  noOfBoxes: 1,
-  soldQuantity: 1,
+  noOfBoxes: 0,
+  soldQuantity: 0,
   unitType: 'DZ',
   rate: 0,
 };

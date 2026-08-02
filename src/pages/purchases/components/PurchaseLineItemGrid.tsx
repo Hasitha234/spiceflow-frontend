@@ -131,6 +131,37 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
       ),
     },
     {
+      title: 'Unit',
+      key: 'unit',
+      width: '10%',
+      render: (_: any, __: any, index: number) => (
+        <Controller
+          name={`lineItems.${index}.unitType`}
+          control={control}
+          render={({ field: f, fieldState: { error } }) => (
+            <div>
+              <Select
+                {...f}
+                size="middle"
+                options={[
+                  { label: 'DZ', value: 'DZ' },
+                  { label: 'MC', value: 'MC' },
+                  { label: 'EA', value: 'EA' },
+                ]}
+                style={{ width: '100%' }}
+                status={error ? 'error' : ''}
+                onChange={(val) => {
+                  f.onChange(val);
+                  handleUnitChange(val, index);
+                }}
+              />
+              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
+            </div>
+          )}
+        />
+      ),
+    },
+    {
       title: 'No. of Boxes',
       key: 'boxes',
       width: '10%',
@@ -142,7 +173,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
             <div>
               <InputNumber onFocus={(e) => e.target.select()} 
                 {...f} 
-                min={1} 
+                min={0} 
+                step={0.01}
                 size="middle"
                 style={{ width: '100%' }} 
                 status={error ? 'error' : ''}
@@ -178,7 +210,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
               <div>
                 <InputNumber onFocus={(e) => e.target.select()} 
                   {...f} 
-                  min={1}
+                  min={0}
+                  step={0.01}
                   size="middle"
                   style={{ width: '100%', color: '#10b981', fontWeight: 600 }} 
                   status={error ? 'error' : ''}
@@ -196,37 +229,6 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
           />
         );
       }
-    },
-    {
-      title: 'Unit',
-      key: 'unit',
-      width: '10%',
-      render: (_: any, __: any, index: number) => (
-        <Controller
-          name={`lineItems.${index}.unitType`}
-          control={control}
-          render={({ field: f, fieldState: { error } }) => (
-            <div>
-              <Select
-                {...f}
-                size="middle"
-                options={[
-                  { label: 'DZ', value: 'DZ' },
-                  { label: 'MC', value: 'MC' },
-                  { label: 'EA', value: 'EA' },
-                ]}
-                style={{ width: '100%' }}
-                status={error ? 'error' : ''}
-                onChange={(val) => {
-                  f.onChange(val);
-                  handleUnitChange(val, index);
-                }}
-              />
-              {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
-            </div>
-          )}
-        />
-      ),
     },
     {
       title: 'Unit Price',
