@@ -86,16 +86,27 @@ export const MorningSummariesPage = () => {
       render: (_, record) => {
         if (record.status === 'PENDING') {
           return (
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => {
-                setSelectedSummary(record);
-                setDeductModalOpen(true);
-              }}
-            >
-              Proceed
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => {
+                  setSelectedSummary(record);
+                  setDeductModalOpen(true);
+                }}
+              >
+                Proceed
+              </Button>
+              <Button
+                size="small"
+                onClick={() => {
+                  setSelectedSummary(record);
+                  setDrawerOpen(true);
+                }}
+              >
+                Edit
+              </Button>
+            </div>
           );
         }
         if (record.status === 'SETTLED') {
@@ -138,7 +149,10 @@ export const MorningSummariesPage = () => {
             key="create"
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => setDrawerOpen(true)}
+            onClick={() => {
+              setSelectedSummary(null);
+              setDrawerOpen(true);
+            }}
           >
             Create Summary
           </Button>,
@@ -175,7 +189,13 @@ export const MorningSummariesPage = () => {
 
       <MorningSummaryFormDrawer 
         open={drawerOpen} 
-        onClose={() => setDrawerOpen(false)} 
+        summaryId={selectedSummary && !deductModalOpen ? selectedSummary.id : undefined}
+        onClose={() => {
+          setDrawerOpen(false);
+          if (!deductModalOpen) {
+            setSelectedSummary(null);
+          }
+        }} 
       />
 
       <DeductInventoryModal
