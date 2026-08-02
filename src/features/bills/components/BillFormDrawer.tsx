@@ -159,14 +159,17 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, b
       notification.error({ message: 'Error', description: 'Final total cannot be negative.' });
       return;
     }
+    const formattedData = {
+      ...data,
+      driverId: data.driverId || undefined,
+      reverseGrts: data.reverseGrts ?? 0,
+      returnAmount: data.returnAmount ?? 0,
+    };
+
     if (billId) {
-      updateMut.mutate(data);
+      updateMut.mutate(formattedData);
     } else {
-      createMutation.mutate({ 
-        ...data, 
-        driverId: data.driverId || undefined,
-        reverseGrts: data.reverseGrts ?? 0,
-      } as import('@/api/generated').BillRequest);
+      createMutation.mutate(formattedData as import('@/api/generated').BillRequest);
     }
   };
 

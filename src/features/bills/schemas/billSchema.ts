@@ -10,7 +10,7 @@ export const billSchema = z.object({
   freeItemsValue: z.number().min(0, 'Must be positive'),
   discount: z.number().min(0, 'Must be positive'),
   skuDiscount: z.number().min(0, 'Must be positive'),
-  returnAmount: z.number().min(0, 'Must be positive'),
+  returnAmount: z.number().min(0, 'Must be positive').nullable().optional(),
 });
 
 export type BillFormData = z.infer<typeof billSchema>;
