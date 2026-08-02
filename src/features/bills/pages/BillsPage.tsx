@@ -133,14 +133,25 @@ export function BillsPage() {
       render: (_: any, record: BillResponse) => (
         <Space size="middle">
           {record.status === 'PENDING' && (
-            <Button 
-              type="primary" 
-              size="small" 
-              icon={<DollarOutlined />}
-              onClick={() => handleCollectClick(record)}
-            >
-              Collect
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                type="primary" 
+                size="small" 
+                icon={<DollarOutlined />}
+                onClick={() => handleCollectClick(record)}
+              >
+                Collect
+              </Button>
+              <Button 
+                size="small" 
+                onClick={() => {
+                  setSelectedBill(record);
+                  setDrawerOpen(true);
+                }}
+              >
+                Edit
+              </Button>
+            </div>
           )}
           {record.status !== 'CANCELLED' && (
             <Button 
@@ -164,7 +175,10 @@ export function BillsPage() {
         title="Bills"
         subtitle="Manage shop bills and collections"
         extra={[
-          <Button key="create" type="primary" icon={<PlusOutlined />} onClick={() => setDrawerOpen(true)}>
+          <Button key="create" type="primary" icon={<PlusOutlined />} onClick={() => {
+            setSelectedBill(null);
+            setDrawerOpen(true);
+          }}>
             Create Bill
           </Button>
         ]}
@@ -250,9 +264,15 @@ export function BillsPage() {
         scroll={{ x: 1000 }}
       />
 
-      <BillFormDrawer
-        open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+      <BillFormDrawer 
+        open={drawerOpen} 
+        billId={selectedBill && !collectionModalOpen ? selectedBill.id : undefined}
+        onClose={() => {
+          setDrawerOpen(false);
+          if (!collectionModalOpen) {
+            setSelectedBill(null);
+          }
+        }} 
       />
 
       <BillCollectionModal
