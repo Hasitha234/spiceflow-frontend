@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Row, Col, Typography, Spin, notification, DatePicker } from 'antd';
 import { EntityFormDrawer } from '@/components/common';
 import { createBill } from '@/api/generated';
+import { updateBill, getBillById } from '../api/billsApi';
 import type { BillRequest } from '@/api/generated';
 import { billSchema, type BillFormData } from '../schemas/billSchema';
 import { useGetReps, useGetDrivers, useGetShops } from '@/api/generated';
@@ -16,9 +17,10 @@ const { Text, Title } = Typography;
 export interface BillFormDrawerProps {
   open: boolean;
   onClose: () => void;
+  billId?: number | null;
 }
 
-export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose }) => {
+export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, billId }) => {
   const queryClient = useQueryClient();
 
   // Use the Orval generated hooks
@@ -63,25 +65,59 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
 
   // Load draft on mount
   useEffect(() => {
-    const savedDraft = localStorage.getItem('bill_draft');
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft);
-        reset(parsed);
-      } catch (e) {
-        console.error("Failed to parse bill draft", e);
+    if (billId) {
+      getBillById(billId).then((data) => {
+        reset({
+          repId: data.repId,
+          driverId: data.driverId || undefined,
+          shopId: data.shopId,
+          billDate: data.billDate,
+          netTotal: data.netTotal,
+          reverseGrts: data.reverseGrts,
+          freeItemsValue: data.freeItemsValue,
+          discount: data.discount,
+          skuDiscount: data.skuDiscount,
+          returnAmount: data.returnAmount,
+        });
+      }).catch((e) => {
+        console.error("Failed to load bill", e);
+        notification.error({ message: 'Failed to load bill for editing' });
+      });
+    } else {
+      const savedDraft = localStorage.getItem('bill_draft');
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          reset(parsed);
+        } catch (e) {
+          console.error("Failed to parse bill draft", e);
+        }
+      } else {
+        reset({
+          repId: undefined,
+          driverId: undefined,
+          shopId: undefined,
+          billDate: dayjs().format('YYYY-MM-DD'),
+          netTotal: 0,
+          reverseGrts: 0,
+          freeItemsValue: 0,
+          discount: 0,
+          skuDiscount: 0,
+          returnAmount: 0,
+        });
       }
     }
-  }, [reset]);
+  }, [reset, billId, open]);
 
   // Save draft on change
   useEffect(() => {
+    if (billId) return;
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('bill_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods]);
+  }, [methods, billId]);
 
   const createMutation = useMutation({
     mutationFn: (data: BillRequest) => createBill(data),
@@ -102,27 +138,47 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose })
     },
   });
 
+  const updateMut = useMutation({
+    mutationFn: (data: BillFormData) => updateBill(billId!, data),
+    onSuccess: () => {
+      notification.success({ message: 'Success', description: 'Bill updated successfully' });
+      queryClient.invalidateQueries({ queryKey: ['getBills'], refetchType: 'all' });
+      onClose();
+    },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    onError: (error: any) => {
+      notification.error({
+        message: 'Error',
+        description: error.response?.data?.message || 'Failed to update bill',
+      });
+    },
+  });
+
   const onSubmit = (data: BillFormData) => {
     if (finalTotal < 0) {
       notification.error({ message: 'Error', description: 'Final total cannot be negative.' });
       return;
     }
-    createMutation.mutate({ 
-      ...data, 
-      driverId: data.driverId || undefined,
-      reverseGrts: data.reverseGrts ?? 0,
-    });
+    if (billId) {
+      updateMut.mutate(data);
+    } else {
+      createMutation.mutate({ 
+        ...data, 
+        driverId: data.driverId || undefined,
+        reverseGrts: data.reverseGrts ?? 0,
+      } as import('@/api/generated').BillRequest);
+    }
   };
 
   const isDataLoading = repsLoading || driversLoading || shopsLoading;
 
   return (
     <EntityFormDrawer
-      title="Create Bill"
+      title={billId ? "Edit Bill" : "Create Bill"}
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
-      loading={createMutation.isPending || isDataLoading}
+      loading={createMutation.isPending || updateMut.isPending || isDataLoading}
     >
       <Spin spinning={isDataLoading}>
         <Row gutter={[16, 16]}>
