@@ -1,11 +1,12 @@
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { EntityFormDrawer } from '@/components/common';
 import { useCreateCancelSummary } from '@/api/generated';
+import { updateCancelSummary, getCancelSummaryById } from '../api/cancelSummaryApi';
 import { cancelSummarySchema, type CancelSummaryFormData } from '../schemas/cancelSummarySchema';
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
 import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
@@ -16,9 +17,10 @@ const { Text, Title } = Typography;
 export interface CancelSummaryFormDrawerProps {
   open: boolean;
   onClose: () => void;
+  summaryId?: number | null;
 }
 
-export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = ({ open, onClose }) => {
+export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = ({ open, onClose, summaryId }) => {
   const queryClient = useQueryClient();
 
   const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 2000 } });
@@ -38,27 +40,52 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
   const { control, handleSubmit, formState: { errors }, reset } = methods;
 
   useEffect(() => {
-    const savedDraft = localStorage.getItem('cancel_summary_draft');
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft);
-        if (!parsed.items || parsed.items.length === 0) {
-          parsed.items = [{ productId: 0, quantity: 1 }];
+    if (summaryId) {
+      getCancelSummaryById(summaryId).then((data) => {
+        reset({
+          repId: data.repId,
+          driverId: data.driverId,
+          summaryDate: data.summaryDate,
+          items: (data.items || []).map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+          }))
+        });
+      }).catch((e) => {
+        console.error('Failed to load summary', e);
+        notification.error({ message: 'Failed to load summary for editing' });
+      });
+    } else {
+      const savedDraft = localStorage.getItem('cancel_summary_draft');
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (!parsed.items || parsed.items.length === 0) {
+            parsed.items = [{ productId: 0, quantity: 1 }];
+          }
+          reset(parsed);
+        } catch (e) {
+          console.error('Failed to parse draft', e);
         }
-        reset(parsed);
-      } catch (e) {
-        console.error('Failed to parse draft', e);
+      } else {
+        reset({
+          repId: undefined,
+          driverId: undefined,
+          summaryDate: dayjs().format('YYYY-MM-DD'),
+          items: [{ productId: 0, quantity: 1 }]
+        });
       }
     }
-  }, [reset]);
+  }, [reset, summaryId, open]);
 
   useEffect(() => {
+    if (summaryId) return;
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('cancel_summary_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods]);
+  }, [methods, summaryId]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -80,7 +107,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     return watchItems?.reduce((total, _, index) => total + calculateEstimate(index), 0) || 0;
   };
 
-  const mutation = useCreateCancelSummary({
+  const createMutation = useCreateCancelSummary({
     mutation: {
       onSuccess: () => {
       localStorage.removeItem('cancel_summary_draft');
@@ -100,24 +127,40 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     }
   });
 
+  const updateMut = useMutation({
+    mutationFn: (data: CancelSummaryFormData) => updateCancelSummary(summaryId!, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
+      notification.success({ message: 'Cancel Summary updated successfully.' });
+      onClose();
+    },
+    onError: () => {
+      notification.error({ message: 'Failed to update Cancel Summary.' });
+    }
+  });
+
   const onSubmit = (data: CancelSummaryFormData) => {
-    mutation.mutate({
-      data: {
-        repId: data.repId,
-        driverId: data.driverId,
-        summaryDate: data.summaryDate,
-        items: data.items.map((item, index) => {
-          const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
-          const price = product?.ratePerSoldUnit || product?.basePrice || 0;
-          return {
-            productId: item.productId,
-            quantity: item.quantity,
-            unitPrice: price,
-            estimateValue: calculateEstimate(index)
-          };
-        })
-      }
-    });
+    const formattedData = {
+      repId: data.repId,
+      driverId: data.driverId,
+      summaryDate: data.summaryDate,
+      items: data.items.map((item, index) => {
+        const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
+        const price = product?.ratePerSoldUnit || product?.basePrice || 0;
+        return {
+          productId: item.productId,
+          quantity: item.quantity,
+          unitPrice: price,
+          estimateValue: calculateEstimate(index)
+        };
+      })
+    };
+
+    if (summaryId) {
+      updateMut.mutate(formattedData);
+    } else {
+      createMutation.mutate({ data: formattedData });
+    }
   };
 
   if (repsLoading || driversLoading || productsLoading) {
@@ -126,7 +169,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
         open={open}
         onClose={onClose}
         onSubmit={() => {}}
-        title="Create Cancel Summary"
+        title={summaryId ? "Edit Cancel Summary" : "Create Cancel Summary"}
       >
         <div className="flex items-center justify-center p-12"><Spin size="large" /></div>
       </EntityFormDrawer>
@@ -138,9 +181,9 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
-      title="Create Cancel Summary"
-      loading={mutation.isPending}
-      submitText="Save Summary"
+      title={summaryId ? "Edit Cancel Summary" : "Create Cancel Summary"}
+      loading={summaryId ? updateMut.isPending : createMutation.isPending}
+      submitText={summaryId ? "Save Changes" : "Save Summary"}
     >
       <Form layout="vertical" className="space-y-4">
         <Row gutter={16}>
