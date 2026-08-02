@@ -193,6 +193,59 @@ export function MonthSummaryPage() {
       </Row>
 
       <Row gutter={[16, 16]}>
+        <Col span={24}>
+          <Card 
+            variant="borderless" 
+            className="shadow-sm"
+            title={
+              <Space>
+                <span>Daily Balance Reconciliation (Monthly Aggregates)</span>
+                {summaryData && summaryData.balancedDaysCount > 0 && (
+                  <Tag color="success">{summaryData.balancedDaysCount} Balanced Days</Tag>
+                )}
+              </Space>
+            }
+          >
+            {summaryData && summaryData.balancedDaysCount > 0 ? (
+              <Row gutter={[16, 16]}>
+                <Col xs={24} sm={8}>
+                  <Statistic
+                    title="Total Morning Dispatch"
+                    value={summaryData.totalMorningDispatch || 0}
+                    precision={2}
+                    prefix="Rs."
+                    valueStyle={{ color: '#1677ff', fontSize: 20 }}
+                  />
+                </Col>
+                <Col xs={24} sm={8}>
+                  <Statistic
+                    title="Total Cancel Returns"
+                    value={summaryData.totalCancelReturns || 0}
+                    precision={2}
+                    prefix="Rs."
+                    valueStyle={{ color: '#ff4d4f', fontSize: 20 }}
+                  />
+                </Col>
+                <Col xs={24} sm={8}>
+                  <Statistic
+                    title="Total Billed Amount"
+                    value={summaryData.totalBilledAmount || 0}
+                    precision={2}
+                    prefix="Rs."
+                    valueStyle={{ color: '#52c41a', fontSize: 20 }}
+                  />
+                </Col>
+              </Row>
+            ) : (
+              <div style={{ padding: '20px', textAlign: 'center', color: '#8c8c8c' }}>
+                No daily balances have been proceeded for this month yet.
+              </div>
+            )}
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
         <Col xs={24} lg={16}>
           <Card 
             title="Expenses Detail" 

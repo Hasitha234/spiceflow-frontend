@@ -397,6 +397,50 @@ export function DaySummaryPage() {
         </Col>
       </Row>
 
+      {/* Daily Balance Status Banner */}
+      {summaryData && (
+        <Row style={{ marginBottom: '24px' }}>
+          <Col span={24}>
+            <Card 
+              className="sf-stat-card" 
+              style={{ 
+                backgroundColor: summaryData.balanceStatus === 'BALANCED' ? '#f6ffed' : '#fffbe6',
+                borderColor: summaryData.balanceStatus === 'BALANCED' ? '#b7eb8f' : '#ffe58f',
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Space size="large">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                    <span style={{ fontSize: 16, fontWeight: 500 }}>Balance Status:</span>
+                    {summaryData.balanceStatus === 'BALANCED' ? (
+                      <Tag color="success" style={{ fontSize: 14, padding: '4px 12px' }}>
+                        BALANCED
+                      </Tag>
+                    ) : (
+                      <Tag color="warning" style={{ fontSize: 14, padding: '4px 12px' }}>
+                        PENDING RECONCILIATION
+                      </Tag>
+                    )}
+                  </div>
+                  {summaryData.balanceStatus === 'BALANCED' && (
+                    <Text type="secondary">
+                      Net Dispatch: <span style={{ fontWeight: 'bold' }}>Rs. {fmt(summaryData.netDispatchTotal || 0)}</span> | 
+                      Bills Total: <span style={{ fontWeight: 'bold' }}>Rs. {fmt(summaryData.billsTotal || 0)}</span>
+                    </Text>
+                  )}
+                </Space>
+                <Button 
+                  type={summaryData.balanceStatus === 'BALANCED' ? 'default' : 'primary'}
+                  onClick={() => window.location.href = '/balance'}
+                >
+                  {summaryData.balanceStatus === 'BALANCED' ? 'View Balance Details' : 'Reconcile Balance'}
+                </Button>
+              </div>
+            </Card>
+          </Col>
+        </Row>
+      )}
+
       {/* Summary Cards Row 1: Primary Income & Collections */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
         <Col xs={24} sm={12} lg={6}>

@@ -251,6 +251,11 @@ export interface EndOfDaySummary {
   chequeDetails?: ChequeDetail[];
   deliveries?: DeliverySummary[];
   cancelledOrders?: CancelledOrderSummary[];
+  morningSummaryTotal?: number | null;
+  cancelSummaryTotal?: number | null;
+  netDispatchTotal?: number | null;
+  billsTotal?: number | null;
+  balanceStatus?: string | null;
 }
 
 export interface ExpenseBreakdown {
@@ -268,4 +273,8 @@ export interface MonthSummary {
   repOrderCount: number;
   purchaseOrderCount: number;
   expenseBreakdown: ExpenseBreakdown[];
+  totalMorningDispatch?: number | null;
+  totalCancelReturns?: number | null;
+  totalBilledAmount?: number | null;
+  balancedDaysCount: number;
 }
