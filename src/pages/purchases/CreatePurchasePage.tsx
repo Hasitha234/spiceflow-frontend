@@ -211,10 +211,14 @@ export function CreatePurchasePage() {
   const grossTotal = useMemo(() => {
     if (!lineItems || !Array.isArray(lineItems)) return 0;
     return lineItems.reduce((sum, item) => {
+      // Use explicit amount if set, otherwise auto-calculate from soldQuantity × rate
+      // This mirrors the exact display logic in the Amount column
+      if (item?.amount !== undefined && item?.amount !== null) {
+        return sum + Number(item.amount);
+      }
       const qty = Number(item?.soldQuantity) || 0;
       const rate = Number(item?.rate) || 0;
-      const amount = item?.amount !== undefined ? Number(item.amount) : qty * rate;
-      return sum + amount;
+      return sum + (qty * rate);
     }, 0);
   }, [lineItems]);
 
