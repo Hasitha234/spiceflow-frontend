@@ -139,7 +139,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, b
   });
 
   const updateMut = useMutation({
-    mutationFn: (data: BillFormData) => updateBill(billId!, data as any),
+    mutationFn: (data: BillFormData) => updateBill(billId!, data),
     onSuccess: () => {
       notification.success({ message: 'Success', description: 'Bill updated successfully' });
       queryClient.invalidateQueries({ queryKey: ['getBills'], refetchType: 'all' });
@@ -166,7 +166,7 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, b
         ...data, 
         driverId: data.driverId || undefined,
         reverseGrts: data.reverseGrts ?? 0,
-      });
+      } as import('@/api/generated').BillRequest);
     }
   };
 
