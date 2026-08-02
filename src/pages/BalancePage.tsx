@@ -10,7 +10,7 @@ const { Title, Text } = Typography;
 
 export function BalancePage() {
   const queryClient = useQueryClient();
-  const user = useAuthStore((state: any) => state.user);
+  const user = useAuthStore((state) => state.user);
   const isTenantOwner = user?.roles.includes('TENANT_OWNER');
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
