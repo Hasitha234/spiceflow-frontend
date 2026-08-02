@@ -250,7 +250,12 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
                 precision={2} 
                 size="middle"
                 style={{ width: '100%' }} 
-                status={error ? 'error' : ''} 
+                status={error ? 'error' : ''}
+                onChange={(val) => {
+                  f.onChange(val);
+                  // Clear explicit amount so auto-calculation (soldQty × rate) takes over
+                  setValue(`lineItems.${index}.amount`, undefined);
+                }}
               />
               {error && <div style={{ color: '#f5222d', fontSize: '11px', marginTop: 4 }}>{error.message}</div>}
             </div>
