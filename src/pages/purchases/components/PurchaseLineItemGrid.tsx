@@ -42,6 +42,8 @@ export function PurchaseLineItemGrid({ control, setValue, supplierProducts, erro
   };
 
   const calcSoldQty = (boxes: number, product: Product | undefined, unitType: string): number => {
+    // MC = Master Carton = 1 box, so soldQty always equals boxes
+    if (unitType === 'MC') return boxes;
     const totalItems = boxes * getTotalItemsPerBox(product);
     return totalItems / getUnitDivisor(unitType);
   };
