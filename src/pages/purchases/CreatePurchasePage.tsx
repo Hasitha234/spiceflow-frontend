@@ -45,8 +45,8 @@ const purchaseSchema = z.object({
     .array(
       z.object({
         productId: z.string().min(1, 'Product is required'),
-        noOfBoxes: z.number().int().min(1, 'Min 1 box'),
-        soldQuantity: z.number().int().min(1, 'Min 1 unit'),
+        noOfBoxes: z.number().min(0, 'Must be positive'),
+        soldQuantity: z.number().min(0, 'Must be positive'),
         unitType: z.string().min(1, 'Unit type is required'),
         rate: z.number().min(0, 'Rate must be positive'),
         amount: z.number().min(0, 'Amount must be positive').optional(),
