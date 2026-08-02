@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import { EntityFormDrawer } from '@/components/common';
-import { createMorningSummary } from '../api/morningSummaryApi';
+import { createMorningSummary, updateMorningSummary, getMorningSummaryById } from '../api/morningSummaryApi';
 import { morningSummarySchema, type MorningSummaryFormData } from '../schemas/morningSummarySchema';
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
 import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
@@ -16,9 +16,10 @@ const { Text, Title } = Typography;
 export interface MorningSummaryFormDrawerProps {
   open: boolean;
   onClose: () => void;
+  summaryId?: number | null;
 }
 
-export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> = ({ open, onClose }) => {
+export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> = ({ open, onClose, summaryId }) => {
   const queryClient = useQueryClient();
 
   // Use the Orval generated hooks
@@ -38,31 +39,60 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
 
   const { control, handleSubmit, formState: { errors }, reset } = methods;
 
-  // Load draft on mount
+  // Load draft on mount for creation mode, or fetch existing data for edit mode
   useEffect(() => {
-    const savedDraft = localStorage.getItem('morning_summary_draft');
-    if (savedDraft) {
-      try {
-        const parsed = JSON.parse(savedDraft);
-        // Ensure items array is never empty from a bad draft
-        if (!parsed.items || parsed.items.length === 0) {
-          parsed.items = [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
+    if (summaryId) {
+      // Edit mode: fetch existing summary
+      getMorningSummaryById(summaryId).then((data) => {
+        reset({
+          repId: data.repId,
+          driverId: data.driverId,
+          summaryDate: data.summaryDate,
+          items: data.items.map(item => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            expectedReturnAmount: item.expectedReturnAmount || 0,
+            expectedReturnPrice: item.expectedReturnPrice || 0
+          }))
+        });
+      }).catch((e) => {
+        console.error('Failed to load summary', e);
+        notification.error({ message: 'Failed to load summary for editing' });
+      });
+    } else {
+      // Create mode: load draft
+      const savedDraft = localStorage.getItem('morning_summary_draft');
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          // Ensure items array is never empty from a bad draft
+          if (!parsed.items || parsed.items.length === 0) {
+            parsed.items = [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
+          }
+          reset(parsed);
+        } catch (e) {
+          console.error('Failed to parse draft', e);
         }
-        reset(parsed);
-      } catch (e) {
-        console.error('Failed to parse draft', e);
+      } else {
+        reset({
+          repId: undefined,
+          driverId: undefined,
+          summaryDate: dayjs().format('YYYY-MM-DD'),
+          items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+        });
       }
     }
-  }, [reset]);
+  }, [reset, summaryId, open]);
 
-  // Save draft on change
+  // Save draft on change (only for creation mode)
   useEffect(() => {
+    if (summaryId) return; // Do not save drafts while editing an existing record
     // eslint-disable-next-line react-hooks/incompatible-library
     const subscription = methods.watch((value) => {
       localStorage.setItem('morning_summary_draft', JSON.stringify(value));
     });
     return () => subscription.unsubscribe();
-  }, [methods]);
+  }, [methods, summaryId]);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -85,7 +115,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     return watchItems?.reduce((total, _, index) => total + calculateEstimate(index), 0) || 0;
   };
 
-  const mutation = useMutation({
+  const createMutation = useMutation({
     mutationFn: createMorningSummary,
     onSuccess: () => {
       localStorage.removeItem('morning_summary_draft');
@@ -104,8 +134,8 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     }
   });
 
-  const onSubmit = (data: MorningSummaryFormData) => {
-    mutation.mutate({
+  const updateMutation = useMutation({
+    mutationFn: (data: MorningSummaryFormData) => updateMorningSummary(summaryId!, {
       repId: data.repId,
       driverId: data.driverId,
       summaryDate: data.summaryDate,
@@ -115,7 +145,33 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         expectedReturnAmount: item.expectedReturnAmount || 0,
         expectedReturnPrice: item.expectedReturnPrice || 0
       }))
-    });
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
+      notification.success({ message: 'Morning Summary updated successfully.' });
+      onClose();
+    },
+    onError: () => {
+      notification.error({ message: 'Failed to update Morning Summary.' });
+    }
+  });
+
+  const onSubmit = (data: MorningSummaryFormData) => {
+    if (summaryId) {
+      updateMutation.mutate(data);
+    } else {
+      createMutation.mutate({
+        repId: data.repId,
+        driverId: data.driverId,
+        summaryDate: data.summaryDate,
+        items: data.items.map(item => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          expectedReturnAmount: item.expectedReturnAmount || 0,
+          expectedReturnPrice: item.expectedReturnPrice || 0
+        }))
+      });
+    }
   };
 
   if (repsLoading || driversLoading || productsLoading) {
@@ -124,7 +180,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         open={open}
         onClose={onClose}
         onSubmit={() => {}}
-        title="Create Morning Summary"
+        title={summaryId ? "Edit Morning Summary" : "Create Morning Summary"}
       >
         <div className="flex items-center justify-center p-12"><Spin size="large" /></div>
       </EntityFormDrawer>
@@ -136,9 +192,9 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
-      title="Create Morning Summary"
-      loading={mutation.isPending}
-      submitText="Save Summary"
+      title={summaryId ? "Edit Morning Summary" : "Create Morning Summary"}
+      loading={summaryId ? updateMutation.isPending : createMutation.isPending}
+      submitText={summaryId ? "Save Changes" : "Save Summary"}
     >
       <Form layout="vertical" className="space-y-4">
         <Row gutter={16}>

@@ -16,6 +16,11 @@ export const createMorningSummary = async (data: MorningSummaryRequest) => {
   return response.data;
 };
 
+export const updateMorningSummary = async (id: number, data: MorningSummaryRequest) => {
+  const response = await apiClient.put<MorningSummary>(`/api/v1/morning-summaries/${id}`, data);
+  return response.data;
+};
+
 export const getMorningSummaryById = async (id: number) => {
   const response = await apiClient.get<MorningSummary>(`/api/v1/morning-summaries/${id}`);
   return response.data;
