@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
-import { Card, Col, DatePicker, Row, Statistic, Table, Typography, App, Space, Button } from 'antd';
+import { Card, Col, DatePicker, Row, Statistic, Table, Typography, App, Space, Button, Tag } from 'antd';
 import { DollarOutlined, PlusOutlined, FallOutlined, RiseOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { reportApi } from '../api/sales';

@@ -1,16 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, Typography, DatePicker, Button, Row, Col, Space, Statistic, message, Popconfirm, Tag, Spin } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, RollbackOutlined } from '@ant-design/icons';
-import { balanceApi } from '@/api/balanceApi';
-import { useAuthStore } from '@/store/auth';
+import { balanceApi } from '../api/balanceApi';
+import { useAuthStore } from '../store/authStore';
 
 const { Title, Text } = Typography;
 
 export function BalancePage() {
   const queryClient = useQueryClient();
-  const user = useAuthStore((state) => state.user);
+  const user = useAuthStore((state: any) => state.user);
   const isTenantOwner = user?.roles.includes('TENANT_OWNER');
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
