@@ -238,6 +238,20 @@ export interface CancelledOrderSummary {
   reason?: string;
 }
 
+export interface RepOrderBillShop {
+  shopName: string;
+  driverName: string;
+  amount: number;
+  status: string;
+}
+
+export interface RepOrderBillSummary {
+  repName: string;
+  orderCount: number;
+  totalAmount: number;
+  shops: RepOrderBillShop[];
+}
+
 export interface EndOfDaySummary {
   date: string;
   totalSalesValue: number;
@@ -256,6 +270,8 @@ export interface EndOfDaySummary {
   netDispatchTotal?: number | null;
   billsTotal?: number | null;
   balanceStatus?: string | null;
+  repOrderBills?: RepOrderBillSummary[];
+  totalRepOrderBillsCount?: number;
 }
 
 export interface ExpenseBreakdown {

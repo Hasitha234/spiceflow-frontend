@@ -337,6 +337,7 @@ export function DaySummaryPage() {
     cheques: (summaryData?.chequeDetails || []).length > 0,
     cancelled: (summaryData?.cancelledOrders || []).length > 0,
     purchases: purchases.length > 0,
+    repOrderBills: (summaryData?.repOrderBills || []).length > 0,
     repOrders: repOrders.length > 0,
     deliveries: deliveries.length > 0,
   };
@@ -345,6 +346,7 @@ export function DaySummaryPage() {
     hasData.cheques && 'cheques',
     hasData.cancelled && 'cancelled',
     hasData.purchases && 'purchases',
+    hasData.repOrderBills && 'repOrderBills',
     hasData.repOrders && 'repOrders',
     hasData.deliveries && 'deliveries',
   ].filter(Boolean) as string[];
@@ -493,7 +495,7 @@ export function DaySummaryPage() {
 
       {/* Summary Cards Row 2: Operational Statistics */}
       <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
               title={t('daySummary.grossDeliverySales', 'Gross Sales')}
@@ -503,7 +505,7 @@ export function DaySummaryPage() {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
               title={t('daySummary.routesShopsVisited', 'Routes / Shops')}
@@ -514,7 +516,7 @@ export function DaySummaryPage() {
             />
           </Card>
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={12} lg={6}>
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             {(() => {
               const returnsTotal = (summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0);
@@ -522,10 +524,21 @@ export function DaySummaryPage() {
                 <Statistic
                   title={t('daySummary.returnsDiscounts', 'Returns & Discounts')}
                   value={returnsTotal > 0 ? `- ${fmt(returnsTotal)}` : fmt(0)}
-                  styles={{ content: { color: returnsTotal > 0 ? 'var(--color-danger)' : 'var(--color-text-tertiary)', fontVariantNumeric: 'tabular-nums' } }}
+                  styles={{ content: { color: returnsTotal > 0 ? 'var(--color-danger)', fontVariantNumeric: 'tabular-nums' } }}
                 />
               );
             })()}
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} lg={6}>
+          <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
+            <Statistic
+              title={t('daySummary.totalRepOrders', 'Total Rep Orders')}
+              value={summaryData?.totalRepOrderBillsCount || 0}
+              suffix="Bills"
+              prefix={<FileTextOutlined />}
+              styles={{ content: { color: 'var(--color-primary-text)', fontVariantNumeric: 'tabular-nums' } }}
+            />
           </Card>
         </Col>
       </Row>
@@ -613,6 +626,61 @@ export function DaySummaryPage() {
                />
             ) : (
               <CompactEmpty message={t('daySummary.noPurchases', 'No purchases recorded')} />
+            )
+          },
+          {
+            key: 'repOrderBills',
+            label: (
+              <SectionHeader
+                icon={<FileTextOutlined />}
+                title={t('daySummary.repOrdersBreakdown', "Today's Rep Orders Breakdown")}
+                count={summaryData?.totalRepOrderBillsCount || 0}
+              />
+            ),
+            children: (summaryData?.repOrderBills || []).length > 0 ? (
+              <Table
+                dataSource={summaryData?.repOrderBills || []}
+                rowKey="repName"
+                pagination={false}
+                size="small"
+                expandable={{
+                  expandedRowRender: (record) => (
+                    <Table
+                      dataSource={record.shops}
+                      rowKey={(r, idx) => `${r.shopName}-${idx}`}
+                      pagination={false}
+                      size="small"
+                      columns={[
+                        { title: 'Shop', dataIndex: 'shopName', key: 'shopName' },
+                        { title: 'Driver', dataIndex: 'driverName', key: 'driverName' },
+                        { 
+                          title: 'Status', 
+                          dataIndex: 'status', 
+                          key: 'status',
+                          render: (status: string) => {
+                            const color = status === 'CANCELLED' ? 'red' : 'green';
+                            return <Tag color={color}>{status === 'CANCELLED' ? 'Cancelled' : 'Confirmed'}</Tag>;
+                          }
+                        },
+                        { 
+                          title: 'Amount (LKR)', 
+                          dataIndex: 'amount', 
+                          key: 'amount', 
+                          align: 'right', 
+                          render: (val) => <Text style={{ fontFamily: 'var(--font-sans)', fontVariantNumeric: 'tabular-nums', fontWeight: 600 }}>{fmt(Number(val || 0))}</Text> 
+                        },
+                      ]}
+                    />
+                  ),
+                }}
+                columns={[
+                  { title: t('repOrder.rep', 'Rep Name'), dataIndex: 'repName', key: 'repName', render: (val) => <Text strong>{val}</Text> },
+                  { title: t('daySummary.orderCount', 'Order Count'), dataIndex: 'orderCount', key: 'orderCount', render: (val) => <Tag color="blue">{val} Orders</Tag> },
+                  { title: t('purchase.totalAmount', 'Total Amount (LKR)'), dataIndex: 'totalAmount', key: 'totalAmount', align: 'right', render: (val) => <Text strong>{fmt(Number(val || 0))}</Text> },
+                ]}
+              />
+            ) : (
+              <CompactEmpty message={t('daySummary.noRepOrdersBreakdown', 'No rep orders recorded today')} />
             )
           },
           {
