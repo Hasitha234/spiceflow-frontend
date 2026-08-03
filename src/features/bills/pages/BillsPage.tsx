@@ -112,6 +112,22 @@ export function BillsPage() {
       width: 150,
     },
     {
+      title: 'Net total',
+      dataIndex: 'netTotal',
+      key: 'netTotal',
+      render: (val?: number) => `Rs ${(val || 0).toFixed(2)}`,
+      width: 120,
+      align: 'right' as const,
+    },
+    {
+      title: 'Free total',
+      dataIndex: 'freeItemsValue',
+      key: 'freeItemsValue',
+      render: (val?: number) => `Rs ${(val || 0).toFixed(2)}`,
+      width: 120,
+      align: 'right' as const,
+    },
+    {
       title: 'Final Total',
       dataIndex: 'finalTotal',
       key: 'finalTotal',
@@ -261,7 +277,7 @@ export function BillsPage() {
           showSizeChanger: true,
           onChange: (page, pageSize) => setPagination({ current: page, pageSize }),
         }}
-        scroll={{ x: 1000 }}
+        scroll={{ x: 1200 }}
       />
 
       <BillFormDrawer 
