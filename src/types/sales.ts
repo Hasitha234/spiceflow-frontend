@@ -272,6 +272,7 @@ export interface EndOfDaySummary {
   balanceStatus?: string | null;
   repOrderBills?: RepOrderBillSummary[];
   totalRepOrderBillsCount?: number;
+  totalRepOrderBillsAmount?: number;
 }
 
 export interface ExpenseBreakdown {

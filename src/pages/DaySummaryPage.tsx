@@ -485,7 +485,7 @@ export function DaySummaryPage() {
           >
             <Statistic
               title={t('daySummary.fullIncome', 'Total Income')}
-              value={fmt((summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0))}
+              value={fmt((summaryData?.totalCashCollected || 0) + (summaryData?.totalChequeAmount || 0) + (summaryData?.totalLoanGiven || 0))}
               prefix={<DollarOutlined />}
               styles={{ content: { color: 'var(--color-primary-text)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }}
             />
@@ -498,8 +498,8 @@ export function DaySummaryPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
-              title={t('daySummary.grossDeliverySales', 'Gross Sales')}
-              value={fmt(summaryData?.totalSalesValue || 0)}
+              title={t('daySummary.grossDeliverySales', 'Gross Delivery Sales Value')}
+              value={fmt(summaryData?.netDispatchTotal || 0)}
               prefix={<TruckOutlined />}
               styles={{ content: { fontVariantNumeric: 'tabular-nums' } }}
             />
@@ -519,7 +519,7 @@ export function DaySummaryPage() {
         <Col xs={24} sm={12} lg={6}>
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             {(() => {
-              const returnsTotal = (summaryData?.totalReturnsValue || 0) + (summaryData?.totalDiscounts || 0);
+              const returnsTotal = (summaryData?.netDispatchTotal || 0) - (summaryData?.totalCashCollected || 0);
               return (
                 <Statistic
                   title={t('daySummary.returnsDiscounts', 'Returns & Discounts')}
@@ -534,8 +534,8 @@ export function DaySummaryPage() {
           <Card size="small" className="sf-stat-card" style={{ textAlign: 'center' }}>
             <Statistic
               title={t('daySummary.totalRepOrders', 'Total Rep Orders')}
-              value={summaryData?.totalRepOrderBillsCount || 0}
-              suffix="Bills"
+              value={fmt(summaryData?.totalRepOrderBillsAmount || 0)}
+              suffix={`(${summaryData?.totalRepOrderBillsCount || 0} Bills)`}
               prefix={<FileTextOutlined />}
               styles={{ content: { color: 'var(--color-primary-text)', fontVariantNumeric: 'tabular-nums' } }}
             />
