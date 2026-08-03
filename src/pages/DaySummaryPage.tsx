@@ -524,7 +524,7 @@ export function DaySummaryPage() {
                 <Statistic
                   title={t('daySummary.returnsDiscounts', 'Returns & Discounts')}
                   value={returnsTotal > 0 ? `- ${fmt(returnsTotal)}` : fmt(0)}
-                  styles={{ content: { color: returnsTotal > 0 ? 'var(--color-danger)', fontVariantNumeric: 'tabular-nums' } }}
+                  styles={{ content: { color: returnsTotal > 0 ? 'var(--color-danger)' : 'var(--color-text-tertiary)', fontVariantNumeric: 'tabular-nums' } }}
                 />
               );
             })()}
