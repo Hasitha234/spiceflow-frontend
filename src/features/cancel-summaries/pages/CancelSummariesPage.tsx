@@ -8,12 +8,14 @@ import { getCancelSummaries } from '@/api/generated';
 import type { CancelSummaryResponse } from '@/api/generated';
 import { CancelSummaryFormDrawer } from '../components/CancelSummaryFormDrawer';
 import { ReturnToWarehouseModal } from '../components/ReturnToWarehouseModal';
+import { CancelSummaryViewDrawer } from '../components/CancelSummaryViewDrawer';
 import { undoProceedCancelSummary } from '../api/cancelSummaryApi';
 import { useTableState } from '@/hooks/useTableState';
 
 export const CancelSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [proceedModalOpen, setProceedModalOpen] = useState(false);
+  const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<CancelSummaryResponse | null>(null);
   const queryClient = useQueryClient();
 
@@ -81,54 +83,62 @@ export const CancelSummariesPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: 180,
       render: (_, record) => {
-        if (record.status === 'PENDING') {
-          return (
-            <div className="flex gap-2">
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  setSelectedSummary(record);
-                  setProceedModalOpen(true);
-                }}
-              >
-                Proceed
-              </Button>
-              <Button
-                size="small"
-                onClick={() => {
-                  setSelectedSummary(record);
-                  setDrawerOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
-          );
-        }
-        if (record.status === 'SETTLED') {
-          return (
+        return (
+          <div className="flex gap-2">
             <Button
-              danger
               size="small"
-              loading={undoMutation.isPending && undoMutation.variables === record.id}
               onClick={() => {
-                if (record.id) {
-                  Modal.confirm({
-                    title: 'Undo Proceed',
-                    content: `Are you sure you want to reverse this summary and remove stock from ${record.returnWarehouseName || 'the warehouse'}?`,
-                    onOk: () => undoMutation.mutate(record.id as number),
-                  });
-                }
+                setSelectedSummary(record);
+                setViewDrawerOpen(true);
               }}
             >
-              Undo
+              View
             </Button>
-          );
-        }
-        return null;
+            {record.status === 'PENDING' && (
+              <>
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={() => {
+                    setSelectedSummary(record);
+                    setProceedModalOpen(true);
+                  }}
+                >
+                  Proceed
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedSummary(record);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </>
+            )}
+            {record.status === 'SETTLED' && (
+              <Button
+                danger
+                size="small"
+                loading={undoMutation.isPending && undoMutation.variables === record.id}
+                onClick={() => {
+                  if (record.id) {
+                    Modal.confirm({
+                      title: 'Undo Proceed',
+                      content: `Are you sure you want to reverse this summary and remove stock from ${record.returnWarehouseName || 'the warehouse'}?`,
+                      onOk: () => undoMutation.mutate(record.id as number),
+                    });
+                  }
+                }}
+              >
+                Undo
+              </Button>
+            )}
+          </div>
+        );
       },
     },
   ];
@@ -203,6 +213,15 @@ export const CancelSummariesPage = () => {
         open={proceedModalOpen}
         onClose={() => {
           setProceedModalOpen(false);
+          setSelectedSummary(null);
+        }}
+        summary={selectedSummary}
+      />
+      
+      <CancelSummaryViewDrawer
+        open={viewDrawerOpen}
+        onClose={() => {
+          setViewDrawerOpen(false);
           setSelectedSummary(null);
         }}
         summary={selectedSummary}
