@@ -87,7 +87,7 @@ export const deliveryApi = {
 
 // ─── Purchases ────────────────────────────────────────────────────────────────
 export const purchaseApi = {
-  list: (params?: { invoiceNo?: string; date?: string; page?: number; size?: number; sort?: string }) =>
+  list: (params?: { invoiceNo?: string; startDate?: string; endDate?: string; page?: number; size?: number; sort?: string }) =>
     apiClient.get<PageResponse<Purchase>>('/api/v1/purchases', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Purchase>(`/api/v1/purchases/${id}`).then((r) => r.data),
