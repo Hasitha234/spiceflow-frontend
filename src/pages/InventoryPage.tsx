@@ -261,16 +261,16 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     fetchData();
   }, [fetchData]);
 
-  const calculateTotalQty = (productId: string | number, b: number, bund: number, l: number) => {
+  const calculateTotalQty = useCallback((productId: string | number, b: number, bund: number, l: number) => {
     const product = allProducts.find(p => String(p.id) === String(productId));
     if (!product) return 0;
     const perBox = product.soldUnitsPerBox || 0;
     const perUnit = product.itemsPerSoldUnit || 0;
     const itemsPerBox = perBox * perUnit;
     return (b * itemsPerBox) + (bund * perUnit) + l;
-  };
+  }, [allProducts]);
 
-  const decomposeTotalQty = (productId: string | number, total: number) => {
+  const decomposeTotalQty = useCallback((productId: string | number, total: number) => {
     const product = allProducts.find(p => String(p.id) === String(productId));
     if (!product) return { boxes: 0, bundles: 0, loose: total };
     const perBox = product.soldUnitsPerBox || 0;
@@ -291,7 +291,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       loose = loose % perUnit;
     }
     return { boxes, bundles, loose };
-  };
+  }, [allProducts]);
 
   const handleOpenAddProduct = () => {
     setEditingItem(null);
@@ -302,7 +302,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     setItemModalVisible(true);
   };
 
-  const handleOpenEditItem = (item: InventoryItem) => {
+  const handleOpenEditItem = useCallback((item: InventoryItem) => {
     setEditingItem(item);
     form.resetFields();
     
@@ -317,9 +317,9 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       expirationDate: item.expirationDate ? dayjs(item.expirationDate) : null,
     });
     setItemModalVisible(true);
-  };
+  }, [form, decomposeTotalQty]);
 
-  const handleDeleteItem = async (item: InventoryItem) => {
+  const handleDeleteItem = useCallback(async (item: InventoryItem) => {
     if (item.quantityAvailable > 0 || (item.quantityReserved && item.quantityReserved > 0)) {
       message.warning('Please edit quantity to 0 before deleting this item.');
       return;
@@ -331,7 +331,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     } catch {
       message.error('Failed to delete inventory item');
     }
-  };
+  }, [fetchData]);
 
   const handleSaveItem = async (values: {
     productId: number | string;
