@@ -120,7 +120,7 @@ export function BalancePage() {
         const perBox = product?.soldUnitsPerBox || 0;
         const perUnit = product?.itemsPerSoldUnit || 1;
         
-        let boxes = 0;
+        let boxes;
         if (perBox > 0 && perUnit > 0) {
           const itemsPerBox = perBox * perUnit;
           boxes = Math.floor(qty / itemsPerBox);
