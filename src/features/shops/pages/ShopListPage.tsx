@@ -77,7 +77,7 @@ export function ShopListPage() {
         subtitle={`${data?.totalElements ?? 0} registered shop${(data?.totalElements ?? 0) === 1 ? '' : 's'}`}
         extra={
           <div className="flex items-center gap-3">
-            {(data?.totalElements ?? 0) > 0 && (
+            {((data?.totalElements ?? 0) > 0 || tableState.search) && (
               <Input.Search
                 placeholder="Search shops..."
                 value={tableState.search}
