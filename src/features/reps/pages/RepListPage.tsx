@@ -123,7 +123,7 @@ export function RepListPage() {
         }
       />
 
-      {(data?.totalElements ?? 0) > 0 && (
+      {((data?.totalElements ?? 0) > 0 || tableState.search) && (
         <FilterPanel
           filters={filterDefs}
           values={filterValues}
