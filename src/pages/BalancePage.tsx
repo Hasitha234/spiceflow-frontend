@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Card, Typography, DatePicker, Button, Row, Col, Space, Statistic, message, Popconfirm, Tag, Spin } from 'antd';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, RollbackOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, RollbackOutlined, WhatsAppOutlined } from '@ant-design/icons';
 import { balanceApi } from '../api/balanceApi';
+import { reportApi } from '../api/sales';
 import { useAuthStore } from '../store/authStore';
 
 const { Title, Text } = Typography;
@@ -14,6 +15,7 @@ export function BalancePage() {
   const isTenantOwner = user?.roles.includes('TENANT_OWNER');
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
+  const [isSendingReport, setIsSendingReport] = useState(false);
 
   const dateString = selectedDate.format('YYYY-MM-DD');
 
@@ -56,6 +58,76 @@ export function BalancePage() {
 
   const isBalanced = balanceData?.isBalanced;
   const isProceeded = balanceData?.status === 'BALANCED';
+
+  const handleSendReport = async () => {
+    try {
+      setIsSendingReport(true);
+      
+      // Fetch End of Day Summary
+      const summary = await reportApi.endOfDaySummary(dateString);
+      
+      // Fetch Stock Status
+      const stockData = await reportApi.stockStatus();
+      
+      // Create CSV
+      const csvHeader = 'Product Code,Product Name,Main Store Quantity,Other Stores Quantity,Total Quantity\n';
+      const csvContent = stockData.map(item => 
+        `"${item.productCode}","${item.productName}",${item.mainStoreQuantity},${item.otherStoresQuantity},${item.totalQuantity}`
+      ).join('\n');
+      const csvString = csvHeader + csvContent;
+      
+      // Download CSV
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `Main_Store_Stock_${dateString}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Get Agency Name
+      const agencyStr = localStorage.getItem('sf_agency');
+      const agencyName = agencyStr ? JSON.parse(agencyStr)?.businessName || 'Agency' : 'Agency';
+
+      // Format WhatsApp Message
+      const totalIncome = (summary.totalCashCollected || 0) + (summary.totalChequeAmount || 0) + (summary.totalLoanGiven || 0);
+      
+      let msg = `${agencyName}\n`;
+      msg += `දෛනික සාරාංශය (${dateString})\n------------------------\n`;
+      msg += `මුළු ආදායම (Full Income): Rs. ${totalIncome.toFixed(2)}\n`;
+      msg += `එකතු කළ මුදල් (Total Cash Collected): Rs. ${(summary.totalCashCollected || 0).toFixed(2)}\n`;
+      msg += `ලැබුණු චෙක්පත් (Cheques Received): Rs. ${(summary.totalChequeAmount || 0).toFixed(2)}\n`;
+      msg += `ණය මුදල් (Loan / Credit Given): Rs. ${(summary.totalLoanGiven || 0).toFixed(2)}\n`;
+      msg += `අවලංගු කළ බිල්පත් වටිනාකම (Cancel Order Amount): Rs. ${(summary.cancelOrderAmount || 0).toFixed(2)}\n`;
+      msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${summary.cancelShopCount || 0}\n\n`;
+      
+      msg += `රියදුරු සාරාංශය (Driver Breakdown):\n\n`;
+      
+      if (summary.driverSummaries && summary.driverSummaries.length > 0) {
+        summary.driverSummaries.forEach(driver => {
+          msg += `රියදුරු (Driver): ${driver.driverName}\n`;
+          msg += `එකතු කළ මුදල් (Cash): Rs. ${(driver.totalCashCollected || 0).toFixed(2)}\n`;
+          msg += `ලැබුණු චෙක්පත් (Cheques): Rs. ${(driver.totalChequeAmount || 0).toFixed(2)}\n`;
+          msg += `ණය මුදල් (Loan): Rs. ${(driver.totalLoanGiven || 0).toFixed(2)}\n`;
+          msg += `අවලංගු (Cancelled): Rs. ${(driver.cancelOrderAmount || 0).toFixed(2)}\n`;
+          msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${driver.cancelShopCount || 0}\n\n`;
+        });
+      } else {
+        msg += `රියදුරු දත්ත නොමැත (No driver data available)\n`;
+      }
+      
+      const encodedMessage = encodeURIComponent(msg);
+      window.open(`https://wa.me/94772285702?text=${encodedMessage}`, '_blank');
+      
+    } catch (error) {
+      console.error(error);
+      message.error('Failed to generate report');
+    } finally {
+      setIsSendingReport(false);
+    }
+  };
 
   return (
     <div style={{ padding: 24, maxWidth: 1200, margin: '0 auto' }}>
@@ -177,7 +249,17 @@ export function BalancePage() {
                 </Button>
 
                 {isProceeded ? (
-                  isTenantOwner && (
+                  <>
+                    <Button 
+                      type="primary" 
+                      style={{ backgroundColor: '#25D366' }} 
+                      icon={<WhatsAppOutlined />} 
+                      onClick={handleSendReport}
+                      loading={isSendingReport}
+                    >
+                      Send Report
+                    </Button>
+                    {isTenantOwner && (
                     <Popconfirm
                       title="Undo Daily Balance?"
                       description="This will revert all settled Morning and Cancel summaries back to PENDING for this date."
@@ -193,7 +275,8 @@ export function BalancePage() {
                         Undo Balance
                       </Button>
                     </Popconfirm>
-                  )
+                    )}
+                  </>
                 ) : (
                   <Button
                     type="primary"

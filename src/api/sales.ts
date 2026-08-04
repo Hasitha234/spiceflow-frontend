@@ -2,6 +2,15 @@ import apiClient from './client';
 import type { PageResponse } from '../types/api';
 import type { Rep, Driver, Shop, RepOrder, LoadingSheet, Delivery, Purchase, EndOfDaySummary, MonthSummary } from '../types/sales';
 
+export interface StockStatus {
+  productId: number;
+  productName: string;
+  productCode: string;
+  mainStoreQuantity: number;
+  otherStoresQuantity: number;
+  totalQuantity: number;
+}
+
 // ─── Master Data ──────────────────────────────────────────────────────────────
 export const repApi = {
   list: (params?: { name?: string; page?: number; size?: number }) =>
@@ -99,7 +108,7 @@ export const reportApi = {
   shopOutstanding: () =>
     apiClient.get('/api/v1/reports/shop-outstanding').then((r) => r.data),
   stockStatus: () =>
-    apiClient.get('/api/v1/reports/stock-status').then((r) => r.data),
+    apiClient.get<StockStatus[]>('/api/v1/reports/stock-status').then((r) => r.data),
   repPerformance: (params: { startDate: string; endDate: string }) =>
     apiClient.get('/api/v1/reports/rep-performance', { params }).then((r) => r.data),
   endOfDaySummary: (date: string) =>
