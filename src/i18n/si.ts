@@ -44,6 +44,7 @@ const si = {
     morningSummaries: 'උදෑසන සාරාංශ',
     cancelSummaries: 'අවලංගු සාරාංශ',
     bills: 'බිල්පත්',
+    balance: 'Balance',
     orders: 'විකුණුම් ඇණවුම්',
     loading: 'පැටවීමේ පත්‍ර',
     deliveries: 'බෙදා හැරීම්',
