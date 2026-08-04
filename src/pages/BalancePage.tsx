@@ -7,12 +7,14 @@ import { balanceApi } from '../api/balanceApi';
 import { reportApi } from '../api/sales';
 import { useAuthStore } from '../store/authStore';
 import { useTenantStore } from '../store/tenantStore';
+import { useAgencyStore } from '../store/agencyStore';
 const { Title, Text } = Typography;
 
 export function BalancePage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const tenantId = useTenantStore((state) => state.tenantId);
+  const { agencyName } = useAgencyStore();
   const isTenantOwner = user?.roles.includes('TENANT_OWNER');
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -64,11 +66,13 @@ export function BalancePage() {
     try {
       setIsSendingReport(true);
       
-      // Fetch End of Day Summary
+      // Fetch End of Day Summary & Stock Status
       const summary = await reportApi.endOfDaySummary(dateString);
+      const stockData = await reportApi.stockStatus();
       
       // Get Agency Name
-      const businessName = user?.assignedTenants?.find(t => t.id === tenantId)?.businessName || 'Agency';
+      const currentTenant = user?.assignedTenants?.find(t => t.id === tenantId);
+      const businessName = agencyName || currentTenant?.businessName || 'Agency';
 
       // Format WhatsApp Message
       const totalIncome = (summary.totalCashCollected || 0) + (summary.totalChequeAmount || 0) + (summary.totalLoanGiven || 0);
@@ -94,8 +98,19 @@ export function BalancePage() {
           msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${driver.cancelShopCount || 0}\n\n`;
         });
       } else {
-        msg += `රියදුරු දත්ත නොමැත (No driver data available)\n`;
+        msg += `රියදුරු දත්ත නොමැත (No driver data available)\n\n`;
       }
+      
+      msg += `ප්‍රධාන ගබඩාවේ තොග (Main Store Stock):\n`;
+      const mainStoreStocks = stockData.filter(item => (item.mainStoreQuantity || 0) > 0);
+      if (mainStoreStocks.length > 0) {
+        mainStoreStocks.forEach(item => {
+          msg += `${item.productName}: ${item.mainStoreQuantity}\n`;
+        });
+      } else {
+        msg += `තොග නොමැත (No stock available)\n`;
+      }
+      msg += `\n`;
       
       const encodedMessage = encodeURIComponent(msg);
       window.open(`https://wa.me/94772285702?text=${encodedMessage}`, '_blank');
