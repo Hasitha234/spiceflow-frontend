@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Tag, Modal } from 'antd';
+import { Button, Tag, Modal, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
 import { getCancelSummaries } from '@/api/generated';
@@ -17,6 +18,7 @@ export const CancelSummariesPage = () => {
   const [proceedModalOpen, setProceedModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<CancelSummaryResponse | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
   const queryClient = useQueryClient();
 
   const {
@@ -31,8 +33,14 @@ export const CancelSummariesPage = () => {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['cancelSummaries', pageableParams],
-    queryFn: () => getCancelSummaries({ page: tableState.page, size: tableState.size, sort: [`${tableState.sort},${tableState.dir}`] }),
+    queryKey: ['cancelSummaries', pageableParams, dateRange?.[0]?.format('YYYY-MM-DD'), dateRange?.[1]?.format('YYYY-MM-DD')],
+    queryFn: () => getCancelSummaries({ 
+      page: tableState.page, 
+      size: tableState.size, 
+      sort: [`${tableState.sort},${tableState.dir}`],
+      startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+      endDate: dateRange?.[1]?.format('YYYY-MM-DD')
+    }),
   });
 
   const columns: ColumnsType<CancelSummaryResponse> = [
@@ -156,6 +164,17 @@ export const CancelSummariesPage = () => {
         title="Cancel Summaries"
         subtitle="Manage end of day unsold stock and returns from van sales."
         extra={[
+          <DatePicker.RangePicker
+            key="dateRange"
+            value={dateRange}
+            onChange={(dates) => {
+              if (dates && dates[0] && dates[1]) {
+                setDateRange([dates[0], dates[1]]);
+                setPage(0);
+              }
+            }}
+            format="YYYY-MM-DD"
+          />,
           <Button
             key="create"
             type="primary"
