@@ -303,25 +303,6 @@ export const BillFormDrawer: React.FC<BillFormDrawerProps> = ({ open, onClose, b
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Reverse GRTs" validateStatus={errors.reverseGrts ? 'error' : ''} help={errors.reverseGrts?.message}>
-              <Controller
-                name="reverseGrts"
-                control={control}
-                render={({ field }) => (
-                  <InputNumber
-                    {...field}
-                    style={{ width: '100%' }}
-                    min={0}
-                    precision={2}
-                    prefix="Rs"
-                    placeholder="Enter amount"
-                    onFocus={handleNumberFocus}
-                  />
-                )}
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
             <Form.Item label="Free Items Value" validateStatus={errors.freeItemsValue ? 'error' : ''} help={errors.freeItemsValue?.message}>
               <Controller
                 name="freeItemsValue"
