@@ -6,12 +6,13 @@ import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, RollbackOutline
 import { balanceApi } from '../api/balanceApi';
 import { reportApi } from '../api/sales';
 import { useAuthStore } from '../store/authStore';
-
+import { useTenantStore } from '../store/tenantStore';
 const { Title, Text } = Typography;
 
 export function BalancePage() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
+  const tenantId = useTenantStore((state) => state.tenantId);
   const isTenantOwner = user?.roles.includes('TENANT_OWNER');
 
   const [selectedDate, setSelectedDate] = useState(dayjs());
@@ -66,35 +67,13 @@ export function BalancePage() {
       // Fetch End of Day Summary
       const summary = await reportApi.endOfDaySummary(dateString);
       
-      // Fetch Stock Status
-      const stockData = await reportApi.stockStatus();
-      
-      // Create CSV
-      const csvHeader = 'Product Code,Product Name,Main Store Quantity,Other Stores Quantity,Total Quantity\n';
-      const csvContent = stockData.map(item => 
-        `"${item.productCode}","${item.productName}",${item.mainStoreQuantity},${item.otherStoresQuantity},${item.totalQuantity}`
-      ).join('\n');
-      const csvString = csvHeader + csvContent;
-      
-      // Download CSV
-      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.setAttribute('href', url);
-      link.setAttribute('download', `Main_Store_Stock_${dateString}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
       // Get Agency Name
-      const agencyStr = localStorage.getItem('sf_agency');
-      const agencyName = agencyStr ? JSON.parse(agencyStr)?.businessName || 'Agency' : 'Agency';
+      const businessName = user?.assignedTenants?.find(t => t.id === tenantId)?.businessName || 'Agency';
 
       // Format WhatsApp Message
       const totalIncome = (summary.totalCashCollected || 0) + (summary.totalChequeAmount || 0) + (summary.totalLoanGiven || 0);
       
-      let msg = `${agencyName}\n`;
+      let msg = `${businessName}\n`;
       msg += `දෛනික සාරාංශය (${dateString})\n------------------------\n`;
       msg += `මුළු ආදායම (Full Income): Rs. ${totalIncome.toFixed(2)}\n`;
       msg += `එකතු කළ මුදල් (Total Cash Collected): Rs. ${(summary.totalCashCollected || 0).toFixed(2)}\n`;
