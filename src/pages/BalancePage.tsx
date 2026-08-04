@@ -82,33 +82,9 @@ export function BalancePage() {
       // Format WhatsApp Message
       const totalIncome = (summary.totalCashCollected || 0) + (summary.totalChequeAmount || 0) + (summary.totalLoanGiven || 0);
       
-      let msg = businessName ? `${businessName}\n` : '';
-      msg += `දෛනික සාරාංශය (${dateString})\n------------------------\n`;
-      msg += `මුළු ආදායම (Full Income): Rs. ${totalIncome.toFixed(2)}\n`;
-      msg += `එකතු කළ මුදල් (Total Cash Collected): Rs. ${(summary.totalCashCollected || 0).toFixed(2)}\n`;
-      msg += `ලැබුණු චෙක්පත් (Cheques Received): Rs. ${(summary.totalChequeAmount || 0).toFixed(2)}\n`;
-      msg += `ණය මුදල් (Loan / Credit Given): Rs. ${(summary.totalLoanGiven || 0).toFixed(2)}\n`;
-      msg += `අවලංගු කළ බිල්පත් වටිනාකම (Cancel Order Amount): Rs. ${(summary.cancelOrderAmount || 0).toFixed(2)}\n`;
-      msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${summary.cancelShopCount || 0}\n\n`;
-      
-      msg += `රියදුරු සාරාංශය (Driver Breakdown):\n\n`;
-      
-      if (summary.driverSummaries && summary.driverSummaries.length > 0) {
-        summary.driverSummaries.forEach(driver => {
-          msg += `රියදුරු (Driver): ${driver.driverName}\n`;
-          msg += `එකතු කළ මුදල් (Cash): Rs. ${(driver.totalCashCollected || 0).toFixed(2)}\n`;
-          msg += `ලැබුණු චෙක්පත් (Cheques): Rs. ${(driver.totalChequeAmount || 0).toFixed(2)}\n`;
-          msg += `ණය මුදල් (Loan): Rs. ${(driver.totalLoanGiven || 0).toFixed(2)}\n`;
-          msg += `අවලංගු (Cancelled): Rs. ${(driver.cancelOrderAmount || 0).toFixed(2)}\n`;
-          msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${driver.cancelShopCount || 0}\n\n`;
-        });
-      } else {
-        msg += `රියදුරු දත්ත නොමැත (No driver data available)\n\n`;
-      }
-      
-      msg += `ප්‍රධාන ගබඩාවේ තොග (Main Store Stock):\n`;
       let totalValue = 0;
       let zeroBoxCount = 0;
+      let stockMsg = '';
       
       stockData.forEach(item => {
         const product = allProducts.find(p => String(p.id) === String(item.productId) || p.sku === item.productCode);
@@ -129,16 +105,42 @@ export function BalancePage() {
         }
         
         if (boxes === 0) {
-          msg += `${item.productName}: ${qty}\n`;
+          stockMsg += `${item.productName}: ${qty}\n`;
           zeroBoxCount++;
         }
       });
       
       if (zeroBoxCount === 0) {
-        msg += `0 Box අයිතම නොමැත (No 0-box items)\n`;
+        stockMsg += `0 Box අයිතම නොමැත (No 0-box items)\n`;
+      }
+
+      let msg = businessName ? `${businessName}\n` : '';
+      msg += `දෛනික සාරාංශය (${dateString})\n------------------------\n`;
+      msg += `මුළු ආදායම (Full Income): Rs. ${totalIncome.toFixed(2)}\n`;
+      msg += `එකතු කළ මුදල් (Total Cash Collected): Rs. ${(summary.totalCashCollected || 0).toFixed(2)}\n`;
+      msg += `ලැබුණු චෙක්පත් (Cheques Received): Rs. ${(summary.totalChequeAmount || 0).toFixed(2)}\n`;
+      msg += `ණය මුදල් (Loan / Credit Given): Rs. ${(summary.totalLoanGiven || 0).toFixed(2)}\n`;
+      msg += `අවලංගු කළ බිල්පත් වටිනාකම (Cancel Order Amount): Rs. ${(summary.cancelOrderAmount || 0).toFixed(2)}\n`;
+      msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${summary.cancelShopCount || 0}\n`;
+      msg += `ඇස්තමේන්තුගත තොග වටිනාකම (Estimated Stock Value): Rs. ${totalValue.toFixed(2)}\n\n`;
+      
+      msg += `රියදුරු සාරාංශය (Driver Breakdown):\n\n`;
+      
+      if (summary.driverSummaries && summary.driverSummaries.length > 0) {
+        summary.driverSummaries.forEach(driver => {
+          msg += `රියදුරු (Driver): ${driver.driverName}\n`;
+          msg += `එකතු කළ මුදල් (Cash): Rs. ${(driver.totalCashCollected || 0).toFixed(2)}\n`;
+          msg += `ලැබුණු චෙක්පත් (Cheques): Rs. ${(driver.totalChequeAmount || 0).toFixed(2)}\n`;
+          msg += `ණය මුදල් (Loan): Rs. ${(driver.totalLoanGiven || 0).toFixed(2)}\n`;
+          msg += `අවලංගු (Cancelled): Rs. ${(driver.cancelOrderAmount || 0).toFixed(2)}\n`;
+          msg += `අවලංගු කළ බිල්පත් ගණන (Cancelled Shop Count): ${driver.cancelShopCount || 0}\n\n`;
+        });
+      } else {
+        msg += `රියදුරු දත්ත නොමැත (No driver data available)\n\n`;
       }
       
-      msg += `\nEstimated Value (LKR): Rs. ${totalValue.toFixed(2)}\n`;
+      msg += `ප්‍රධාන ගබඩාවේ තොග (Main Store Stock):\n`;
+      msg += stockMsg;
       msg += `\n`;
       
       const encodedMessage = encodeURIComponent(msg);
