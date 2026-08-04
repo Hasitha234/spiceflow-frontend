@@ -58,6 +58,9 @@ export function AppLayout() {
   const { agencyName } = useAgencyStore();
   const { tenantId, setTenantId } = useTenantStore();
   
+  const currentTenant = user?.assignedTenants?.find(t => t.id === tenantId);
+  const resolvedAgencyName = agencyName || currentTenant?.businessName;
+  
   const { theme, toggleTheme } = useThemeStore();
   const isMobile = useIsMobile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -267,7 +270,7 @@ export function AppLayout() {
           zIndex: 10,
         }}>
           {/* Left-aligned Agency Name */}
-          {agencyName && (
+          {resolvedAgencyName && (
             <div className="mr-auto flex items-center gap-2">
               <span
                 className="text-sm font-medium tabular-nums"
@@ -276,7 +279,7 @@ export function AppLayout() {
                   letterSpacing: 'var(--tracking-normal)',
                 }}
               >
-                {agencyName}
+                {resolvedAgencyName}
               </span>
             </div>
           )}
