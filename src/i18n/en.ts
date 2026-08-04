@@ -44,6 +44,7 @@ const en = {
     morningSummaries: 'Morning Summaries',
     cancelSummaries: 'Cancel Summaries',
     bills: 'Bills',
+    balance: 'Balance',
     orders: 'Sales Orders',
     loading: 'Loading Sheets',
     deliveries: 'Deliveries',
