@@ -19,7 +19,7 @@ export const MorningSummariesPage = () => {
   const [deductModalOpen, setDeductModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')]);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
   const queryClient = useQueryClient();
 
   const {
