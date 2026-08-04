@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Select, message, Form, Input, DatePicker, Popconfirm, Tooltip, Space, Tabs, Radio } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
 import { ResponsiveModal } from '@/components/common';
 
 import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined, DownloadOutlined } from '@ant-design/icons';
@@ -12,6 +13,7 @@ import { VehicleLoadingSheetsTab } from '../features/inventory/components/Vehicl
 import { WarehouseTypeBadge } from '../components/common/WarehouseTypeBadge';
 import { downloadInventoryPdf } from '../utils/pdfExport';
 import { useAgencyStore } from '../store/agencyStore';
+import { useAuthStore } from '../store/authStore';
 
 export function InventoryPage() {
   const { t } = useTranslation();
@@ -224,6 +226,8 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [inputMode, setInputMode] = useState<'packaging' | 'totalQty'>('packaging');
   const [packagingInputs, setPackagingInputs] = useState({ boxes: 0, bundles: 0, loose: 0 });
   const [totalQtyInput, setTotalQtyInput] = useState(0);
+  
+  const userType = useAuthStore(state => state.user?.userType || 'TENANT_OWNER');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -431,7 +435,8 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     });
   }, [items, searchQuery, stockFilter]);
 
-  const columns = useMemo(() => [
+  const columns = useMemo(() => {
+    const baseColumns: ColumnsType<InventoryItem> = [
     {
       title: 'SKU',
       dataIndex: 'productSku',
@@ -540,8 +545,11 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           </span>
         );
       }
-    },
-    {
+    }
+  ];
+
+  if (userType === 'TENANT_OWNER') {
+    baseColumns.push({
       title: t('common.actions', 'Actions'),
       key: 'actions',
       align: 'right' as const,
@@ -575,9 +583,11 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           </Tooltip>
         </Space>
       ),
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  ], [t]);
+    });
+  }
+
+  return baseColumns;
+}, [t, userType, handleDeleteItem, handleOpenEditItem]);
 
   return (
     <div className="p-6">
