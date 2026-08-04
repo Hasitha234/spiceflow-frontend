@@ -71,7 +71,7 @@ export const loadingSheetApi = {
 
 // ─── Deliveries ───────────────────────────────────────────────────────────────
 export const deliveryApi = {
-  list: (params?: { page?: number; size?: number; date?: string; sort?: string }) =>
+  list: (params?: { date?: string; page?: number; size?: number; sort?: string }) =>
     apiClient.get<PageResponse<Delivery>>('/api/v1/sales/deliveries', { params }).then((r) => r.data),
   get: (id: string) =>
     apiClient.get<Delivery>(`/api/v1/sales/deliveries/${id}`).then((r) => r.data),
@@ -84,6 +84,7 @@ export const deliveryApi = {
   complete: (id: string) =>
     apiClient.post(`/api/v1/sales/deliveries/${id}/complete`).then((r) => r.data),
 };
+
 
 // ─── Purchases ────────────────────────────────────────────────────────────────
 export const purchaseApi = {

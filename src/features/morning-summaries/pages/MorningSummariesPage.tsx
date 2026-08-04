@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Tag, Modal } from 'antd';
+import { Button, Tag, Modal, DatePicker } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
 import { getMorningSummaries } from '../api/morningSummaryApi';
@@ -18,6 +19,7 @@ export const MorningSummariesPage = () => {
   const [deductModalOpen, setDeductModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().startOf('month'), dayjs().endOf('month')]);
   const queryClient = useQueryClient();
 
   const {
@@ -32,8 +34,8 @@ export const MorningSummariesPage = () => {
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['morningSummaries', pageableParams],
-    queryFn: () => getMorningSummaries(tableState.page, tableState.size),
+    queryKey: ['morningSummaries', pageableParams, dateRange?.[0]?.format('YYYY-MM-DD'), dateRange?.[1]?.format('YYYY-MM-DD')],
+    queryFn: () => getMorningSummaries(tableState.page, tableState.size, dateRange?.[0]?.format('YYYY-MM-DD'), dateRange?.[1]?.format('YYYY-MM-DD')),
   });
 
   const columns: ColumnsType<MorningSummary> = [
@@ -155,6 +157,17 @@ export const MorningSummariesPage = () => {
         title="Morning Summaries"
         subtitle="Manage bulk van sales dispatch and load estimates."
         extra={[
+          <DatePicker.RangePicker
+            key="dateRange"
+            value={dateRange}
+            onChange={(dates) => {
+              if (dates && dates[0] && dates[1]) {
+                setDateRange([dates[0], dates[1]]);
+                setPage(0);
+              }
+            }}
+            format="YYYY-MM-DD"
+          />,
           <Button
             key="create"
             type="primary"
