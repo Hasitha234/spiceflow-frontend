@@ -14,7 +14,9 @@ import {
   Typography,
   message,
   Popconfirm,
+  DatePicker,
 } from 'antd';
+import dayjs from 'dayjs';
 import {
   PlusOutlined,
   DeleteOutlined,
@@ -45,6 +47,12 @@ export function PurchasesPage() {
   const [page, setPage] = useState(0);
   const [size, setSize] = useState(10);
   const [total, setTotal] = useState(0);
+  
+  // Default to current month
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
+    dayjs().startOf('month'),
+    dayjs().endOf('month'),
+  ]);
 
   // Warehouse selection state
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
@@ -55,7 +63,9 @@ export function PurchasesPage() {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const purchaseRes = await purchaseApi.list({ page, size, sort: 'id,desc' });
+      const startDate = dateRange?.[0]?.format('YYYY-MM-DD');
+      const endDate = dateRange?.[1]?.format('YYYY-MM-DD');
+      const purchaseRes = await purchaseApi.list({ page, size, sort: 'id,desc', startDate, endDate });
       setPurchases(purchaseRes?.content || []);
       setTotal(purchaseRes?.totalElements || 0);
     } catch {
@@ -63,13 +73,13 @@ export function PurchasesPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, size]);
+  }, [page, size, dateRange]);
 
   useEffect(() => {
     loadData();
     // Load warehouses for confirmation dropdown
     warehouseApi.list({ size: 100 }).then(res => setWarehouses(res?.content || [])).catch(() => {});
-  }, [loadData]);
+  }, [loadData, dateRange]);
 
   const handleConfirmClick = useCallback((id: string) => {
     setConfirmingPurchaseId(id);
@@ -270,16 +280,33 @@ export function PurchasesPage() {
           </Text>
         </div>
         <PermissionGuard requireRole={['ROLE_TENANT_OWNER', 'ROLE_PURCHASING_AGENT', 'ROLE_INVENTORY_MANAGER', 'ROLE_DATA_ENTRY', 'ROLE_OWNER']}>
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <DatePicker.RangePicker
+            value={dateRange}
+            onChange={(dates) => {
+              if (dates && dates[0] && dates[1]) {
+                setDateRange([dates[0], dates[1]]);
+              }
+            }}
+            allowClear={false}
+            style={{ width: '280px' }}
+          />
           <Button
             type="primary"
             icon={<PlusOutlined />}
-            onClick={() => {
-              navigate('/purchases/new');
+            onClick={() => navigate('/purchases/new')}
+            className="sf-focus-ring"
+            style={{ 
+              height: '40px',
+              padding: '0 20px',
+              borderRadius: 'var(--radius-md)',
+              fontWeight: 500,
+              boxShadow: 'var(--shadow-sm)'
             }}
-            style={{ fontWeight: 500, height: '40px', padding: '0 1rem', borderRadius: '6px' }}
           >
             {t('purchase.create', 'New Purchase Order')}
           </Button>
+        </div>
         </PermissionGuard>
       </div>
 

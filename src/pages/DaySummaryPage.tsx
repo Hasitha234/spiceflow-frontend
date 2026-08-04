@@ -83,7 +83,7 @@ export function DaySummaryPage() {
     try {
       const dateStr = date.format('YYYY-MM-DD');
       const [purchaseRes, repOrderRes, deliveryRes, summaryRes] = await Promise.all([
-        purchaseApi.list({ date: dateStr, size: 100 }),
+        purchaseApi.list({ startDate: dateStr, endDate: dateStr, size: 100 }),
         repOrderApi.list({ date: dateStr, size: 100 }),
         deliveryApi.list({ date: dateStr, size: 100 }),
         reportApi.endOfDaySummary(dateStr),
