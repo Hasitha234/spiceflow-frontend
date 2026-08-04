@@ -11,10 +11,12 @@ import { DeductInventoryModal } from '../components/DeductInventoryModal';
 import { useTableState } from '@/hooks/useTableState';
 import { undoDeduction } from '../api/morningSummaryApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { MorningSummaryViewDrawer } from '../components/MorningSummaryViewDrawer';
 
 export const MorningSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deductModalOpen, setDeductModalOpen] = useState(false);
+  const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
   const queryClient = useQueryClient();
 
@@ -82,52 +84,60 @@ export const MorningSummariesPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 120,
+      width: 180,
       render: (_, record) => {
-        if (record.status === 'PENDING') {
-          return (
-            <div className="flex gap-2">
-              <Button
-                type="primary"
-                size="small"
-                onClick={() => {
-                  setSelectedSummary(record);
-                  setDeductModalOpen(true);
-                }}
-              >
-                Proceed
-              </Button>
-              <Button
-                size="small"
-                onClick={() => {
-                  setSelectedSummary(record);
-                  setDrawerOpen(true);
-                }}
-              >
-                Edit
-              </Button>
-            </div>
-          );
-        }
-        if (record.status === 'SETTLED') {
-          return (
+        return (
+          <div className="flex gap-2">
             <Button
-              danger
               size="small"
-              loading={undoMutation.isPending && undoMutation.variables === record.id}
               onClick={() => {
-                Modal.confirm({
-                  title: 'Undo Deduction',
-                  content: `Are you sure you want to reverse this summary and return stock to ${record.deductedWarehouseName || 'the warehouse'} and subtract from ${record.returnWarehouseName || 'the return warehouse'}?`,
-                  onOk: () => undoMutation.mutate(record.id),
-                });
+                setSelectedSummary(record);
+                setViewDrawerOpen(true);
               }}
             >
-              Undo
+              View
             </Button>
-          );
-        }
-        return null;
+            {record.status === 'PENDING' && (
+              <>
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={() => {
+                    setSelectedSummary(record);
+                    setDeductModalOpen(true);
+                  }}
+                >
+                  Proceed
+                </Button>
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedSummary(record);
+                    setDrawerOpen(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </>
+            )}
+            {record.status === 'SETTLED' && (
+              <Button
+                danger
+                size="small"
+                loading={undoMutation.isPending && undoMutation.variables === record.id}
+                onClick={() => {
+                  Modal.confirm({
+                    title: 'Undo Deduction',
+                    content: `Are you sure you want to reverse this summary and return stock to ${record.deductedWarehouseName || 'the warehouse'} and subtract from ${record.returnWarehouseName || 'the return warehouse'}?`,
+                    onOk: () => undoMutation.mutate(record.id),
+                  });
+                }}
+              >
+                Undo
+              </Button>
+            )}
+          </div>
+        );
       },
     },
   ];
@@ -202,6 +212,15 @@ export const MorningSummariesPage = () => {
         open={deductModalOpen}
         onClose={() => {
           setDeductModalOpen(false);
+          setSelectedSummary(null);
+        }}
+        summary={selectedSummary}
+      />
+      
+      <MorningSummaryViewDrawer
+        open={viewDrawerOpen}
+        onClose={() => {
+          setViewDrawerOpen(false);
           setSelectedSummary(null);
         }}
         summary={selectedSummary}
