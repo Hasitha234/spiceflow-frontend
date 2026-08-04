@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Typography, Button, Table, Space, Tag, Modal, notification, Row, Col, Input, DatePicker, Select } from 'antd';
 import { PlusOutlined, DeleteOutlined, CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, DollarOutlined } from '@ant-design/icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import { getBills, cancelBill, useGetReps, useGetShops } from '@/api/generated';
 import type { BillResponse } from '@/api/generated';
 import { PageHeader } from '@/components/common';
@@ -18,7 +19,8 @@ export function BillsPage() {
   const [selectedBill, setSelectedBill] = useState<BillResponse | null>(null);
   const [pagination, setPagination] = useState({ current: 1, pageSize: 10 });
   const [filters, setFilters] = useState({
-    billDate: undefined as string | undefined,
+    startDate: dayjs().format('YYYY-MM-DD') as string | undefined,
+    endDate: dayjs().format('YYYY-MM-DD') as string | undefined,
     repId: undefined as number | undefined,
     shopId: undefined as number | undefined,
     status: undefined as string | undefined,
@@ -31,7 +33,8 @@ export function BillsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['getBills', pagination.current, pagination.pageSize, filters],
     queryFn: () => getBills({
-      billDate: filters.billDate,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
       repId: filters.repId,
       shopId: filters.shopId,
       status: filters.status,
@@ -210,11 +213,21 @@ export function BillsPage() {
             />
           </Col>
           <Col span={4}>
-            <DatePicker
-              placeholder="Bill Date"
+            <DatePicker.RangePicker
               style={{ width: '100%' }}
               allowClear
-              onChange={date => setFilters(prev => ({ ...prev, billDate: date ? date.format('YYYY-MM-DD') : undefined }))}
+              value={filters.startDate && filters.endDate ? [dayjs(filters.startDate), dayjs(filters.endDate)] : null}
+              onChange={dates => {
+                if (dates && dates[0] && dates[1]) {
+                  setFilters(prev => ({ 
+                    ...prev, 
+                    startDate: dates[0]?.format('YYYY-MM-DD'),
+                    endDate: dates[1]?.format('YYYY-MM-DD')
+                  }));
+                } else {
+                  setFilters(prev => ({ ...prev, startDate: undefined, endDate: undefined }));
+                }
+              }}
             />
           </Col>
           <Col span={4}>
