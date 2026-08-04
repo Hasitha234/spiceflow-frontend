@@ -252,6 +252,15 @@ export interface RepOrderBillSummary {
   shops: RepOrderBillShop[];
 }
 
+export interface DriverSummary {
+  driverName: string;
+  totalCashCollected: number;
+  totalChequeAmount: number;
+  totalLoanGiven: number;
+  cancelOrderAmount: number;
+  cancelShopCount: number;
+}
+
 export interface EndOfDaySummary {
   date: string;
   totalSalesValue: number;
@@ -265,12 +274,15 @@ export interface EndOfDaySummary {
   chequeDetails?: ChequeDetail[];
   deliveries?: DeliverySummary[];
   cancelledOrders?: CancelledOrderSummary[];
+  cancelOrderAmount?: number;
+  cancelShopCount?: number;
   morningSummaryTotal?: number | null;
   cancelSummaryTotal?: number | null;
   netDispatchTotal?: number | null;
-  billsTotal?: number | null;
+  billsTotal?: number;
   balanceStatus?: string | null;
   repOrderBills?: RepOrderBillSummary[];
+  driverSummaries?: DriverSummary[];
   totalRepOrderBillsCount?: number;
   totalRepOrderBillsAmount?: number;
 }
