@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Card, Typography, Skeleton, ConfigProvider, Input, Button, Upload, message } from 'antd';
+import { Card, Typography, Skeleton, ConfigProvider, Button, Upload, message } from 'antd';
 import { ResponsiveModal, ChangePasswordModal } from '@/components/common';
 
 import { useTranslation } from 'react-i18next';
@@ -25,6 +25,8 @@ import { useGetSuppliers } from '@/api/generated/suppliers/suppliers';
 import { useGetAllWarehouses } from '@/api/generated/warehouses/warehouses';
 import { useGetReps, useGetDrivers, useGetShops } from '@/api/generated/sales-master-data/sales-master-data';
 import { useAgencyStore } from '@/store/agencyStore';
+import { useAuthStore } from '@/store/authStore';
+import { useTenantStore } from '@/store/tenantStore';
 
 const { Title, Text } = Typography;
 
@@ -115,20 +117,24 @@ const getCount = (data: any) => {
 
 // --- Agency Settings Modal ---
 function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { agencyName, agencyLogo, setAgencyName, setAgencyLogo } = useAgencyStore();
-  const [nameInput, setNameInput] = useState(agencyName || '');
+  const { agencyLogo, setAgencyName, setAgencyLogo } = useAgencyStore();
   const [logoInput, setLogoInput] = useState<string | null>(agencyLogo);
+
+  const user = useAuthStore(state => state.user);
+  const tenantId = useTenantStore(state => state.tenantId);
+  
+  // Find current tenant name from assigned tenants, or fallback if empty
+  const tenantName = user?.assignedTenants?.find(t => t.id === tenantId)?.businessName || 'Your Agency';
 
   // Sync inputs when modal opens
   React.useEffect(() => {
     if (open) {
-      setNameInput(agencyName || '');
       setLogoInput(agencyLogo);
     }
-  }, [open, agencyName, agencyLogo]);
+  }, [open, agencyLogo]);
 
   const handleSave = () => {
-    setAgencyName(nameInput.trim() || null);
+    setAgencyName(tenantName);
     setAgencyLogo(logoInput);
     message.success('Agency branding updated successfully!');
     onClose();
@@ -165,11 +171,19 @@ function AgencySettingsModal({ open, onClose }: { open: boolean; onClose: () => 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '16px' }}>
         <div>
           <Text strong style={{ display: 'block', marginBottom: '8px' }}>Agency Name</Text>
-          <Input 
-            placeholder="Enter agency name" 
-            value={nameInput} 
-            onChange={(e) => setNameInput(e.target.value)} 
-          />
+          <div style={{
+            padding: '8px 12px',
+            background: '#f5f5f5',
+            border: '1px solid #d9d9d9',
+            borderRadius: '6px',
+            color: '#595959',
+            fontWeight: 500
+          }}>
+            {tenantName}
+          </div>
+          <Text type="secondary" style={{ fontSize: '12px', marginTop: '4px', display: 'block' }}>
+            This name is securely fetched from your tenant profile.
+          </Text>
         </div>
         
         <div>
