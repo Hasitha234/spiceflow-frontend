@@ -229,7 +229,7 @@ export function AdminUsersPage() {
             <Input placeholder="John Doe" />
           </Form.Item>
           <Form.Item name="email" label="Email Address" rules={[{ required: true, type: 'email' }]}>
-            <Input placeholder="john@example.com" disabled={!!editingUser} />
+            <Input placeholder="john@example.com" />
           </Form.Item>
           {!editingUser && (
             <Form.Item name="password" label="Password" rules={[{ required: true }]}>
