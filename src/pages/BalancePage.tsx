@@ -275,7 +275,8 @@ export function BalancePage() {
                         Undo Balance
                       </Button>
                     </Popconfirm>
-                  )
+                    )}
+                  </>
                 ) : (
                   <Button
                     type="primary"
