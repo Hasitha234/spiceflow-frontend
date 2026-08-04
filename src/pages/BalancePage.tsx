@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { CheckCircleOutlined, CloseCircleOutlined, SyncOutlined, RollbackOutlined, WhatsAppOutlined } from '@ant-design/icons';
 import { balanceApi } from '../api/balanceApi';
 import { reportApi } from '../api/sales';
+import { productApi } from '../api/inventory';
 import { useAuthStore } from '../store/authStore';
 import { useTenantStore } from '../store/tenantStore';
 import { useAgencyStore } from '../store/agencyStore';
@@ -66,18 +67,22 @@ export function BalancePage() {
     try {
       setIsSendingReport(true);
       
-      // Fetch End of Day Summary & Stock Status
+      // Fetch End of Day Summary, Stock Status & Products
       const summary = await reportApi.endOfDaySummary(dateString);
-      const stockData = await reportApi.stockStatus();
+      const [stockData, productsRes] = await Promise.all([
+        reportApi.stockStatus(),
+        productApi.list({ size: 1000 })
+      ]);
+      const allProducts = productsRes?.content || [];
       
       // Get Agency Name
       const currentTenant = user?.assignedTenants?.find(t => t.id === tenantId);
-      const businessName = agencyName || currentTenant?.businessName || 'Agency';
+      const businessName = agencyName || currentTenant?.businessName || '';
 
       // Format WhatsApp Message
       const totalIncome = (summary.totalCashCollected || 0) + (summary.totalChequeAmount || 0) + (summary.totalLoanGiven || 0);
       
-      let msg = `${businessName}\n`;
+      let msg = businessName ? `${businessName}\n` : '';
       msg += `දෛනික සාරාංශය (${dateString})\n------------------------\n`;
       msg += `මුළු ආදායම (Full Income): Rs. ${totalIncome.toFixed(2)}\n`;
       msg += `එකතු කළ මුදල් (Total Cash Collected): Rs. ${(summary.totalCashCollected || 0).toFixed(2)}\n`;
@@ -102,14 +107,38 @@ export function BalancePage() {
       }
       
       msg += `ප්‍රධාන ගබඩාවේ තොග (Main Store Stock):\n`;
-      const mainStoreStocks = stockData.filter(item => (item.mainStoreQuantity || 0) > 0);
-      if (mainStoreStocks.length > 0) {
-        mainStoreStocks.forEach(item => {
-          msg += `${item.productName}: ${item.mainStoreQuantity}\n`;
-        });
-      } else {
-        msg += `තොග නොමැත (No stock available)\n`;
+      let totalValue = 0;
+      let zeroBoxCount = 0;
+      
+      stockData.forEach(item => {
+        const product = allProducts.find(p => String(p.id) === String(item.productId) || p.sku === item.productCode);
+        const basePrice = product?.basePrice || 0;
+        const qty = item.mainStoreQuantity || 0;
+        
+        totalValue += (qty * basePrice);
+        
+        const perBox = product?.soldUnitsPerBox || 0;
+        const perUnit = product?.itemsPerSoldUnit || 1;
+        
+        let boxes = 0;
+        if (perBox > 0 && perUnit > 0) {
+          const itemsPerBox = perBox * perUnit;
+          boxes = Math.floor(qty / itemsPerBox);
+        } else {
+          boxes = qty > 0 ? 1 : 0; // If no box packaging is defined, treat positive qty as having boxes
+        }
+        
+        if (boxes === 0) {
+          msg += `${item.productName}: ${qty}\n`;
+          zeroBoxCount++;
+        }
+      });
+      
+      if (zeroBoxCount === 0) {
+        msg += `0 Box අයිතම නොමැත (No 0-box items)\n`;
       }
+      
+      msg += `\nEstimated Value (LKR): Rs. ${totalValue.toFixed(2)}\n`;
       msg += `\n`;
       
       const encodedMessage = encodeURIComponent(msg);
