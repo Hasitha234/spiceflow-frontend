@@ -48,11 +48,8 @@ export function PurchasesPage() {
   const [size, setSize] = useState(10);
   const [total, setTotal] = useState(0);
   
-  // Default to current month
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([
-    dayjs().startOf('month'),
-    dayjs().endOf('month'),
-  ]);
+  // Default to current day
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
 
   // Warehouse selection state
   const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
