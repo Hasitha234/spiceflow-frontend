@@ -54,7 +54,7 @@ export const CancelSummariesPage = () => {
       title: 'Date',
       dataIndex: 'summaryDate',
       key: 'summaryDate',
-      render: (date) => <span>{new Date(date).toLocaleDateString()}</span>,
+      render: (date) => <span>{dayjs(date).format('YYYY-MM-DD')}</span>,
     },
     {
       title: 'Rep Name',
@@ -71,7 +71,7 @@ export const CancelSummariesPage = () => {
       dataIndex: 'finalEstimateValue',
       key: 'finalEstimateValue',
       render: (val) => (
-        <span className="font-bold text-orange-700">
+        <span className="font-medium text-gray-900">
           {new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val)}
         </span>
       ),

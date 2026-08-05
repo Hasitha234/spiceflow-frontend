@@ -144,14 +144,14 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
       repId: data.repId,
       driverId: data.driverId,
       summaryDate: data.summaryDate,
-      items: data.items.map((item, index) => {
+      items: data.items.map((item) => {
         const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
         const price = product?.ratePerSoldUnit || product?.basePrice || 0;
         return {
           productId: item.productId,
           quantity: item.quantity,
           unitPrice: price,
-          estimateValue: calculateEstimate(index)
+          estimateValue: price * item.quantity
         };
       })
     };
