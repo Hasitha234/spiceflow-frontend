@@ -2,6 +2,7 @@ import React from 'react';
 import { Drawer, Descriptions, Table, Tag, Typography, Button } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import type { CancelSummaryResponse, CancelSummaryItemResponse } from '@/api/generated';
+import dayjs from 'dayjs';
 
 const { Text } = Typography;
 
@@ -36,14 +37,14 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
       dataIndex: 'unitPrice',
       key: 'unitPrice',
       align: 'right',
-      render: (val) => val ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : '-',
+      render: (val) => val != null ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : '-',
     },
     {
       title: 'Est. Value',
       dataIndex: 'estimateValue',
       key: 'estimateValue',
       align: 'right',
-      render: (val) => val ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : '-',
+      render: (val) => val != null ? new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(val) : '-',
     },
   ];
 
@@ -77,7 +78,7 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
           <Text strong className="text-blue-600">{summary.summaryNumber}</Text>
         </Descriptions.Item>
         <Descriptions.Item label="Date">
-          {summary.summaryDate ? new Date(summary.summaryDate).toLocaleDateString() : '-'}
+          {summary.summaryDate ? dayjs(summary.summaryDate).format('YYYY-MM-DD') : '-'}
         </Descriptions.Item>
         <Descriptions.Item label="Rep">
           {summary.repName || '-'}
@@ -91,7 +92,7 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
           </Descriptions.Item>
         )}
         <Descriptions.Item label="Est. Total Value" span={2}>
-          <Text strong className="text-green-700 text-lg">
+          <Text strong className="text-gray-900 text-lg">
             {new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(summary.finalEstimateValue || 0)}
           </Text>
         </Descriptions.Item>
