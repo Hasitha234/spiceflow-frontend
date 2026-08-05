@@ -10,7 +10,7 @@ import type { CancelSummaryResponse } from '@/api/generated';
 import { CancelSummaryFormDrawer } from '../components/CancelSummaryFormDrawer';
 import { ReturnToWarehouseModal } from '../components/ReturnToWarehouseModal';
 import { CancelSummaryViewDrawer } from '../components/CancelSummaryViewDrawer';
-import { undoProceedCancelSummary } from '../api/cancelSummaryApi';
+import { undoProceedCancelSummary, deleteCancelSummary } from '../api/cancelSummaryApi';
 import { useTableState } from '@/hooks/useTableState';
 
 export const CancelSummariesPage = () => {
@@ -125,6 +125,25 @@ export const CancelSummariesPage = () => {
                 >
                   Edit
                 </Button>
+                <Button
+                  danger
+                  size="small"
+                  loading={deleteMutation.isPending && deleteMutation.variables === record.id}
+                  onClick={() => {
+                    if (record.id) {
+                      Modal.confirm({
+                        title: 'Delete Cancel Summary',
+                        content: 'Are you sure you want to delete this Cancel Summary? This action cannot be undone.',
+                        okText: 'Yes',
+                        okType: 'danger',
+                        cancelText: 'No',
+                        onOk: () => deleteMutation.mutate(record.id as number),
+                      });
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
               </>
             )}
             {record.status === 'SETTLED' && (
@@ -153,6 +172,13 @@ export const CancelSummariesPage = () => {
 
   const undoMutation = useMutation({
     mutationFn: (id: number) => undoProceedCancelSummary(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: number) => deleteCancelSummary(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
     },
