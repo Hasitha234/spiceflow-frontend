@@ -24,3 +24,7 @@ export const getCancelSummaryById = async (id: number) => {
   const response = await apiClient.get<import('@/api/generated').CancelSummaryResponse>(`/api/v1/sales/cancel-summaries/${id}`);
   return response.data;
 };
+
+export const deleteCancelSummary = async (id: number) => {
+  await apiClient.delete(`/api/v1/sales/cancel-summaries/${id}`);
+};
