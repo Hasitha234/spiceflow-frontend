@@ -230,6 +230,8 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [totalQtyInput, setTotalQtyInput] = useState(0);
   
   const userType = useAuthStore(state => state.user?.userType || 'TENANT_OWNER');
+  const userPermissions = useAuthStore(state => state.user?.permissions || []);
+  const canTransfer = userType === 'TENANT_OWNER' || userPermissions.includes('INVENTORY_TRANSFER');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -550,7 +552,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
     }
   ];
 
-  if (userType === 'TENANT_OWNER') {
+  if (canTransfer) {
     baseColumns.push({
       title: t('common.actions', 'Actions'),
       key: 'actions',
@@ -589,7 +591,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   }
 
   return baseColumns;
-}, [t, userType, handleDeleteItem, handleOpenEditItem]);
+}, [t, canTransfer, handleDeleteItem, handleOpenEditItem]);
 
   return (
     <div className="p-6">
@@ -656,7 +658,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 Unload Vehicle
               </Button>
             )}
-            {userType === 'TENANT_OWNER' && (
+            {canTransfer && (
               <Button
                 type="primary"
                 icon={<SwapOutlined />}
