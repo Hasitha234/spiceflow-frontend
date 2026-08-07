@@ -91,6 +91,12 @@ export const inventoryItemApi = {
     quantity: number;
     reason?: string;
   }) => apiClient.post('/api/v1/inventory-items/transfer', data).then((r) => r.data),
+  batchTransfer: (data: {
+    fromWarehouseId: number;
+    toWarehouseId: number;
+    items: Array<{ productId: number; quantity: number }>;
+    notes?: string;
+  }) => apiClient.post('/api/v1/inventory-items/batch-transfer', data).then((r) => r.data),
   markDamaged: (data: {
     inventoryItemId: string;
     quantity: number;
