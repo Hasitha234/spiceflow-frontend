@@ -1,12 +1,12 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Table, Button, Form, InputNumber, Select, message, Tag, Typography, Space, App, Row, Col, Input, Radio } from 'antd';
+import { Table, InputNumber, Select, Tag, App, Input, Radio } from 'antd';
 import { SwapOutlined, SearchOutlined } from '@ant-design/icons';
 import { ResponsiveModal } from '@/components/common';
 import { inventoryItemApi } from '../../../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../../../types/inventory';
 import { WarehouseTypeBadge } from '../../../components/common/WarehouseTypeBadge';
 
-const { Text, Title } = Typography;
+
 
 interface TransferStockModalProps {
   visible: boolean;
@@ -160,8 +160,9 @@ export const TransferStockModal: React.FC<TransferStockModalProps> = ({
       });
       appMessage.success(`Successfully transferred ${itemsToTransfer.length} items`);
       onSuccess();
-    } catch (error: any) {
-      appMessage.error(error?.response?.data?.message || 'Failed to complete the transfer');
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      appMessage.error(err?.response?.data?.message || 'Failed to complete the transfer');
     } finally {
       setTransferring(false);
     }
