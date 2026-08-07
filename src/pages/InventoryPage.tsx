@@ -5,13 +5,14 @@ import { Card, Col, Row, Tag, Button, Spin, Table, Statistic, InputNumber, Selec
 import type { ColumnsType } from 'antd/es/table';
 import { ResponsiveModal } from '@/components/common';
 
-import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined, DownloadOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, AppstoreOutlined, ShoppingOutlined, DollarOutlined, ReloadOutlined, PlusOutlined, EditOutlined, DeleteOutlined, CarOutlined, ShopOutlined, ArrowRightOutlined, DownloadOutlined, SwapOutlined } from '@ant-design/icons';
 import { warehouseApi, inventoryItemApi, productApi } from '../api/inventory';
 import type { Warehouse, InventoryItem, Product } from '../types/inventory';
 import dayjs from 'dayjs';
 import { VehicleLoadingSheetsTab } from '../features/inventory/components/VehicleLoadingSheetsTab';
 import { WarehouseTypeBadge } from '../components/common/WarehouseTypeBadge';
 import { downloadInventoryPdf } from '../utils/pdfExport';
+import { TransferStockModal } from '../features/inventory/components/TransferStockModal';
 import { useAgencyStore } from '../store/agencyStore';
 import { useAuthStore } from '../store/authStore';
 
@@ -220,6 +221,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const [savingItem, setSavingItem] = useState(false);
   const [form] = Form.useForm();
   const [searchQuery, setSearchQuery] = useState('');
+  const [transferModalVisible, setTransferModalVisible] = useState(false);
   const [stockFilter, setStockFilter] = useState('ALL');
   const { agencyName } = useAgencyStore();
 
@@ -652,6 +654,16 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
                 className="h-9 px-4 rounded-md border-slate-300 text-slate-700 hover:text-emerald-700 hover:border-emerald-600 font-medium text-sm transition-all"
               >
                 Unload Vehicle
+              </Button>
+            )}
+            {userType === 'TENANT_OWNER' && (
+              <Button
+                type="primary"
+                icon={<SwapOutlined />}
+                onClick={() => setTransferModalVisible(true)}
+                className="h-9 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-sm inline-flex items-center gap-1.5 shadow-2xs transition-all"
+              >
+                Transfer Stock
               </Button>
             )}
             <Button
@@ -1088,6 +1100,22 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
           </Form.Item>
         </Form>
       </ResponsiveModal>
+
+      {warehouse && (
+        <TransferStockModal
+          visible={transferModalVisible}
+          sourceWarehouseId={warehouse.id}
+          sourceWarehouseName={warehouse.name}
+          items={items}
+          allWarehouses={allWarehouses}
+          allProducts={allProducts}
+          onClose={() => setTransferModalVisible(false)}
+          onSuccess={() => {
+            setTransferModalVisible(false);
+            fetchData();
+          }}
+        />
+      )}
     </div>
   );
 }
