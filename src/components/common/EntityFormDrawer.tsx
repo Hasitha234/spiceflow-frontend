@@ -40,6 +40,7 @@ export const EntityFormDrawer: React.FC<EntityFormDrawerProps> = ({
           <Button
             type="primary"
             loading={loading}
+            disabled={loading}
             onClick={onSubmit}
             style={{ borderRadius: 'var(--radius-md)' }}
             className="font-medium"

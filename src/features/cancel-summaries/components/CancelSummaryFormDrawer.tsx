@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useForm, useFieldArray, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
@@ -11,6 +11,7 @@ import { cancelSummarySchema, type CancelSummaryFormData } from '../schemas/canc
 import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
 import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
 import dayjs from 'dayjs';
+import axios from 'axios';
 
 const { Text, Title } = Typography;
 
@@ -22,6 +23,7 @@ export interface CancelSummaryFormDrawerProps {
 
 export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = ({ open, onClose, summaryId }) => {
   const queryClient = useQueryClient();
+  const submittingRef = useRef(false);
 
   const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 2000 } });
   const { data: driversData, isLoading: driversLoading } = useGetDrivers({ pageable: { page: 0, size: 2000 } });
@@ -121,8 +123,18 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
       notification.success({ message: 'Cancel Summary created successfully.' });
       onClose();
     },
-    onError: () => {
-      notification.error({ message: 'Failed to create Cancel Summary.' });
+    onError: (error: unknown) => {
+      if (axios.isAxiosError(error) && error.response?.status === 409) {
+        notification.warning({
+          message: 'Duplicate detected',
+          description: 'A cancel summary with the same number was just created. Please try again.',
+        });
+      } else {
+        notification.error({ message: 'Failed to create Cancel Summary.' });
+      }
+    },
+    onSettled: () => {
+      submittingRef.current = false;
     }
     }
   });
@@ -136,10 +148,16 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     },
     onError: () => {
       notification.error({ message: 'Failed to update Cancel Summary.' });
+    },
+    onSettled: () => {
+      submittingRef.current = false;
     }
   });
 
   const onSubmit = (data: CancelSummaryFormData) => {
+    if (submittingRef.current) return;
+    submittingRef.current = true;
+    
     const formattedData = {
       repId: data.repId,
       driverId: data.driverId,
