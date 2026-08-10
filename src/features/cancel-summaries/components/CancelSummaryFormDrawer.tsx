@@ -276,7 +276,14 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
                         optionFilterProp="label"
                         placeholder="Select Product"
                         popupMatchSelectWidth={false}
-                        options={productsData?.content?.map((p: ProductResponse) => ({ label: p.name ?? '', value: p.id ?? 0 }))}
+                        options={productsData?.content
+                          ?.filter((p: ProductResponse) => {
+                            const currentProductIds = watchItems
+                              ?.map((item, i) => i !== index ? item.productId : null)
+                              .filter((id): id is number => id !== null && id > 0) || [];
+                            return !currentProductIds.includes(p.id ?? 0);
+                          })
+                          .map((p: ProductResponse) => ({ label: p.name ?? '', value: p.id ?? 0 }))}
                       />
                     </Form.Item>
                   )}
