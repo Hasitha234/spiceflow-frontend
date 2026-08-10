@@ -156,6 +156,10 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
 
   const onSubmit = (data: CancelSummaryFormData) => {
     if (submittingRef.current) return;
+    if (!productsData?.content?.length) {
+      notification.error({ message: 'Product data is not available. Please refresh the page and try again.' });
+      return;
+    }
     submittingRef.current = true;
     
     const formattedData = {
