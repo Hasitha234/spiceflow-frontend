@@ -129,6 +129,12 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
           message: 'Duplicate detected',
           description: 'A cancel summary with the same number was just created. Please try again.',
         });
+      } else if (axios.isAxiosError(error) && error.response?.status === 500) {
+        notification.error({
+          message: 'Server error',
+          description: 'A temporary server issue occurred. Please try again in a moment. If this persists, contact support.',
+          duration: 8,
+        });
       } else {
         notification.error({ message: 'Failed to create Cancel Summary.' });
       }
