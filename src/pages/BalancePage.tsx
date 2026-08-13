@@ -232,7 +232,7 @@ export function BalancePage() {
               </Card>
             </Col>
             <Col xs={24} md={12}>
-              <Card title={<Title level={4} style={{ margin: 0 }}>Side B: Bills Total (Net + Free)</Title>}>
+              <Card title={<Title level={4} style={{ margin: 0 }}>Side B: Cancelled Bills Total</Title>}>
                 <Statistic
                   value={balanceData.billsTotal}
                   precision={2}
