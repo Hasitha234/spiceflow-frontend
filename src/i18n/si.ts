@@ -42,7 +42,7 @@ const si = {
     monthSummary: 'මාසික සාරාංශය',
     inventory: 'තොගය',
     morningSummaries: 'උදෑසන සාරාංශ',
-    cancelSummaries: 'අවලංගු සාරාංශ',
+    cancelSummaries: 'සවස් සාරාංශ',
     bills: 'බිල්පත්',
     balance: 'Balance',
     orders: 'විකුණුම් ඇණවුම්',

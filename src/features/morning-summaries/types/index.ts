@@ -30,7 +30,7 @@ export interface MorningSummaryRequest {
   repId: number;
   driverId: number;
   summaryDate: string;
-  items: MorningSummaryItemRequest[];
+  finalEstimateValue: number;
 }
 
 export interface MorningSummaryItemRequest {

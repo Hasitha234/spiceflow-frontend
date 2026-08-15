@@ -199,7 +199,7 @@ export function BalancePage() {
             <Col xs={24} md={8}>
               <Card>
                 <Statistic
-                  title="Cancel Summaries (Total Est. Value)"
+                  title="Evening Summaries (Total Sold Value)"
                   value={balanceData.cancelSummaryTotal}
                   precision={2}
                   prefix="Rs."
@@ -210,7 +210,7 @@ export function BalancePage() {
             <Col xs={24} md={8}>
               <Card style={{ backgroundColor: '#fafafa', border: '2px solid #d9d9d9' }}>
                 <Statistic
-                  title="Net Dispatch (Morning - Cancel)"
+                  title="Net Dispatch (Morning − Evening)"
                   value={balanceData.netDispatchTotal}
                   precision={2}
                   prefix="Rs."
@@ -232,7 +232,7 @@ export function BalancePage() {
               </Card>
             </Col>
             <Col xs={24} md={12}>
-              <Card title={<Title level={4} style={{ margin: 0 }}>Side B: Cancelled Bills Total</Title>}>
+              <Card title={<Title level={4} style={{ margin: 0 }}>Side B: Bills Total</Title>}>
                 <Statistic
                   value={balanceData.billsTotal}
                   precision={2}

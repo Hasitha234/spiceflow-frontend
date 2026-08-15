@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Form, InputNumber, Select, Button, Row, Col, Typography, Spin, Divider, notification, DatePicker } from 'antd';
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Form, InputNumber, Select, Row, Col, Spin, notification, DatePicker } from 'antd';
 import { EntityFormDrawer } from '@/components/common';
 import { createMorningSummary, updateMorningSummary, getMorningSummaryById } from '../api/morningSummaryApi';
 import { morningSummarySchema, type MorningSummaryFormData } from '../schemas/morningSummarySchema';
-import { useGetReps, useGetDrivers, useGetProducts } from '@/api/generated';
-import type { ProductResponse, RepResponse, DriverResponse } from '@/api/generated';
+import { useGetReps, useGetDrivers } from '@/api/generated';
+import type { RepResponse, DriverResponse } from '@/api/generated';
 import dayjs from 'dayjs';
 
-const { Text, Title } = Typography;
+
 
 export interface MorningSummaryFormDrawerProps {
   open: boolean;
@@ -25,7 +24,6 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
   // Use the Orval generated hooks
   const { data: repsData, isLoading: repsLoading } = useGetReps({ pageable: { page: 0, size: 2000 } });
   const { data: driversData, isLoading: driversLoading } = useGetDrivers({ pageable: { page: 0, size: 2000 } });
-  const { data: productsData, isLoading: productsLoading } = useGetProducts({ pageable: { page: 0, size: 2000 } });
 
   const methods = useForm<MorningSummaryFormData>({
     resolver: zodResolver(morningSummarySchema),
@@ -33,7 +31,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       repId: undefined,
       driverId: undefined,
       summaryDate: dayjs().format('YYYY-MM-DD'),
-      items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+      finalEstimateValue: 0
     }
   });
 
@@ -48,12 +46,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
           repId: data.repId,
           driverId: data.driverId,
           summaryDate: data.summaryDate,
-          items: data.items.map(item => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            expectedReturnAmount: item.expectedReturnAmount || 0,
-            expectedReturnPrice: item.expectedReturnPrice || 0
-          }))
+          finalEstimateValue: data.finalEstimateValue || 0
         });
       }).catch((e) => {
         console.error('Failed to load summary', e);
@@ -65,10 +58,6 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       if (savedDraft) {
         try {
           const parsed = JSON.parse(savedDraft);
-          // Ensure items array is never empty from a bad draft
-          if (!parsed.items || parsed.items.length === 0) {
-            parsed.items = [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }];
-          }
           reset(parsed);
         } catch (e) {
           console.error('Failed to parse draft', e);
@@ -78,7 +67,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
           repId: undefined,
           driverId: undefined,
           summaryDate: dayjs().format('YYYY-MM-DD'),
-          items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+          finalEstimateValue: 0
         });
       }
     }
@@ -94,27 +83,6 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
     return () => subscription.unsubscribe();
   }, [methods, summaryId]);
 
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: "items"
-  });
-
-  const watchItems = methods.watch("items");
-
-  const calculateEstimate = (index: number) => {
-    const item = watchItems?.[index];
-    if (!item || !item.productId || !item.quantity) return 0;
-    const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
-    if (!product) return 0;
-    const rawPrice = product.ratePerSoldUnit;
-    const price = (rawPrice != null && rawPrice > 0) ? rawPrice : (product.basePrice || 0);
-    return price * item.quantity;
-  };
-
-  const calculateTotalEstimate = () => {
-    return watchItems?.reduce((total, _, index) => total + calculateEstimate(index), 0) || 0;
-  };
-
   const createMutation = useMutation({
     mutationFn: createMorningSummary,
     onSuccess: () => {
@@ -123,7 +91,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         repId: undefined,
         driverId: undefined,
         summaryDate: dayjs().format('YYYY-MM-DD'),
-        items: [{ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 }]
+        finalEstimateValue: 0
       });
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
       notification.success({ message: 'Morning Summary created successfully.' });
@@ -139,12 +107,7 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
       repId: data.repId,
       driverId: data.driverId,
       summaryDate: data.summaryDate,
-      items: data.items.map(item => ({
-        productId: item.productId,
-        quantity: item.quantity,
-        expectedReturnAmount: item.expectedReturnAmount || 0,
-        expectedReturnPrice: item.expectedReturnPrice || 0
-      }))
+      finalEstimateValue: data.finalEstimateValue
     }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
@@ -164,17 +127,12 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
         repId: data.repId,
         driverId: data.driverId,
         summaryDate: data.summaryDate,
-        items: data.items.map(item => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          expectedReturnAmount: item.expectedReturnAmount || 0,
-          expectedReturnPrice: item.expectedReturnPrice || 0
-        }))
+        finalEstimateValue: data.finalEstimateValue
       });
     }
   };
 
-  if (repsLoading || driversLoading || productsLoading) {
+  if (repsLoading || driversLoading) {
     return (
       <EntityFormDrawer
         open={open}
@@ -243,121 +201,25 @@ export const MorningSummaryFormDrawer: React.FC<MorningSummaryFormDrawerProps> =
               )}
             />
           </Col>
-        </Row>
-
-        <Divider />
-        <div className="flex justify-between items-center mb-4">
-          <Title level={5} style={{ margin: 0 }}>Line Items</Title>
-        </div>
-        {errors.items?.message && <Text type="danger" className="mb-2 block">{errors.items.message}</Text>}
-
-        {fields.map((field, index) => (
-          <div key={field.id} className="bg-gray-50 p-4 rounded-md border border-gray-200 mb-4">
-            <Row gutter={16} align="bottom">
-              <Col span={1} className="pb-2">
-                <Text strong>{index + 1}.</Text>
-              </Col>
-              <Col span={7}>
-                <Controller
-                  name={`items.${index}.productId`}
-                  control={control}
-                  render={({ field: pField }) => (
-                    <Form.Item label="Product" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.productId ? 'error' : ''} help={errors.items?.[index]?.productId?.message}>
-                      <Select
-                        {...pField}
-                        showSearch
-                        optionFilterProp="label"
-                        placeholder="Select Product"
-                        popupMatchSelectWidth={false}
-                        options={productsData?.content
-                          ?.filter((p: ProductResponse) => {
-                            const currentProductIds = watchItems
-                              ?.map((item, i) => i !== index ? item.productId : null)
-                              .filter((id): id is number => id !== null && id > 0) || [];
-                            return !currentProductIds.includes(p.id ?? 0);
-                          })
-                          .map((p: ProductResponse) => ({ label: p.name ?? '', value: p.id ?? 0 }))}
-                      />
-                    </Form.Item>
-                  )}
-                />
-              </Col>
-              <Col span={4}>
-                <Controller
-                  name={`items.${index}.quantity`}
-                  control={control}
-                  render={({ field: qField }) => (
-                    <Form.Item label="Qty" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.quantity ? 'error' : ''} help={errors.items?.[index]?.quantity?.message}>
-                      <InputNumber {...qField} style={{ width: '100%' }} min={0} onFocus={(e) => e.target.select()} />
-                    </Form.Item>
-                  )}
-                />
-              </Col>
-              <Col span={4}>
-                <Controller
-                  name={`items.${index}.expectedReturnAmount`}
-                  control={control}
-                  render={({ field: eraField }) => (
-                    <Form.Item label="Ret Qty (Exp)" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.expectedReturnAmount ? 'error' : ''} help={errors.items?.[index]?.expectedReturnAmount?.message}>
-                      <InputNumber 
-                        {...eraField} 
-                        style={{ width: '100%' }} 
-                        min={0} 
-                        onFocus={(e) => e.target.select()}
-                        onChange={(val) => {
-                          eraField.onChange(val);
-                          const item = watchItems?.[index];
-                          if (item && item.productId) {
-                            const product = productsData?.content?.find((p: ProductResponse) => p.id === item.productId);
-                            if (product) {
-                              const rpRaw = product.ratePerSoldUnit;
-                              const price = (rpRaw != null && rpRaw > 0) ? rpRaw : (product.basePrice || 0);
-                              methods.setValue(`items.${index}.expectedReturnPrice`, (val || 0) * price, { shouldDirty: true });
-                            }
-                          }
-                        }}
-                      />
-                    </Form.Item>
-                  )}
-                />
-              </Col>
-              <Col span={4}>
-                <Controller
-                  name={`items.${index}.expectedReturnPrice`}
-                  control={control}
-                  render={({ field: erpField }) => (
-                    <Form.Item label="Ret Value (Exp)" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.expectedReturnPrice ? 'error' : ''} help={errors.items?.[index]?.expectedReturnPrice?.message}>
-                      <InputNumber {...erpField} style={{ width: '100%' }} min={0} prefix="Rs." onFocus={(e) => e.target.select()} />
-                    </Form.Item>
-                  )}
-                />
-              </Col>
-              <Col span={3}>
-                <Form.Item label="Estimate" style={{ margin: 0 }}>
-                  <div className="font-semibold text-green-700 h-[32px] flex items-center">
-                    Rs. {calculateEstimate(index).toFixed(2)}
-                  </div>
+          <Col span={8}>
+            <Controller
+              name="finalEstimateValue"
+              control={control}
+              render={({ field }) => (
+                <Form.Item label="Final Estimate Value" validateStatus={errors.finalEstimateValue ? 'error' : ''} help={errors.finalEstimateValue?.message}>
+                  <InputNumber 
+                    {...field} 
+                    style={{ width: '100%' }} 
+                    min={0.01} 
+                    prefix="Rs." 
+                    onFocus={(e) => e.target.select()} 
+                    size="large"
+                  />
                 </Form.Item>
-              </Col>
-              <Col span={1} className="text-right">
-                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => remove(index)} />
-              </Col>
-            </Row>
-          </div>
-        ))}
-
-        <div className="mb-4">
-          <Button type="dashed" block icon={<PlusOutlined />} onClick={() => append({ productId: 0, quantity: 0, expectedReturnAmount: 0, expectedReturnPrice: 0 })}>
-            Add Item
-          </Button>
-        </div>
-
-        <div className="mt-8 flex justify-end">
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 min-w-[300px] text-right">
-            <Text type="secondary">Final Estimate Value</Text>
-            <Title level={3} style={{ margin: 0, color: '#1d4ed8' }}>Rs. {calculateTotalEstimate().toFixed(2)}</Title>
-          </div>
-        </div>
+              )}
+            />
+          </Col>
+        </Row>
       </Form>
     </EntityFormDrawer>
   );

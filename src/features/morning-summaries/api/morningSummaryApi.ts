@@ -18,12 +18,18 @@ export const getMorningSummaries = async (page = 0, size = 10, startDate?: strin
 };
 
 export const createMorningSummary = async (data: MorningSummaryRequest) => {
-  const response = await apiClient.post<MorningSummary>('/api/v1/morning-summaries', data);
+  const response = await apiClient.post<MorningSummary>('/api/v1/morning-summaries', {
+    ...data,
+    items: [],
+  });
   return response.data;
 };
 
 export const updateMorningSummary = async (id: number, data: MorningSummaryRequest) => {
-  const response = await apiClient.put<MorningSummary>(`/api/v1/morning-summaries/${id}`, data);
+  const response = await apiClient.put<MorningSummary>(`/api/v1/morning-summaries/${id}`, {
+    ...data,
+    items: [],
+  });
   return response.data;
 };
 

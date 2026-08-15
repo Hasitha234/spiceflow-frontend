@@ -104,15 +104,19 @@ export const MorningSummaryViewDrawer: React.FC<MorningSummaryViewDrawerProps> =
         </Descriptions.Item>
       </Descriptions>
 
-      <Text strong className="text-base block mb-4">Line Items</Text>
-      <Table
-        dataSource={summary.items}
-        columns={itemColumns}
-        rowKey="productId"
-        pagination={false}
-        size="small"
-        bordered
-      />
+      {summary.items && summary.items.length > 0 && (
+        <>
+          <Text strong className="text-base block mb-4 mt-6">Line Items</Text>
+          <Table
+            dataSource={summary.items}
+            columns={itemColumns}
+            rowKey="productId"
+            pagination={false}
+            size="small"
+            bordered
+          />
+        </>
+      )}
     </Drawer>
   );
 };

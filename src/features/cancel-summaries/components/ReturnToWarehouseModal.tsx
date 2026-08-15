@@ -31,7 +31,7 @@ export const ReturnToWarehouseModal: React.FC<ReturnToWarehouseModalProps> = ({
       return proceedCancelSummary(summary.id, selectedWarehouseId);
     },
     onSuccess: () => {
-      notification.success({ message: 'Summary processed successfully.' });
+      notification.success({ message: 'Evening summary processed. Items deducted from warehouse.' });
       queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
       onClose();
     },
@@ -51,12 +51,12 @@ export const ReturnToWarehouseModal: React.FC<ReturnToWarehouseModalProps> = ({
       key: 'productName',
     },
     {
-      title: 'Return Qty',
+      title: 'Sold Qty',
       dataIndex: 'quantity',
       key: 'quantity',
     },
     {
-      title: 'Return Value',
+      title: 'Sold Value',
       dataIndex: 'estimateValue',
       key: 'estimateValue',
       render: (val: number) => (
@@ -74,7 +74,7 @@ export const ReturnToWarehouseModal: React.FC<ReturnToWarehouseModalProps> = ({
 
   return (
     <Modal
-      title={`Proceed Cancel Summary - ${summary?.summaryNumber}`}
+      title={`Proceed Evening Summary — Deduct from Warehouse - ${summary?.summaryNumber}`}
       open={open}
       onCancel={handleClose}
       footer={[
@@ -94,10 +94,10 @@ export const ReturnToWarehouseModal: React.FC<ReturnToWarehouseModalProps> = ({
       width={700}
     >
       <div className="mb-4">
-        <Text strong className="block mb-2">Select Warehouse to Return Stock To:</Text>
+        <Text strong className="block mb-2">Select Warehouse to Deduct Sold Items From:</Text>
         <Select
           style={{ width: '100%' }}
-          placeholder="Select Return Warehouse"
+          placeholder="Select Deduction Warehouse"
           loading={warehousesLoading}
           value={selectedWarehouseId}
           onChange={setSelectedWarehouseId}
@@ -110,7 +110,7 @@ export const ReturnToWarehouseModal: React.FC<ReturnToWarehouseModalProps> = ({
 
       {selectedWarehouseId && (
         <div className="mt-4">
-          <Text strong className="block mb-2">Items to be Returned:</Text>
+          <Text strong className="block mb-2">Sold Items to Deduct:</Text>
           <Table
             dataSource={summary?.items || []}
             columns={columns}

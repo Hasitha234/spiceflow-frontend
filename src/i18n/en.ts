@@ -42,7 +42,7 @@ const en = {
     monthSummary: 'Month Summary',
     inventory: 'Inventory',
     morningSummaries: 'Morning Summaries',
-    cancelSummaries: 'Cancel Summaries',
+    cancelSummaries: 'Evening Summaries',
     bills: 'Bills',
     balance: 'Balance',
     orders: 'Sales Orders',
