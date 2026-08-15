@@ -87,10 +87,13 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
           {summary.driverName || '-'}
         </Descriptions.Item>
         {summary.returnWarehouseName && (
-          <Descriptions.Item label="Deduction Warehouse" span={2}>
+          <Descriptions.Item label="Deduction Warehouse" span={1}>
             {summary.returnWarehouseName}
           </Descriptions.Item>
         )}
+        <Descriptions.Item label="Inventory Processed" span={summary.returnWarehouseName ? 1 : 2}>
+          {summary.inventoryProcessed ? <Tag color="success">Yes</Tag> : <Tag color="default">No</Tag>}
+        </Descriptions.Item>
         <Descriptions.Item label="Est. Total Value" span={2}>
           <Text strong className="text-gray-900 text-lg">
             {new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR' }).format(summary.finalEstimateValue || 0)}

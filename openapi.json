@@ -7542,6 +7542,9 @@
           },
           "lastModifiedBy": {
             "type": "string"
+          },
+          "inventoryProcessed": {
+            "type": "boolean"
           }
         }
       },
