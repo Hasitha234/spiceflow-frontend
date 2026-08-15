@@ -120,7 +120,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
         items: [{ productId: 0, quantity: 1 }]
       });
       queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
-      notification.success({ message: 'Cancel Summary created successfully.' });
+      notification.success({ message: 'Evening Summary created successfully.' });
       onClose();
     },
     onError: (error: unknown) => {
@@ -149,7 +149,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
     mutationFn: (data: CancelSummaryFormData) => updateCancelSummary(summaryId!, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cancelSummaries'] });
-      notification.success({ message: 'Cancel Summary updated successfully.' });
+      notification.success({ message: 'Evening Summary updated successfully.' });
       onClose();
     },
     onError: () => {
@@ -197,7 +197,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
         open={open}
         onClose={onClose}
         onSubmit={() => {}}
-        title={summaryId ? "Edit Cancel Summary" : "Create Cancel Summary"}
+        title={summaryId ? "Edit Evening Summary" : "Create Evening Summary"}
       >
         <div className="flex items-center justify-center p-12"><Spin size="large" /></div>
       </EntityFormDrawer>
@@ -209,7 +209,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
       open={open}
       onClose={onClose}
       onSubmit={handleSubmit(onSubmit)}
-      title={summaryId ? "Edit Cancel Summary" : "Create Cancel Summary"}
+      title={summaryId ? "Edit Evening Summary" : "Create Evening Summary"}
       loading={summaryId ? updateMut.isPending : createMutation.isPending}
       submitText={summaryId ? "Save Changes" : "Save Summary"}
     >
@@ -264,7 +264,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
 
         <Divider />
         <div className="flex justify-between items-center mb-4">
-          <Title level={5} style={{ margin: 0 }}>Line Items (Unsold/Returned)</Title>
+          <Title level={5} style={{ margin: 0 }}>Sold Items</Title>
         </div>
         {errors.items?.message && <Text type="danger" className="mb-2 block">{errors.items.message}</Text>}
 
@@ -304,14 +304,14 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
                   name={`items.${index}.quantity`}
                   control={control}
                   render={({ field: qField }) => (
-                    <Form.Item label="Ret Qty" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.quantity ? 'error' : ''} help={errors.items?.[index]?.quantity?.message}>
+                    <Form.Item label="Sold Qty" style={{ margin: 0 }} validateStatus={errors.items?.[index]?.quantity ? 'error' : ''} help={errors.items?.[index]?.quantity?.message}>
                       <InputNumber {...qField} style={{ width: '100%' }} min={1} onFocus={(e) => e.target.select()} />
                     </Form.Item>
                   )}
                 />
               </Col>
               <Col span={5}>
-                <Form.Item label="Ret Value" style={{ margin: 0 }}>
+                <Form.Item label="Sold Value" style={{ margin: 0 }}>
                   <div className="font-semibold text-orange-600 h-[32px] flex items-center">
                     Rs. {calculateEstimate(index).toFixed(2)}
                   </div>
@@ -332,7 +332,7 @@ export const CancelSummaryFormDrawer: React.FC<CancelSummaryFormDrawerProps> = (
 
         <div className="mt-8 flex justify-end">
           <div className="bg-orange-50 p-4 rounded-lg border border-orange-200 min-w-[300px] text-right">
-            <Text type="secondary">Total Return Value</Text>
+            <Text type="secondary">Total Sold Value</Text>
             <Title level={3} style={{ margin: 0, color: '#c2410c' }}>Rs. {calculateTotalEstimate().toFixed(2)}</Title>
           </div>
         </div>

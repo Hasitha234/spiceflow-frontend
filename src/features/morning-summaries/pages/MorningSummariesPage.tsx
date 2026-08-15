@@ -8,7 +8,6 @@ import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/
 import { getMorningSummaries } from '../api/morningSummaryApi';
 import type { MorningSummary } from '../types';
 import { MorningSummaryFormDrawer } from '../components/MorningSummaryFormDrawer';
-import { DeductInventoryModal } from '../components/DeductInventoryModal';
 import { useTableState } from '@/hooks/useTableState';
 import { undoDeduction } from '../api/morningSummaryApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -16,7 +15,6 @@ import { MorningSummaryViewDrawer } from '../components/MorningSummaryViewDrawer
 
 export const MorningSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [deductModalOpen, setDeductModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
@@ -101,16 +99,6 @@ export const MorningSummariesPage = () => {
             </Button>
             {record.status === 'PENDING' && (
               <>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => {
-                    setSelectedSummary(record);
-                    setDeductModalOpen(true);
-                  }}
-                >
-                  Proceed
-                </Button>
                 <Button
                   size="small"
                   onClick={() => {
@@ -212,22 +200,11 @@ export const MorningSummariesPage = () => {
 
       <MorningSummaryFormDrawer 
         open={drawerOpen} 
-        summaryId={selectedSummary && !deductModalOpen ? selectedSummary.id : undefined}
+        summaryId={selectedSummary ? selectedSummary.id : undefined}
         onClose={() => {
           setDrawerOpen(false);
-          if (!deductModalOpen) {
-            setSelectedSummary(null);
-          }
-        }} 
-      />
-
-      <DeductInventoryModal
-        open={deductModalOpen}
-        onClose={() => {
-          setDeductModalOpen(false);
           setSelectedSummary(null);
-        }}
-        summary={selectedSummary}
+        }} 
       />
       
       <MorningSummaryViewDrawer

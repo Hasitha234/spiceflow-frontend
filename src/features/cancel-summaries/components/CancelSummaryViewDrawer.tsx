@@ -27,7 +27,7 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
       render: (text) => <Text strong>{text || 'Unknown Product'}</Text>,
     },
     {
-      title: 'Qty Returned',
+      title: 'Qty Sold',
       dataIndex: 'quantity',
       key: 'quantity',
       align: 'right',
@@ -60,7 +60,7 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
     <Drawer
       title={
         <div className="flex items-center gap-3">
-          <span>Cancel Summary Details</span>
+          <span>Evening Summary Details</span>
           {renderStatus(summary.status)}
         </div>
       }
@@ -87,7 +87,7 @@ export const CancelSummaryViewDrawer: React.FC<CancelSummaryViewDrawerProps> = (
           {summary.driverName || '-'}
         </Descriptions.Item>
         {summary.returnWarehouseName && (
-          <Descriptions.Item label="Return Warehouse" span={2}>
+          <Descriptions.Item label="Deduction Warehouse" span={2}>
             {summary.returnWarehouseName}
           </Descriptions.Item>
         )}

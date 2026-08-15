@@ -132,8 +132,8 @@ export const CancelSummariesPage = () => {
                   onClick={() => {
                     if (record.id) {
                       Modal.confirm({
-                        title: 'Delete Cancel Summary',
-                        content: 'Are you sure you want to delete this Cancel Summary? This action cannot be undone.',
+                        title: 'Delete Evening Summary',
+                        content: 'Are you sure you want to delete this Evening Summary? This action cannot be undone.',
                         okText: 'Yes',
                         okType: 'danger',
                         cancelText: 'No',
@@ -155,7 +155,7 @@ export const CancelSummariesPage = () => {
                   if (record.id) {
                     Modal.confirm({
                       title: 'Undo Proceed',
-                      content: `Are you sure you want to reverse this summary and remove stock from ${record.returnWarehouseName || 'the warehouse'}?`,
+                      content: `Are you sure you want to reverse this summary and add stock back to ${record.returnWarehouseName || 'the warehouse'}?`,
                       onOk: () => undoMutation.mutate(record.id as number),
                     });
                   }
@@ -187,8 +187,8 @@ export const CancelSummariesPage = () => {
   return (
     <PageLayout>
       <PageHeader
-        title="Cancel Summaries"
-        subtitle="Manage end of day unsold stock and returns from van sales."
+        title="Evening Summaries"
+        subtitle="Record end-of-day sold items and reconcile with morning dispatch."
         extra={[
           <DatePicker.RangePicker
             key="dateRange"
@@ -210,7 +210,7 @@ export const CancelSummariesPage = () => {
               setDrawerOpen(true);
             }}
           >
-            Create Summary
+            Create Evening Summary
           </Button>,
         ]}
       />
