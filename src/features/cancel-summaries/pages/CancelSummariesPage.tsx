@@ -78,14 +78,19 @@ export const CancelSummariesPage = () => {
     },
     {
       title: 'Status',
-      dataIndex: 'status',
       key: 'status',
-      render: (status: string) => {
+      render: (_, record) => {
+        const { status, inventoryProcessed } = record;
         let color = 'default';
         if (status === 'SETTLED') color = 'success';
         if (status === 'CANCELLED') color = 'error';
         if (status === 'PENDING') color = 'processing';
-        return <Tag color={color}>{status}</Tag>;
+        return (
+          <div className="flex flex-col gap-1 items-start">
+            <Tag color={color} className="m-0">{status}</Tag>
+            {inventoryProcessed && <Tag color="cyan" className="m-0 text-[10px]">Inv. Processed</Tag>}
+          </div>
+        );
       },
     },
     {
