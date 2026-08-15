@@ -109,7 +109,7 @@ export const CancelSummariesPage = () => {
             >
               View
             </Button>
-            {record.status === 'PENDING' && (
+            {!record.inventoryProcessed && (
               <>
                 <Button
                   type="primary"
@@ -151,7 +151,7 @@ export const CancelSummariesPage = () => {
                 </Button>
               </>
             )}
-            {record.status === 'SETTLED' && (
+            {record.inventoryProcessed && (
               <Button
                 danger
                 size="small"
