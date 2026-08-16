@@ -46,6 +46,8 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
       await proceedEveningSummary(summaryId, selectedWarehouseId);
       notification.success({ message: 'Evening summary processed successfully.' });
       queryClient.invalidateQueries({ queryKey: ['evening-summaries'] });
+      queryClient.invalidateQueries({ queryKey: ['warehouses'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
       onClose();
     } catch (error: unknown) {
       const err = error as { response?: { data?: { message?: string } }, message?: string };
