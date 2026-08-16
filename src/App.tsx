@@ -31,6 +31,9 @@ const MorningSummariesPage = lazyWithRetry(() => import('./features/morning-summ
 const EveningSummariesPage = lazyWithRetry(() =>
   import('./features/evening-summaries/pages/EveningSummariesPage').then(m => ({ default: m.EveningSummariesPage }))
 );
+const StockTransfersPage = lazyWithRetry(() =>
+  import('./features/stock-transfers/pages').then(m => ({ default: m.StockTransfersPage }))
+);
 const BalancePage = lazyWithRetry(() => import('./pages/BalancePage').then((m) => ({ default: m.BalancePage })));
 const RepOrdersPage = lazyWithRetry(() => import('./pages/RepOrdersPage').then((m) => ({ default: m.RepOrdersPage })));
 const CreateRepOrderPage = lazyWithRetry(() => import('./pages/CreateRepOrderPage').then((m) => ({ default: m.CreateRepOrderPage })));
@@ -91,6 +94,7 @@ function App() {
               <Route path="inventory" element={<InventoryPage />} />
               <Route path="morning-summaries" element={<MorningSummariesPage />} />
               <Route path="evening-summaries" element={<EveningSummariesPage />} />
+              <Route path="stock-transfers" element={<StockTransfersPage />} />
               <Route path="balance" element={<BalancePage />} />
               <Route path="sales" element={<RepOrdersPage />} />
               <Route path="sales/new" element={<CreateRepOrderPage />} />
