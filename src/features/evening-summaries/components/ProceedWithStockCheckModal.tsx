@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Select, Table, Typography, Tag, Alert, Button, Spin, notification } from 'antd';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkStockAvailability, proceedEveningSummary } from '../api/eveningSummaryApi';
+import { checkStockAvailability, proceedEveningSummary, type StockAvailabilityResponse } from '../api/eveningSummaryApi';
 import { getAllWarehouses } from '@/api/generated/warehouses/warehouses';
 import { CheckCircleOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
@@ -35,7 +35,7 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
     }
   }, [open]);
 
-  const hasShortage = stockStatus?.some((item: any) => !item.sufficient);
+  const hasShortage = stockStatus?.some((item: StockAvailabilityResponse) => !item.sufficient);
   const canProceed = !!selectedWarehouseId && !isCheckingStock && stockStatus && !hasShortage;
 
   const handleProceed = async () => {
@@ -47,10 +47,11 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
       notification.success({ message: 'Evening summary processed successfully.' });
       queryClient.invalidateQueries({ queryKey: ['evening-summaries'] });
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } }, message?: string };
       notification.error({
         message: 'Error processing summary',
-        description: error.response?.data?.message || 'An unexpected error occurred.',
+        description: err.response?.data?.message || err.message || 'An unexpected error occurred.',
       });
     } finally {
       setIsProceeding(false);
@@ -80,7 +81,7 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
       dataIndex: 'shortQuantity',
       key: 'shortQuantity',
       align: 'right' as const,
-      render: (val: number, record: any) => (
+      render: (val: number, record: StockAvailabilityResponse) => (
         <Text type={record.sufficient ? 'secondary' : 'danger'} strong={!record.sufficient}>
           {val}
         </Text>
@@ -90,7 +91,7 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
       title: 'Status',
       key: 'status',
       align: 'center' as const,
-      render: (_: any, record: any) => (
+      render: (_: unknown, record: StockAvailabilityResponse) => (
         record.sufficient ? 
           <Tag icon={<CheckCircleOutlined />} color="success">Sufficient</Tag> : 
           <Tag icon={<CloseCircleOutlined />} color="error">Short</Tag>
@@ -126,7 +127,7 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
           placeholder="Select warehouse..."
           value={selectedWarehouseId}
           onChange={setSelectedWarehouseId}
-          options={warehousesData?.content?.map((wh: any) => ({ label: wh.name, value: wh.id }))}
+          options={warehousesData?.content?.map((wh: { name: string, id: number }) => ({ label: wh.name, value: wh.id }))}
         />
       </div>
 

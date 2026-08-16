@@ -49,7 +49,7 @@ interface PageResponse<T> {
   number: number;
 }
 
-export const getEveningSummaries = async (params?: Record<string, any>) => {
+export const getEveningSummaries = async (params?: Record<string, unknown>) => {
   const response = await apiClient.get<PageResponse<EveningSummaryResponse>>('/api/v1/sales/evening-summaries', { params });
   return response.data;
 };

@@ -36,7 +36,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
     }
   });
 
-  const { control, handleSubmit, reset, watch, setValue, formState: { errors } } = methods;
+  const { control, handleSubmit, reset, watch, setValue, getValues, formState: { errors } } = methods;
   const { fields, append, remove } = useFieldArray({ control, name: 'items' });
 
   useEffect(() => {
@@ -55,7 +55,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
             }))
           });
         }).catch(err => {
-          notification.error({ message: 'Error fetching summary', description: err.message });
+          notification.error({ message: 'Error fetching summary', description: (err as Error).message });
           onClose();
         });
       } else {
@@ -70,17 +70,18 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
   }, [open, summaryId, reset, onClose]);
 
   const handleProductSelect = (index: number, productId: number) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const product = productsData?.content?.find((p: any) => p.id === productId);
     if (product) {
       const price = product.ratePerSoldUnit || product.basePrice || 0;
       setValue(`items.${index}.unitPrice`, price);
-      const qty = watch(`items.${index}.quantity`) || 0;
+      const qty = getValues(`items.${index}.quantity`) || 0;
       setValue(`items.${index}.estimateValue`, price * qty);
     }
   };
 
   const handleQuantityChange = (index: number, qty: number) => {
-    const price = watch(`items.${index}.unitPrice`) || 0;
+    const price = getValues(`items.${index}.unitPrice`) || 0;
     setValue(`items.${index}.estimateValue`, price * qty);
   };
 
@@ -97,16 +98,18 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
       }
       queryClient.invalidateQueries({ queryKey: ['evening-summaries'] });
       onClose();
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorResponse = err as { response?: { data?: { message?: string } }, message?: string };
       notification.error({
         message: 'Submission failed',
-        description: err.response?.data?.message || err.message
+        description: errorResponse.response?.data?.message || errorResponse.message || 'Unknown error occurred'
       });
     } finally {
       submittingRef.current = false;
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const totalEstimate = watch('items').reduce((sum, item: any) => sum + (item.estimateValue || 0), 0);
 
   return (
@@ -150,6 +153,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
                       (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
                     }
                   >
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {repsData?.content?.map((rep: any) => (
                       <Select.Option key={rep.id} value={rep.id}>{rep.name}</Select.Option>
                     ))}
@@ -173,6 +177,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
                       (option?.children as unknown as string).toLowerCase().includes(input.toLowerCase())
                     }
                   >
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {driversData?.content?.map((d: any) => (
                       <Select.Option key={d.id} value={d.id}>{d.name}</Select.Option>
                     ))}
@@ -209,6 +214,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
                       filterOption={(input, option) =>
                         (option?.label as unknown as string).toLowerCase().includes(input.toLowerCase())
                       }
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       options={productsData?.content?.map((p: any) => ({
                         label: `${p.name} (${p.sku})`,
                         value: p.id,

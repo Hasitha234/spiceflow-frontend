@@ -6,7 +6,7 @@ import { PlusOutlined, SearchOutlined, MoreOutlined, EyeOutlined, EditOutlined, 
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
-import { getEveningSummaries, deleteEveningSummary, undoProceedEveningSummary } from '../api/eveningSummaryApi';
+import { getEveningSummaries, deleteEveningSummary, undoProceedEveningSummary, type EveningSummaryResponse } from '../api/eveningSummaryApi';
 import { EveningSummaryFormDrawer } from '../components/EveningSummaryFormDrawer';
 import { ProceedWithStockCheckModal } from '../components/ProceedWithStockCheckModal';
 import { EveningSummaryViewDrawer } from '../components/EveningSummaryViewDrawer';
@@ -20,9 +20,9 @@ export const EveningSummariesPage = () => {
   const [selectedSummaryId, setSelectedSummaryId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
-  // @ts-ignore - roles might not be exported from AuthState but it's used elsewhere, wait let's check authStore again
+  // @ts-expect-error - roles might not be exported from AuthState but it's used elsewhere
   const user = useAuthStore(state => state.user);
-  const roles = (user as any)?.roles || [];
+  const roles = (user as { roles?: string[] })?.roles || [];
   const canEdit = roles.some((role: string) => ['TENANT_OWNER', 'DATA_ENTRY'].includes(role));
 
   const {
@@ -58,10 +58,11 @@ export const EveningSummariesPage = () => {
           await deleteEveningSummary(id);
           notification.success({ message: 'Summary deleted successfully' });
           queryClient.invalidateQueries({ queryKey: ['evening-summaries'] });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { message?: string } }, message?: string };
           notification.error({
             message: 'Error deleting summary',
-            description: error.response?.data?.message || error.message,
+            description: err.response?.data?.message || err.message || 'An unknown error occurred.',
           });
         }
       },
@@ -79,17 +80,18 @@ export const EveningSummariesPage = () => {
           await undoProceedEveningSummary(id);
           notification.success({ message: 'Proceed action reversed successfully' });
           queryClient.invalidateQueries({ queryKey: ['evening-summaries'] });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { message?: string } }, message?: string };
           notification.error({
             message: 'Error reversing proceed',
-            description: error.response?.data?.message || error.message,
+            description: err.response?.data?.message || err.message || 'An unknown error occurred.',
           });
         }
       },
     });
   };
 
-  const columns: ColumnsType<any> = [
+  const columns: ColumnsType<EveningSummaryResponse> = [
     {
       title: 'Summary No.',
       dataIndex: 'summaryNumber',
@@ -128,7 +130,7 @@ export const EveningSummariesPage = () => {
       title: 'Status',
       key: 'status',
       align: 'center',
-      render: (_, record: any) => (
+      render: (_, record: EveningSummaryResponse) => (
         <Space direction="vertical" size={2}>
           <Tag color={record.status === 'SETTLED' ? 'success' : 'processing'}>
             {record.status}
@@ -143,7 +145,7 @@ export const EveningSummariesPage = () => {
       title: 'Actions',
       key: 'actions',
       align: 'right',
-      render: (_, record: any) => {
+      render: (_, record: EveningSummaryResponse) => {
         const items: MenuProps['items'] = [
           {
             key: 'view',
@@ -245,10 +247,10 @@ export const EveningSummariesPage = () => {
           loading={isLoading}
           pagination={false}
           scroll={{ x: 800, y: 'calc(100vh - 350px)' }}
-          onChange={(_, __, sorter: any) => {
-            const s = Array.isArray(sorter) ? sorter[0] : sorter;
+          onChange={(_, __, sorter: unknown) => {
+            const s = (Array.isArray(sorter) ? sorter[0] : sorter) as { field?: string, order?: string };
             if (s && s.field && s.order) {
-              setSort(s.field as string, s.order === 'ascend' ? 'asc' : 'desc');
+              setSort(s.field, s.order === 'ascend' ? 'asc' : 'desc');
             }
           }}
         />

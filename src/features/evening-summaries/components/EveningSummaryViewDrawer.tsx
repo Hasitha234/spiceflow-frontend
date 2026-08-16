@@ -2,7 +2,7 @@ import React from 'react';
 import { Drawer, Descriptions, Table, Typography, Tag, Divider, Spin } from 'antd';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
-import { getEveningSummaryById } from '../api/eveningSummaryApi';
+import { getEveningSummaryById, type EveningSummaryItemResponse } from '../api/eveningSummaryApi';
 
 const { Title, Text } = Typography;
 
@@ -24,7 +24,7 @@ export const EveningSummaryViewDrawer: React.FC<EveningSummaryViewDrawerProps> =
       title: 'Product',
       dataIndex: 'productName',
       key: 'productName',
-      render: (text: string, record: any) => (
+      render: (text: string, record: EveningSummaryItemResponse) => (
         <div>
           <div>{text}</div>
           <Text type="secondary" style={{ fontSize: '12px' }}>{record.productSku}</Text>
