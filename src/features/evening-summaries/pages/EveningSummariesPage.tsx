@@ -18,7 +18,7 @@ export const EveningSummariesPage = () => {
   const [proceedModalOpen, setProceedModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummaryId, setSelectedSummaryId] = useState<number | null>(null);
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(30, 'day'), dayjs()]);
   const queryClient = useQueryClient();
 
   const user = useAuthStore(state => state.user);
