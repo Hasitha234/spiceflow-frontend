@@ -231,22 +231,23 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
                 help={errors.items?.[index]?.quantity?.message}
                 style={{ marginBottom: 0 }}
               >
-                <Controller
-                  name={`items.${index}.quantity`}
-                  control={control}
-                  render={({ field }) => (
-                    <InputNumber
-                      {...field}
-                      min={1}
-                      style={{ width: '100%' }}
-                      placeholder="Qty"
-                      onChange={(val) => {
-                        field.onChange(val);
-                        handleQuantityChange(index, val || 0);
-                      }}
-                    />
-                  )}
-                />
+                  <Controller
+                    name={`items.${index}.quantity`}
+                    control={control}
+                    render={({ field }) => (
+                      <InputNumber
+                        {...field}
+                        min={1}
+                        style={{ width: '100%' }}
+                        placeholder="Qty"
+                        onFocus={(e) => e.target.select()}
+                        onChange={(val) => {
+                          field.onChange(val);
+                          handleQuantityChange(index, val || 0);
+                        }}
+                      />
+                    )}
+                  />
               </Form.Item>
             </Col>
             <Col span={7}>

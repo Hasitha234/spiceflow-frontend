@@ -11,7 +11,7 @@ import { EveningSummaryFormDrawer } from '../components/EveningSummaryFormDrawer
 import { ProceedWithStockCheckModal } from '../components/ProceedWithStockCheckModal';
 import { EveningSummaryViewDrawer } from '../components/EveningSummaryViewDrawer';
 import { useTableState } from '@/hooks/useTableState';
-import { useAuthStore } from '@/store/authStore';
+
 
 export const EveningSummariesPage = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -21,9 +21,7 @@ export const EveningSummariesPage = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs().subtract(30, 'day'), dayjs()]);
   const queryClient = useQueryClient();
 
-  const user = useAuthStore(state => state.user);
-  const roles = (user as { roles?: string[] })?.roles || [];
-  const canEdit = roles.some((role: string) => ['TENANT_OWNER', 'DATA_ENTRY'].includes(role));
+
 
   const {
     state: tableState,
@@ -159,7 +157,7 @@ export const EveningSummariesPage = () => {
           },
         ];
 
-        if (canEdit && record.status === 'PENDING' && !record.inventoryProcessed) {
+        if (record.status === 'PENDING' && !record.inventoryProcessed) {
           items.push({
             key: 'edit',
             icon: <EditOutlined />,
@@ -189,7 +187,7 @@ export const EveningSummariesPage = () => {
           });
         }
 
-        if (canEdit && record.inventoryProcessed && record.status === 'PENDING') {
+        if (record.inventoryProcessed && record.status === 'PENDING') {
           items.push({ type: 'divider' });
           items.push({
             key: 'undo',
