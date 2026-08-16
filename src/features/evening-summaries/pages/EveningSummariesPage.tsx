@@ -20,7 +20,6 @@ export const EveningSummariesPage = () => {
   const [selectedSummaryId, setSelectedSummaryId] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
-  // @ts-expect-error - roles might not be exported from AuthState but it's used elsewhere
   const user = useAuthStore(state => state.user);
   const roles = (user as { roles?: string[] })?.roles || [];
   const canEdit = roles.some((role: string) => ['TENANT_OWNER', 'DATA_ENTRY'].includes(role));

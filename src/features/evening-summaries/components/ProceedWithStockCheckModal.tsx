@@ -127,7 +127,7 @@ export const ProceedWithStockCheckModal: React.FC<ProceedWithStockCheckModalProp
           placeholder="Select warehouse..."
           value={selectedWarehouseId}
           onChange={setSelectedWarehouseId}
-          options={warehousesData?.content?.map((wh: { name: string, id: number }) => ({ label: wh.name, value: wh.id }))}
+          options={warehousesData?.content?.map((wh) => ({ label: wh.name || '', value: wh.id || 0 }))}
         />
       </div>
 
