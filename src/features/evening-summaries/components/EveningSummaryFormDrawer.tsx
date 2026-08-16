@@ -253,6 +253,7 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
               <div style={{ padding: '4px 11px', background: '#f5f5f5', borderRadius: 6, border: '1px solid #d9d9d9', minHeight: 32 }}>
                 <Text type="secondary" style={{ fontSize: 12, display: 'block', marginBottom: 2 }}>Est. Value</Text>
                 <Text strong>
+                  {/* eslint-disable-next-line react-hooks/incompatible-library */}
                   LKR {new Intl.NumberFormat('en-LK').format(watch(`items.${index}.estimateValue`) || 0)}
                 </Text>
               </div>
