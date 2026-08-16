@@ -37,7 +37,7 @@ const allMenuItems = [
       { key: '/inventory', translateKey: 'nav.inventory', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/purchases', translateKey: 'nav.purchases', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/morning-summaries', translateKey: 'nav.morningSummaries', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
-      { key: '/cancel-summaries', translateKey: 'nav.cancelSummaries', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
+      { key: '/evening-summaries', translateKey: 'Evening Summaries', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/bills', translateKey: 'nav.bills', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/balance', translateKey: 'nav.balance', roles: ['TENANT_OWNER', 'DATA_ENTRY'] },
       { key: '/qr-scan', translateKey: 'nav.qrScan', roles: ['TENANT_OWNER', 'DRIVER'] },
