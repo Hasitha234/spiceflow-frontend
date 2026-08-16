@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Button, Tag, Modal, notification, Input, Space, Dropdown } from 'antd';
+import { Button, Tag, Modal, notification, DatePicker, Space, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { PlusOutlined, SearchOutlined, MoreOutlined, EyeOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined, UndoOutlined } from '@ant-design/icons';
+import { PlusOutlined, MoreOutlined, EyeOutlined, EditOutlined, DeleteOutlined, PlayCircleOutlined, UndoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
@@ -18,6 +18,7 @@ export const EveningSummariesPage = () => {
   const [proceedModalOpen, setProceedModalOpen] = useState(false);
   const [viewDrawerOpen, setViewDrawerOpen] = useState(false);
   const [selectedSummaryId, setSelectedSummaryId] = useState<number | null>(null);
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
   const queryClient = useQueryClient();
 
   const user = useAuthStore(state => state.user);
@@ -30,19 +31,20 @@ export const EveningSummariesPage = () => {
     setPage,
     setSize,
     setSort,
-    setSearch,
   } = useTableState({
     defaultSort: 'createdAt',
     defaultDir: 'desc',
   });
 
   const { data, isLoading } = useQuery({
-    queryKey: ['evening-summaries', pageableParams],
+    queryKey: ['evening-summaries', pageableParams, dateRange?.[0]?.format('YYYY-MM-DD'), dateRange?.[1]?.format('YYYY-MM-DD')],
     queryFn: () => getEveningSummaries({
       page: tableState.page,
       size: tableState.size,
       sort: [`${tableState.sort},${tableState.dir}`],
       search: tableState.search || undefined,
+      startDate: dateRange?.[0]?.format('YYYY-MM-DD'),
+      endDate: dateRange?.[1]?.format('YYYY-MM-DD'),
     }),
   });
 
@@ -213,28 +215,28 @@ export const EveningSummariesPage = () => {
         title="Evening Summaries"
         subtitle="Manage end-of-day stock deductions and rep settlements."
         extra={[
-          <Input
-            key="search"
-            placeholder="Search summaries..."
-            prefix={<SearchOutlined />}
-            style={{ width: 250 }}
-            value={tableState.search}
-            onChange={(e) => setSearch(e.target.value)}
-            allowClear
+          <DatePicker.RangePicker
+            key="dateRange"
+            value={dateRange}
+            onChange={(dates) => {
+              if (dates && dates[0] && dates[1]) {
+                setDateRange([dates[0], dates[1]]);
+                setPage(0);
+              }
+            }}
+            format="YYYY-MM-DD"
           />,
-          canEdit && (
-            <Button
-              key="create"
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => {
-                setSelectedSummaryId(null);
-                setDrawerOpen(true);
-              }}
-            >
-              Create Summary
-            </Button>
-          )
+          <Button
+            key="create"
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              setSelectedSummaryId(null);
+              setDrawerOpen(true);
+            }}
+          >
+            Create Summary
+          </Button>
         ].filter(Boolean)}
       />
 
