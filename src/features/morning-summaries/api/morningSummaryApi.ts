@@ -50,3 +50,7 @@ export const deductFromInventory = async (id: number, warehouseId: number, retur
 export const undoDeduction = async (id: number) => {
   await apiClient.post(`/api/v1/morning-summaries/${id}/undo-deduct`);
 };
+
+export const deleteMorningSummary = async (id: number) => {
+  await apiClient.delete(`/api/v1/morning-summaries/${id}`);
+};

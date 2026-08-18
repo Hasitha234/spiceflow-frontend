@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Button, Tag, Modal, DatePicker } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Tag, Modal, DatePicker, notification, Dropdown } from 'antd';
+import type { MenuProps } from 'antd';
+import { PlusOutlined, MoreOutlined, EyeOutlined, EditOutlined, DeleteOutlined, UndoOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import type { ColumnsType } from 'antd/es/table';
 import { PageLayout, PageHeader, DataTable, ListPageFooter } from '@/components/common';
@@ -9,7 +10,7 @@ import { getMorningSummaries } from '../api/morningSummaryApi';
 import type { MorningSummary } from '../types';
 import { MorningSummaryFormDrawer } from '../components/MorningSummaryFormDrawer';
 import { useTableState } from '@/hooks/useTableState';
-import { undoDeduction } from '../api/morningSummaryApi';
+import { undoDeduction, deleteMorningSummary } from '../api/morningSummaryApi';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { MorningSummaryViewDrawer } from '../components/MorningSummaryViewDrawer';
 
@@ -19,6 +20,28 @@ export const MorningSummariesPage = () => {
   const [selectedSummary, setSelectedSummary] = useState<MorningSummary | null>(null);
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs]>([dayjs(), dayjs()]);
   const queryClient = useQueryClient();
+
+  const handleDelete = (id: number) => {
+    Modal.confirm({
+      title: 'Delete Morning Summary',
+      content: 'Are you sure you want to delete this morning summary?',
+      okText: 'Delete',
+      okType: 'danger',
+      onOk: async () => {
+        try {
+          await deleteMorningSummary(id);
+          notification.success({ message: 'Summary deleted successfully' });
+          queryClient.invalidateQueries({ queryKey: ['morningSummaries'] });
+        } catch (error: unknown) {
+          const err = error as { response?: { data?: { message?: string } }, message?: string };
+          notification.error({
+            message: 'Error deleting summary',
+            description: err.response?.data?.message || err.message || 'An unknown error occurred.',
+          });
+        }
+      },
+    });
+  };
 
   const {
     state: tableState,
@@ -84,49 +107,61 @@ export const MorningSummariesPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 180,
+      align: 'right',
       render: (_, record) => {
+        const items: MenuProps['items'] = [
+          {
+            key: 'view',
+            icon: <EyeOutlined />,
+            label: 'View Details',
+            onClick: () => {
+              setSelectedSummary(record);
+              setViewDrawerOpen(true);
+            },
+          },
+        ];
+
+        if (record.status === 'PENDING') {
+          items.push({
+            key: 'edit',
+            icon: <EditOutlined />,
+            label: 'Edit',
+            onClick: () => {
+              setSelectedSummary(record);
+              setDrawerOpen(true);
+            },
+          });
+          items.push({ type: 'divider' });
+          items.push({
+            key: 'delete',
+            icon: <DeleteOutlined />,
+            label: 'Delete',
+            danger: true,
+            onClick: () => handleDelete(record.id),
+          });
+        }
+
+        if (record.status === 'SETTLED') {
+          items.push({ type: 'divider' });
+          items.push({
+            key: 'undo',
+            icon: <UndoOutlined />,
+            label: 'Undo Deduction',
+            danger: true,
+            onClick: () => {
+              Modal.confirm({
+                title: 'Undo Deduction',
+                content: `Are you sure you want to reverse this summary and return stock to ${record.deductedWarehouseName || 'the warehouse'} and subtract from ${record.returnWarehouseName || 'the return warehouse'}?`,
+                onOk: () => undoMutation.mutate(record.id),
+              });
+            },
+          });
+        }
+
         return (
-          <div className="flex gap-2">
-            <Button
-              size="small"
-              onClick={() => {
-                setSelectedSummary(record);
-                setViewDrawerOpen(true);
-              }}
-            >
-              View
-            </Button>
-            {record.status === 'PENDING' && (
-              <>
-                <Button
-                  size="small"
-                  onClick={() => {
-                    setSelectedSummary(record);
-                    setDrawerOpen(true);
-                  }}
-                >
-                  Edit
-                </Button>
-              </>
-            )}
-            {record.status === 'SETTLED' && (
-              <Button
-                danger
-                size="small"
-                loading={undoMutation.isPending && undoMutation.variables === record.id}
-                onClick={() => {
-                  Modal.confirm({
-                    title: 'Undo Deduction',
-                    content: `Are you sure you want to reverse this summary and return stock to ${record.deductedWarehouseName || 'the warehouse'} and subtract from ${record.returnWarehouseName || 'the return warehouse'}?`,
-                    onOk: () => undoMutation.mutate(record.id),
-                  });
-                }}
-              >
-                Undo
-              </Button>
-            )}
-          </div>
+          <Dropdown menu={{ items }} trigger={['click']}>
+            <Button type="text" icon={<MoreOutlined />} loading={undoMutation.isPending && undoMutation.variables === record.id} />
+          </Dropdown>
         );
       },
     },
