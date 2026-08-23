@@ -132,7 +132,6 @@ export const EveningSummaryFormDrawer: React.FC<EveningSummaryFormDrawerProps> =
                     value={field.value ? dayjs(field.value) : null}
                     onChange={(date) => field.onChange(date ? date.format('YYYY-MM-DD') : '')}
                     style={{ width: '100%' }}
-                    disabled={!!summaryId}
                   />
                 )}
               />
