@@ -232,6 +232,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   const userType = useAuthStore(state => state.user?.userType || 'TENANT_OWNER');
   const userPermissions = useAuthStore(state => state.user?.permissions || []);
   const canTransfer = userType === 'TENANT_OWNER' || userPermissions.includes('INVENTORY_TRANSFER');
+  const canEdit = userType === 'TENANT_OWNER' || userType === 'PLATFORM_ADMIN';
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -560,15 +561,17 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
       width: 100,
       render: (_: unknown, record: InventoryItem) => (
         <Space>
-          <Tooltip title={t('common.edit', 'Edit')}>
-            <Button
-              type="text"
-              icon={<EditOutlined style={{ color: 'var(--color-primary)' }} />}
-              onClick={() => handleOpenEditItem(record)}
-              aria-label={`Edit ${record.productName}`}
-              style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
-            />
-          </Tooltip>
+          {canEdit && (
+            <Tooltip title={t('common.edit', 'Edit')}>
+              <Button
+                type="text"
+                icon={<EditOutlined style={{ color: 'var(--color-primary)' }} />}
+                onClick={() => handleOpenEditItem(record)}
+                aria-label={`Edit ${record.productName}`}
+                style={{ width: 36, height: 36, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
+              />
+            </Tooltip>
+          )}
           <Tooltip title={t('common.delete', 'Delete')}>
             <Popconfirm
               title={record.quantityAvailable > 0 || (record.quantityReserved && record.quantityReserved > 0) ? "Please edit quantity to 0 before deleting." : "Are you sure you want to delete this item?"}
@@ -591,7 +594,7 @@ function WarehouseDetail({ warehouseId, onBack, t }: { warehouseId: string; onBa
   }
 
   return baseColumns;
-}, [t, canTransfer, handleDeleteItem, handleOpenEditItem]);
+}, [t, canTransfer, canEdit, handleDeleteItem, handleOpenEditItem]);
 
   return (
     <div className="p-6">
